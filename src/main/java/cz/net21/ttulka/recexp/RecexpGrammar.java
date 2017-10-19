@@ -9,6 +9,9 @@ public class RecexpGrammar {
 
     private final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
+    public RecexpGrammar() {
+    }
+
     public RecexpGrammar(RecexpRule... rules) {
         if (rules != null && rules.length > 0) {
             this.rules.addAll(Arrays.asList(rules));
