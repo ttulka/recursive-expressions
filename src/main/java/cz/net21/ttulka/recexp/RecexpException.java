@@ -1,5 +1,8 @@
 package cz.net21.ttulka.recexp;
 
+/**
+ * @author ttulka
+ */
 public class RecexpException extends RuntimeException {
 
     protected RecexpException(String message) {

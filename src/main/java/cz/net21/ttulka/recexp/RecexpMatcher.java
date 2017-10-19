@@ -2,6 +2,9 @@ package cz.net21.ttulka.recexp;
 
 import java.util.Set;
 
+/**
+ * @author ttulka
+ */
 public class RecexpMatcher {
 
     private final String input;
