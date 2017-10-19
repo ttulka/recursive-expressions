@@ -5,36 +5,36 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RecursiveGrammar {
+public class RecexpGrammar {
 
-    private final Set<Rule> rules = new HashSet<Rule>();
+    private final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
-    public RecursiveGrammar(Rule... rules) {
+    public RecexpGrammar(RecexpRule... rules) {
         if (rules != null && rules.length > 0) {
             this.rules.addAll(Arrays.asList(rules));
         }
     }
 
-    public RecursiveGrammar(String... rules) {
+    public RecexpGrammar(String... rules) {
         if (rules != null && rules.length > 0) {
             for (String rule : rules) {
-                this.rules.add(new Rule(rule));
+                this.rules.add(new RecexpRule(rule));
             }
         }
     }
 
-    public RecursiveGrammar addRule(Rule rule) {
+    public RecexpGrammar addRule(RecexpRule rule) {
         this.rules.add(rule);
         return this;
     }
 
-    public RecursiveGrammar addRule(String name, String expression) {
-        this.rules.add(new Rule(name, expression));
+    public RecexpGrammar addRule(String name, String expression) {
+        this.rules.add(new RecexpRule(name, expression));
         return this;
     }
 
-    public RecursiveGrammar addRule(String expression) {
-        this.rules.add(new Rule(expression));
+    public RecexpGrammar addRule(String expression) {
+        this.rules.add(new RecexpRule(expression));
         return this;
     }
 

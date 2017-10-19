@@ -5,9 +5,9 @@ import java.util.Set;
 public class RecexpMatcher {
 
     private final String input;
-    private final Set<Rule> rules;
+    private final Set<RecexpRule> rules;
 
-    RecexpMatcher(String input, Set<Rule> rules) {
+    RecexpMatcher(String input, Set<RecexpRule> rules) {
         this.input = input;
         this.rules = rules;
     }

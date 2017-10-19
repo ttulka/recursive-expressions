@@ -9,7 +9,7 @@ public class RecexpTest {
 
     @Test
     public void simpleRecursiveTest() {
-        RecursiveGrammar grammar = new RecursiveGrammar("a($this)b");
+        RecexpGrammar grammar = new RecexpGrammar("a($this)b");
 
         assertThat(grammar.matches("ab"), is(true));
         assertThat(grammar.matches("aabb"), is(true));
@@ -24,7 +24,7 @@ public class RecexpTest {
 
     @Test
     public void doubleRecursiveTest() {
-        RecursiveGrammar grammar = new RecursiveGrammar("a($this)b($this)c");
+        RecexpGrammar grammar = new RecexpGrammar("a($this)b($this)c");
 
         assertThat(grammar.matches("abc"), is(true));
         assertThat(grammar.matches("abc"), is(true));

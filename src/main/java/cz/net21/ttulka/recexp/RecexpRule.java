@@ -1,16 +1,16 @@
 package cz.net21.ttulka.recexp;
 
-public class Rule {
+public class RecexpRule {
 
     private final String name;
     private final String expression;
 
-    public Rule(String expression) {
+    public RecexpRule(String expression) {
         this.name = expression;
         this.expression = expression;
     }
 
-    public Rule(String name, String expression) {
+    public RecexpRule(String name, String expression) {
         this.name = name;
         this.expression = expression;
     }
