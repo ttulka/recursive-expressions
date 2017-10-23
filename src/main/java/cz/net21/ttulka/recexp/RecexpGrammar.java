@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public class RecexpGrammar {
 
-    private final Set<RecexpRule> rules = new HashSet<RecexpRule>();
+    protected final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
     public RecexpGrammar() {
     }
@@ -42,10 +42,6 @@ public class RecexpGrammar {
     public RecexpGrammar addRule(String expression) {
         this.rules.add(new RecexpRule(expression));
         return this;
-    }
-
-    public String[] split(CharSequence input) {
-        return null; // TODO
     }
 
     public RecexpMatcher matcher(String input) {
