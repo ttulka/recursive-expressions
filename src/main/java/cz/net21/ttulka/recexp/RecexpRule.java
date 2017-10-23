@@ -8,12 +8,12 @@ public class RecexpRule {
     private final String name;
     private final String expression;
 
-    public RecexpRule(String expression) {
+    protected RecexpRule(String expression) {
         this.name = expression;
         this.expression = expression;
     }
 
-    public RecexpRule(String name, String expression) {
+    protected RecexpRule(String name, String expression) {
         this.name = name;
         this.expression = expression;
     }
