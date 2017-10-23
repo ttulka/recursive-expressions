@@ -12,6 +12,26 @@ import static org.junit.Assert.fail;
 public class RecexpTest {
 
     @Test
+    public void epsilonTest() {
+        RecexpGrammar grammar = new RecexpGrammar("");
+
+        assertThat(grammar.accepts(""), is(true));
+
+        assertThat(grammar.accepts("a"), is(false));
+    }
+
+    @Test
+    public void simpleTest() {
+        RecexpGrammar grammar = new RecexpGrammar("a");
+
+        assertThat(grammar.accepts("a"), is(true));
+
+        assertThat(grammar.accepts(""), is(false));
+        assertThat(grammar.accepts("aa"), is(false));
+        assertThat(grammar.accepts("aaa"), is(false));
+    }
+
+    @Test
     public void simpleRecursiveTest() {
         RecexpGrammar grammar = new RecexpGrammar("a$this?b");
 
@@ -78,6 +98,12 @@ public class RecexpTest {
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
+    public void cyclicOnlyThisTest() {
+        new RecexpGrammar("$this").accepts("a");
+        fail("Cyclic rule should throw an exception.");
+    }
+
+    @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicSimpleThisTest() {
         new RecexpGrammar("a($this)b").accepts("ab");
         fail("Cyclic rule should throw an exception.");
@@ -112,6 +138,14 @@ public class RecexpTest {
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
+    public void cyclicTwoThisTest() {
+        new RecexpGrammar()
+                .addRule("a($this)b")
+                .addRule("c($this)d");
+        fail("Cyclic rule should throw an exception.");
+    }
+
+    @Test(expected = RecexpCyclicRuleException.class)
     public void transitiveCyclicThreeRulesTest() {
         new RecexpGrammar()
                 .addRule("RULE_1", "a($RULE_2)b")
@@ -130,11 +164,82 @@ public class RecexpTest {
         assertThat(grammar.accepts("aacbb"), is(true));
         assertThat(grammar.accepts("aaacbbb"), is(true));
 
+        assertThat(grammar.accepts(""), is(false));
         assertThat(grammar.accepts("ab"), is(false));
         assertThat(grammar.accepts("aabb"), is(false));
         assertThat(grammar.accepts("abc"), is(false));
         assertThat(grammar.accepts("cc"), is(false));
         assertThat(grammar.accepts("accb"), is(false));
+    }
+
+    @Test
+    public void orThisByTwoRulesTest() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("R", "a($R)b")
+                .addRule("R", "x");
+
+        assertThat(grammar.accepts("x"), is(true));
+        assertThat(grammar.accepts("axb"), is(true));
+        assertThat(grammar.accepts("aaxbb"), is(true));
+        assertThat(grammar.accepts("aaaxbbb"), is(true));
+
+        assertThat(grammar.accepts(""), is(false));
+        assertThat(grammar.accepts("xx"), is(false));
+        assertThat(grammar.accepts("xxx"), is(false));
+        assertThat(grammar.accepts("ab"), is(false));
+        assertThat(grammar.accepts("aabc"), is(false));
+        assertThat(grammar.accepts("axxb"), is(false));
+        assertThat(grammar.accepts("xabx"), is(false));
+    }
+
+    @Test
+    public void orNamedThreeRulesTest() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("R", "a($R)b")
+                .addRule("R", "x")
+                .addRule("R", "");
+
+        assertThat(grammar.accepts(""), is(true));
+        assertThat(grammar.accepts("x"), is(true));
+        assertThat(grammar.accepts("ab"), is(true));
+        assertThat(grammar.accepts("aabb"), is(true));
+        assertThat(grammar.accepts("aaabbb"), is(true));
+        assertThat(grammar.accepts("axb"), is(true));
+        assertThat(grammar.accepts("aaxbb"), is(true));
+        assertThat(grammar.accepts("aaaxbbb"), is(true));
+
+        assertThat(grammar.accepts("xx"), is(false));
+        assertThat(grammar.accepts("xxx"), is(false));
+        assertThat(grammar.accepts("ab"), is(false));
+        assertThat(grammar.accepts("aabc"), is(false));
+        assertThat(grammar.accepts("axxb"), is(false));
+        assertThat(grammar.accepts("xabx"), is(false));
+    }
+
+    @Test
+    public void orNamedTransitiveThreeRulesTest() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("R", "a($R)b")
+                .addRule("R", "$X")
+                .addRule("R", "$EPS")
+                .addRule("X", "x")
+                .addRule("EPS", "");
+
+        assertThat(grammar.accepts(""), is(true));
+        assertThat(grammar.accepts("x"), is(true));
+        assertThat(grammar.accepts("ab"), is(true));
+        assertThat(grammar.accepts("aabb"), is(true));
+        assertThat(grammar.accepts("aaabbb"), is(true));
+        assertThat(grammar.accepts("axb"), is(true));
+        assertThat(grammar.accepts("aaxbb"), is(true));
+        assertThat(grammar.accepts("aaaxbbb"), is(true));
+
+        assertThat(grammar.accepts("xx"), is(false));
+        assertThat(grammar.accepts("xxx"), is(false));
+        assertThat(grammar.accepts("ab"), is(false));
+        assertThat(grammar.accepts("aabc"), is(false));
+        assertThat(grammar.accepts("axxb"), is(false));
+        assertThat(grammar.accepts("xabx"), is(false));
     }
 
     @Test
@@ -148,6 +253,7 @@ public class RecexpTest {
         assertThat(grammar.accepts("aacbb"), is(true));
         assertThat(grammar.accepts("aaacbbb"), is(true));
 
+        assertThat(grammar.accepts(""), is(false));
         assertThat(grammar.accepts("ab"), is(false));
         assertThat(grammar.accepts("aabb"), is(false));
         assertThat(grammar.accepts("abc"), is(false));
@@ -171,6 +277,7 @@ public class RecexpTest {
         assertThat(grammar.accepts("acacxdbdb"), is(true));
         assertThat(grammar.accepts("acacacxdbdbdb"), is(true));
 
+        assertThat(grammar.accepts(""), is(false));
         assertThat(grammar.accepts("ab"), is(false));
         assertThat(grammar.accepts("acdb"), is(false));
         assertThat(grammar.accepts("acabdb"), is(false));
