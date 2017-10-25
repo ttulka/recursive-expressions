@@ -20,6 +20,15 @@ public class RecexpGroup {
     }
 
     /**
+     * Returns the name of capturing group.
+     *
+     * @return the name of capturing group
+     */
+    public String name() {
+        return null;    // TODO
+    }
+
+    /**
      * Returns the number of capturing groups in the input for this matcher's grammar.
      * <p>
      * Group zero denotes the entire pattern by convention. It is not included in this count.
