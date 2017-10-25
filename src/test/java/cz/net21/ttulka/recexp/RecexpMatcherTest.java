@@ -52,10 +52,10 @@ public class RecexpMatcherTest {
         assertThat(matcher.group(1).group(1).groupCount(), is(0));
         assertThat(matcher.group(1).group(2).groupCount(), is(0));
 
+        assertThat(matcher.value(), is("abcde"));
         assertThat(matcher.group(1).value(), is("bcd"));
-        assertThat(matcher.group(1).groupCount(), is(2));
-        assertThat(matcher.group(1).group(1).groupCount(), is(0));
-        assertThat(matcher.group(1).group(2).groupCount(), is(0));
+        assertThat(matcher.group(1).group(1).value(), is("c"));
+        assertThat(matcher.group(1).group(2).value(), is("d"));
     }
 
     @Test
@@ -68,6 +68,18 @@ public class RecexpMatcherTest {
         assertThat(matcher.group(1).group(1).groupCount(), is(2));
         assertThat(matcher.group(1).group(1).group(1).groupCount(), is(0));
         assertThat(matcher.group(1).group(1).group(2).groupCount(), is(0));
+
+        assertThat(matcher.value(), is("abcde"));
+        assertThat(matcher.group(1).value(), is("abcde"));
+        assertThat(matcher.group(1).group(1).value(), is("bcd"));
+        assertThat(matcher.group(1).group(1).group(1).value(), is("c"));
+        assertThat(matcher.group(1).group(1).group(2).value(), is("d"));
+
+        assertThat(matcher.value(), is("abcde"));
+        assertThat(matcher.group(1).value(), is("abcde"));
+        assertThat(matcher.group(1).group(1).value(), is("bcd"));
+        assertThat(matcher.group(1).group(1).group(1).value(), is("c"));
+        assertThat(matcher.group(1).group(1).group(2).value(), is("d"));
     }
 
     @Test
@@ -78,22 +90,35 @@ public class RecexpMatcherTest {
         assertThat(matcher.groupCount(), is(1));    // 2 in case of RegExp
         assertThat(matcher.group(1).groupCount(), is(1));
         assertThat(matcher.group(1).group(1).groupCount(), is(0));
+
+        assertThat(matcher.value(), is("ab"));
+        assertThat(matcher.group(1).value(), is("b"));
+        assertThat(matcher.group(1).group(1).value(), is("b"));
     }
 
     @Test
     public void recursiveGroupTest() {
         RecexpRule rule = new RecexpRule("a$this?b");
         RecexpMatcher matcher = new RecexpMatcher("aabb", Collections.singleton(rule));
+
         assertThat(matcher.groupCount(), is(1));
         assertThat(matcher.group(1).groupCount(), is(0));
+
+        assertThat(matcher.value(), is("aabb"));
+        assertThat(matcher.group(1).value(), is("ab"));
     }
 
     @Test
     public void recursiveGroupExplicitGroupTest() {
         RecexpRule rule = new RecexpRule("a($this?)b");
         RecexpMatcher matcher = new RecexpMatcher("aabb", Collections.singleton(rule));
+
         assertThat(matcher.groupCount(), is(1));
         assertThat(matcher.group(1).groupCount(), is(1));
         assertThat(matcher.group(1).group(1).groupCount(), is(0));
+
+        assertThat(matcher.value(), is("aabb"));
+        assertThat(matcher.group(1).value(), is("ab"));
+        assertThat(matcher.group(1).group(1).value(), is("ab"));
     }
 }
