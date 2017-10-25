@@ -45,6 +45,9 @@ public class RecexpGrammar {
     }
 
     public RecexpMatcher matcher(String input) {
+        if (this.rules.isEmpty()) {
+            throw new RecexpEmptyRulesException("Input: '" + input + "'.");
+        }
         return new RecexpMatcher(input, Collections.unmodifiableSet(this.rules));
     }
 
