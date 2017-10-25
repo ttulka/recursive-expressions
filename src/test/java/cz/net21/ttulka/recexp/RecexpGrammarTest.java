@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.fail;
 
 /**
  * @author ttulka
@@ -106,5 +107,12 @@ public class RecexpGrammarTest {
         RecexpMatcher matcher = grammar.matcher("");
 
         assertThat(matcher.rules, containsInAnyOrder(grammar.rules.toArray()));
+    }
+
+    @Test(expected = RecexpEmptyRulesException.class)
+    public void emptyMatcherExceptionTest() {
+        new RecexpGrammar().matcher("");
+
+        fail("Cannot create a matcher from an empty grammar.");
     }
 }
