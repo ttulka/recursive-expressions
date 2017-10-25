@@ -26,7 +26,7 @@ public class RecexpMatcher extends RecexpGroup {
     }
 
     @Override
-    public String getValue() {
+    public String value() {
         return input;
     }
 }

@@ -303,7 +303,7 @@ public class RecexpTest {
 
         RecexpMatcher matcher = grammar.matcher(input);
 
-        assertThat(matcher.getValue(), is(input));
+        assertThat(matcher.value(), is(input));
         assertThat(matcher.groups().length, is(0));
     }
 
@@ -316,21 +316,21 @@ public class RecexpTest {
         assertThat(matcher1.groupCount(), is(2));
         assertThat(matcher1.groups().length, is(2));
 
-        assertThat(matcher1.getValue(), is("ab"));
+        assertThat(matcher1.value(), is("ab"));
 
-        assertThat(matcher1.group(0).getValue(), is(matcher1.getValue()));
-        assertThat(matcher1.group("a($this?)b").getValue(), is(matcher1.getValue()));
+        assertThat(matcher1.group(0).value(), is(matcher1.value()));
+        assertThat(matcher1.group("a($this?)b").value(), is(matcher1.value()));
 
         assertThat(matcher1.group(0).groupCount(), is(matcher1.groupCount()));
         assertThat(matcher1.group(0).groups().length, is(matcher1.groups().length));
 
-        assertThat(matcher1.group(1).getValue(), is("a"));
-        assertThat(matcher1.group("a").getValue(), is("a"));
+        assertThat(matcher1.group(1).value(), is("a"));
+        assertThat(matcher1.group("a").value(), is("a"));
         assertThat(matcher1.group(1).groupCount(), is(1));
         assertThat(matcher1.group(1).groups().length, is(matcher1.group(1).groupCount()));
 
-        assertThat(matcher1.group(2).getValue(), is("b"));
-        assertThat(matcher1.group("b").getValue(), is("b"));
+        assertThat(matcher1.group(2).value(), is("b"));
+        assertThat(matcher1.group("b").value(), is("b"));
         assertThat(matcher1.group(2).groupCount(), is(1));
         assertThat(matcher1.group(2).groups().length, is(matcher1.group(2).groupCount()));
 
@@ -339,30 +339,30 @@ public class RecexpTest {
         assertThat(matcher2.groupCount(), is(3));
         assertThat(matcher2.groups().length, is(matcher2.groupCount()));
 
-        assertThat(matcher2.getValue(), is("aabb"));
+        assertThat(matcher2.value(), is("aabb"));
 
-        assertThat(matcher2.group(0).getValue(), is("aabb"));
-        assertThat(matcher2.group("a($this?)b").getValue(), is("aabb"));
+        assertThat(matcher2.group(0).value(), is("aabb"));
+        assertThat(matcher2.group("a($this?)b").value(), is("aabb"));
 
-        assertThat(matcher2.group(1).getValue(), is("a"));
-        assertThat(matcher2.group("a").getValue(), is("a"));
+        assertThat(matcher2.group(1).value(), is("a"));
+        assertThat(matcher2.group("a").value(), is("a"));
 
-        assertThat(matcher2.group(2).getValue(), is("ab"));
-        assertThat(matcher2.group("$this?").getValue(), is("ab"));
+        assertThat(matcher2.group(2).value(), is("ab"));
+        assertThat(matcher2.group("$this?").value(), is("ab"));
 
-        assertThat(matcher2.group(3).getValue(), is("b"));
-        assertThat(matcher2.group("b").getValue(), is("b"));
+        assertThat(matcher2.group(3).value(), is("b"));
+        assertThat(matcher2.group("b").value(), is("b"));
 
         assertThat(matcher2.group(2).groupCount(), is(2));
         assertThat(matcher2.group(2).groups().length, is(matcher2.group(2).groupCount()));
 
-        assertThat(matcher2.group(2).group(1).getValue(), is("a"));
-        assertThat(matcher2.group(2).group("a").getValue(), is("a"));
+        assertThat(matcher2.group(2).group(1).value(), is("a"));
+        assertThat(matcher2.group(2).group("a").value(), is("a"));
         assertThat(matcher2.group(2).group(1).groupCount(), is(1));
         assertThat(matcher2.group(2).group(1).groups().length, is(matcher1.group(1).groupCount()));
 
-        assertThat(matcher2.group(2).group(2).getValue(), is("b"));
-        assertThat(matcher2.group(2).group("b").getValue(), is("b"));
+        assertThat(matcher2.group(2).group(2).value(), is("b"));
+        assertThat(matcher2.group(2).group("b").value(), is("b"));
         assertThat(matcher2.group(2).group(2).groupCount(), is(1));
         assertThat(matcher2.group(2).group(2).groups().length, is(matcher1.group(1).groupCount()));
     }
@@ -374,23 +374,23 @@ public class RecexpTest {
         RecexpMatcher matcher1 = grammar.matcher("firstsecond");
 
         assertThat(matcher1.groupCount(), is(4));
-        assertThat(matcher1.group(1).getValue(), is("fi"));
-        assertThat(matcher1.group(2).getValue(), is("r"));
-        assertThat(matcher1.group(3).getValue(), is("st"));
-        assertThat(matcher1.group(4).getValue(), is("second"));
+        assertThat(matcher1.group(1).value(), is("fi"));
+        assertThat(matcher1.group(2).value(), is("r"));
+        assertThat(matcher1.group(3).value(), is("st"));
+        assertThat(matcher1.group(4).value(), is("second"));
 
         RecexpMatcher matcher2 = grammar.matcher("firstfistsecondsecond");
 
         assertThat(matcher2.groupCount(), is(5));
-        assertThat(matcher2.group(1).getValue(), is("fi"));
-        assertThat(matcher2.group(2).getValue(), is("r"));
-        assertThat(matcher2.group(3).getValue(), is("st"));
-        assertThat(matcher2.group(4).getValue(), is("fistsecond"));
-        assertThat(matcher2.group(5).getValue(), is("second"));
+        assertThat(matcher2.group(1).value(), is("fi"));
+        assertThat(matcher2.group(2).value(), is("r"));
+        assertThat(matcher2.group(3).value(), is("st"));
+        assertThat(matcher2.group(4).value(), is("fistsecond"));
+        assertThat(matcher2.group(5).value(), is("second"));
 
         assertThat(matcher2.group(4).groupCount(), is(3));
-        assertThat(matcher2.group(4).group(1).getValue(), is("fi"));
-        assertThat(matcher2.group(4).group(2).getValue(), is("st"));
-        assertThat(matcher2.group(4).group(3).getValue(), is("second"));
+        assertThat(matcher2.group(4).group(1).value(), is("fi"));
+        assertThat(matcher2.group(4).group(2).value(), is("st"));
+        assertThat(matcher2.group(4).group(3).value(), is("second"));
     }
 }

@@ -1,7 +1,10 @@
 package cz.net21.ttulka.recexp;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -34,6 +37,63 @@ public class RecexpMatcherTest {
 
         RecexpMatcher matcher = new RecexpMatcher(input, null);
 
-        assertThat(matcher.getValue(), is(input));
+        assertThat(matcher.value(), is(input));
+    }
+
+    @Test
+    public void groupTest() {
+        RecexpRule rule = new RecexpRule("a(b(c)(d))e");
+        RecexpMatcher matcher = new RecexpMatcher("abcde", Collections.singleton(rule));
+
+        // groups are hierarchical - for a level
+        // that differs from the RegExp
+        assertThat(matcher.groupCount(), is(1));    // 3 in case of RegExp
+        assertThat(matcher.group(1).groupCount(), is(2));
+        assertThat(matcher.group(1).group(1).groupCount(), is(0));
+        assertThat(matcher.group(1).group(2).groupCount(), is(0));
+
+        assertThat(matcher.group(1).value(), is("bcd"));
+        assertThat(matcher.group(1).groupCount(), is(2));
+        assertThat(matcher.group(1).group(1).groupCount(), is(0));
+        assertThat(matcher.group(1).group(2).groupCount(), is(0));
+    }
+
+    @Test
+    public void groupExplicitZeroGroupTest() {
+        RecexpRule rule = new RecexpRule("(a(b(c)(d))e)");
+        RecexpMatcher matcher = new RecexpMatcher("abcde", Collections.singleton(rule));
+
+        assertThat(matcher.groupCount(), is(2));    // 4 in case of RegExp
+        assertThat(matcher.group(1).groupCount(), is(1));
+        assertThat(matcher.group(1).group(1).groupCount(), is(2));
+        assertThat(matcher.group(1).group(1).group(1).groupCount(), is(0));
+        assertThat(matcher.group(1).group(1).group(2).groupCount(), is(0));
+    }
+
+    @Test
+    public void explicitDoubleGroupTest() {
+        RecexpRule rule = new RecexpRule("a((b))");
+        RecexpMatcher matcher = new RecexpMatcher("ab", Collections.singleton(rule));
+
+        assertThat(matcher.groupCount(), is(1));    // 2 in case of RegExp
+        assertThat(matcher.group(1).groupCount(), is(1));
+        assertThat(matcher.group(1).group(1).groupCount(), is(0));
+    }
+
+    @Test
+    public void recursiveGroupTest() {
+        RecexpRule rule = new RecexpRule("a$this?b");
+        RecexpMatcher matcher = new RecexpMatcher("aabb", Collections.singleton(rule));
+        assertThat(matcher.groupCount(), is(1));
+        assertThat(matcher.group(1).groupCount(), is(0));
+    }
+
+    @Test
+    public void recursiveGroupExplicitGroupTest() {
+        RecexpRule rule = new RecexpRule("a($this?)b");
+        RecexpMatcher matcher = new RecexpMatcher("aabb", Collections.singleton(rule));
+        assertThat(matcher.groupCount(), is(1));
+        assertThat(matcher.group(1).groupCount(), is(1));
+        assertThat(matcher.group(1).group(1).groupCount(), is(0));
     }
 }

@@ -15,8 +15,8 @@ public class RecexpGroup {
      *
      * @return the input subsequence captured by the given group
      */
-    public String getValue() {
-        return null;
+    public String value() {
+        return null;    // TODO
     }
 
     /**
