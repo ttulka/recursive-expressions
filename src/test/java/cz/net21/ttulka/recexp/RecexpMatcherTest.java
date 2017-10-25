@@ -3,8 +3,6 @@ package cz.net21.ttulka.recexp;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -56,6 +54,11 @@ public class RecexpMatcherTest {
         assertThat(matcher.group(1).value(), is("bcd"));
         assertThat(matcher.group(1).group(1).value(), is("c"));
         assertThat(matcher.group(1).group(2).value(), is("d"));
+
+        assertThat(matcher.name(), is("a(b(c)(d))e"));
+        assertThat(matcher.group(1).name(), is("b(c)(d)"));
+        assertThat(matcher.group(1).group(1).name(), is("c"));
+        assertThat(matcher.group(1).group(2).name(), is("d"));
     }
 
     @Test
@@ -75,11 +78,11 @@ public class RecexpMatcherTest {
         assertThat(matcher.group(1).group(1).group(1).value(), is("c"));
         assertThat(matcher.group(1).group(1).group(2).value(), is("d"));
 
-        assertThat(matcher.value(), is("abcde"));
-        assertThat(matcher.group(1).value(), is("abcde"));
-        assertThat(matcher.group(1).group(1).value(), is("bcd"));
-        assertThat(matcher.group(1).group(1).group(1).value(), is("c"));
-        assertThat(matcher.group(1).group(1).group(2).value(), is("d"));
+        assertThat(matcher.name(), is("(a(b(c)(d))e)"));
+        assertThat(matcher.group(1).name(), is("a(b(c)(d))e"));
+        assertThat(matcher.group(1).group(1).name(), is("b(c)(d)"));
+        assertThat(matcher.group(1).group(1).group(1).name(), is("c"));
+        assertThat(matcher.group(1).group(1).group(2).name(), is("d"));
     }
 
     @Test
@@ -94,6 +97,10 @@ public class RecexpMatcherTest {
         assertThat(matcher.value(), is("ab"));
         assertThat(matcher.group(1).value(), is("b"));
         assertThat(matcher.group(1).group(1).value(), is("b"));
+
+        assertThat(matcher.name(), is("a((b))"));
+        assertThat(matcher.group(1).name(), is("(b)"));
+        assertThat(matcher.group(1).group(1).name(), is("b"));
     }
 
     @Test
@@ -106,6 +113,9 @@ public class RecexpMatcherTest {
 
         assertThat(matcher.value(), is("aabb"));
         assertThat(matcher.group(1).value(), is("ab"));
+
+        assertThat(matcher.name(), is("a$this?b"));
+        assertThat(matcher.group(1).name(), is("a$this?b"));
     }
 
     @Test
@@ -120,5 +130,9 @@ public class RecexpMatcherTest {
         assertThat(matcher.value(), is("aabb"));
         assertThat(matcher.group(1).value(), is("ab"));
         assertThat(matcher.group(1).group(1).value(), is("ab"));
+
+        assertThat(matcher.name(), is("a($this?)b"));
+        assertThat(matcher.group(1).name(), is("$this?"));
+        assertThat(matcher.group(1).group(1).name(), is("a($this?)b"));
     }
 }
