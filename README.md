@@ -7,3 +7,7 @@ Java Library for Recursive Expressions
 ## Prerequisites
 
 - Java 6
+
+## Characteristics
+
+- Not Thread-safe
