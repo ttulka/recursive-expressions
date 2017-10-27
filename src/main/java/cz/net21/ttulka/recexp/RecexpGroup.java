@@ -7,7 +7,14 @@ package cz.net21.ttulka.recexp;
  */
 public class RecexpGroup {
 
-    protected RecexpGroup() {
+    private final String name;
+    private final String value;
+    private final RecexpGroup[] groups;
+
+    protected RecexpGroup(String name, String value, RecexpGroup[] groups) {
+        this.name = name;
+        this.value = value;
+        this.groups = groups;
     }
 
     /**
@@ -16,7 +23,7 @@ public class RecexpGroup {
      * @return the input subsequence captured by the given group
      */
     public String value() {
-        return null;    // TODO
+        return value;
     }
 
     /**
@@ -25,7 +32,7 @@ public class RecexpGroup {
      * @return the name of capturing group
      */
     public String name() {
-        return null;    // TODO
+        return name;
     }
 
     /**
@@ -36,7 +43,7 @@ public class RecexpGroup {
      * @return the number of capturing groups in the input for this matcher's grammar
      */
     public int groupCount() {
-        return 0; // TODO
+        return this.groups.length;
     }
 
     /**
@@ -45,7 +52,7 @@ public class RecexpGroup {
      * @return the capturing groups in the input for this matcher's grammar
      */
     public RecexpGroup[] groups() {
-        return null; // TODO
+        return this.groups;
     }
 
     /**
@@ -57,7 +64,10 @@ public class RecexpGroup {
      * @return The (possibly empty) subgroup captured by the group, or null if the group failed to match part of the input
      */
     public RecexpGroup group(int group) {
-        return null; // TODO
+        if (group < 0 || group >= this.groups.length) {
+            return null;
+        }
+        return this.groups[group];
     }
 
     /**
@@ -69,6 +79,12 @@ public class RecexpGroup {
      * @return The (possibly empty) subgroup captured by the group, or null if the group failed to match part of the input
      */
     public RecexpGroup group(String groupName) {
-        return null; // TODO
+        for (RecexpGroup group : this.groups) {
+
+            if (group.name().equals(groupName)) {
+                return group;
+            }
+        }
+        return null;
     }
 }
