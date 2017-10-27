@@ -104,9 +104,9 @@ public class RecexpGrammarTest {
                 .addRule("B", "b")
                 .addRule("A", "a");
 
-        RecexpMatcher matcher = grammar.matcher("");
+        RecexpMatcher matcher = grammar.matcher("abc");
 
-        assertThat(matcher.rules, containsInAnyOrder(grammar.rules.toArray()));
+        assertThat(matcher.value(), is("abc"));
     }
 
     @Test(expected = RecexpEmptyRulesException.class)
