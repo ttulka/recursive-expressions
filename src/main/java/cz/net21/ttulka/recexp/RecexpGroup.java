@@ -67,7 +67,10 @@ public class RecexpGroup {
         if (group < 0 || group >= this.groups.length) {
             return null;
         }
-        return this.groups[group];
+        if (group == 0) {
+            return this;
+        }
+        return this.groups[group - 1];
     }
 
     /**
@@ -79,6 +82,9 @@ public class RecexpGroup {
      * @return The (possibly empty) subgroup captured by the group, or null if the group failed to match part of the input
      */
     public RecexpGroup group(String groupName) {
+        if (groupName.equals(name)) {
+            return this;
+        }
         for (RecexpGroup group : this.groups) {
 
             if (group.name().equals(groupName)) {
