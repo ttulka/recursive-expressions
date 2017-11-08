@@ -1,9 +1,15 @@
 package cz.net21.ttulka.recexp;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.fail;
@@ -114,5 +120,72 @@ public class RecexpGrammarTest {
         new RecexpGrammar().matcher("");
 
         fail("Cannot create a matcher from an empty grammar.");
+    }
+
+    @Test
+    public void hydrateExpressionTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+
+        assertThat(grammar.hydrateExpression("\\@this"), is("\\@this"));
+        assertThat(grammar.hydrateExpression("ab\\@this"), is("ab\\@this"));
+        assertThat(grammar.hydrateExpression("ab\\@this@"), is("ab\\@this@"));
+        assertThat(grammar.hydrateExpression("@this"), is("(.*)"));
+        assertThat(grammar.hydrateExpression("ab@this"), is("ab(.*)"));
+        assertThat(grammar.hydrateExpression("ab@this@"), is("ab(.*)@"));
+    }
+
+    @Test
+    public void getExpressionPartsTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+
+        assertThat(grammar.getExpressionParts("a"), contains("a"));
+        assertThat(grammar.getExpressionParts("ab"), contains("ab"));
+        assertThat(grammar.getExpressionParts("a(b)"), contains("a(b)"));
+        assertThat(grammar.getExpressionParts("a(b)@this"), contains("a(b)", "@this"));
+        assertThat(grammar.getExpressionParts("a(b)(@this)"), contains("a(b)(", "@this", ")"));
+        assertThat(grammar.getExpressionParts("a(b)(\\@this)"), contains("a(b)(\\@this)"));
+        assertThat(grammar.getExpressionParts("a(b)(\\@this)@this"), contains("a(b)(\\@this)", "@this"));
+        assertThat(grammar.getExpressionParts("a(b)(@this)@this"), contains("a(b)(", "@this", ")", "@this"));
+        assertThat(grammar.getExpressionParts("a(b)(@AB)@CD"), contains("a(b)(", "@AB", ")", "@CD"));
+    }
+
+    @Test
+    public void getCartesianProductTest() {
+        List<Set<String>> candidates = new ArrayList<Set<String>>();
+
+        Set<String> candidate1 = new HashSet<String>();
+        candidate1.add("a");
+        candidate1.add("b");
+
+        candidates.add(candidate1);
+
+        Set<String> candidate2 = new HashSet<String>();
+        candidate2.add("A");
+
+        candidates.add(candidate2);
+
+        Set<String> candidate3 = new HashSet<String>();
+        candidate3.add("1");
+        candidate3.add("2");
+        candidate3.add("3");
+
+        candidates.add(candidate3);
+
+        RecexpGrammar grammar = new RecexpGrammar();
+
+        assertThat(grammar.getCartesianProduct(candidates), containsInAnyOrder(
+                "aA1", "aA2", "aA3", "bA1", "bA2", "bA3"));
+    }
+
+    @Test
+    public void isApplicableTest() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("A","a")
+                .addRule("A", "@A@this");
+
+        assertThat(grammar.isApplicable("A", ""), is(false));
+        assertThat(grammar.isApplicable("A", "aaa"), is(true));
+
+        // TODO
     }
 }

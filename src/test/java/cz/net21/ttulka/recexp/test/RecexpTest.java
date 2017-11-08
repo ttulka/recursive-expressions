@@ -38,7 +38,7 @@ public class RecexpTest {
 
     @Test
     public void simpleRecursiveTest() {
-        RecexpGrammar grammar = new RecexpGrammar("a$this?b");
+        RecexpGrammar grammar = new RecexpGrammar("a@this?b");
 
         assertThat(grammar.accepts("ab"), is(true));
         assertThat(grammar.accepts("aabb"), is(true));
@@ -53,7 +53,7 @@ public class RecexpTest {
 
     @Test
     public void doubleRecursiveThisTest() {
-        RecexpGrammar grammar = new RecexpGrammar("a$this?b$this?c");
+        RecexpGrammar grammar = new RecexpGrammar("a@this?b@this?c");
 
         assertThat(grammar.accepts("abc"), is(true));
         assertThat(grammar.accepts("abc"), is(true));
@@ -79,7 +79,7 @@ public class RecexpTest {
     @Test
     public void doubleRecursiveRuleTest() {
         RecexpGrammar grammar = new RecexpGrammar(
-                new RecexpRule("RULE", "a$RULE?b$RULE?c"));
+                new RecexpRule("RULE", "a@RULE?b@RULE?c"));
 
         assertThat(grammar.accepts("abc"), is(true));
         assertThat(grammar.accepts("abc"), is(true));
@@ -104,31 +104,31 @@ public class RecexpTest {
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicOnlyThisTest() {
-        new RecexpGrammar("$this").accepts("a");
+        new RecexpGrammar("@this").accepts("a");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicSimpleThisTest() {
-        new RecexpGrammar("a($this)b").accepts("ab");
+        new RecexpGrammar("a(@this)b").accepts("ab");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicDoubleThisTest() {
-        new RecexpGrammar("a($this)b($this)c").accepts("abc");
+        new RecexpGrammar("a(@this)b(@this)c").accepts("abc");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicDoubleThis2Test() {
-        new RecexpGrammar("a($this)b$this?c").accepts("abc");
+        new RecexpGrammar("a(@this)b@this?c").accepts("abc");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicSimpleRuleTest() {
-        new RecexpGrammar(new RecexpRule("RULE_CYCLIC", "a($RULE_CYCLIC)b"))
+        new RecexpGrammar(new RecexpRule("RULE_CYCLIC", "a(@RULE_CYCLIC)b"))
                 .accepts("ab");
         fail("Cyclic rule should throw an exception.");
     }
@@ -136,8 +136,8 @@ public class RecexpTest {
     @Test(expected = RecexpCyclicRuleException.class)
     public void transitiveCyclicTwoRulesTest() {
         new RecexpGrammar()
-                .addRule("RULE_1", "a($RULE_2)b")
-                .addRule("RULE_2", "c($RULE_1)d")
+                .addRule("RULE_1", "a(@RULE_2)b")
+                .addRule("RULE_2", "c(@RULE_1)d")
                 .accepts("acdb");
         fail("Cyclic rule should throw an exception.");
     }
@@ -145,16 +145,16 @@ public class RecexpTest {
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicTwoThisTest() {
         new RecexpGrammar()
-                .addRule("a($this)b")
-                .addRule("c($this)d");
+                .addRule("a(@this)b")
+                .addRule("c(@this)d");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void transitiveCyclicThreeRulesTest() {
         new RecexpGrammar()
-                .addRule("RULE_1", "a($RULE_2)b")
-                .addRule("RULE_2", "c($RULE_1)d")
+                .addRule("RULE_1", "a(@RULE_2)b")
+                .addRule("RULE_2", "c(@RULE_1)d")
                 .addRule("RULE_3", "x")
                 .accepts("acxdb");
         fail("Cyclic rule should throw an exception.");
@@ -162,7 +162,7 @@ public class RecexpTest {
 
     @Test
     public void orThisTest() {
-        RecexpGrammar grammar = new RecexpGrammar("a($this)b|c");
+        RecexpGrammar grammar = new RecexpGrammar("a(@this)b|c");
 
         assertThat(grammar.accepts("c"), is(true));
         assertThat(grammar.accepts("acb"), is(true));
@@ -180,7 +180,7 @@ public class RecexpTest {
     @Test
     public void orThisByTwoRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("R", "a($R)b")
+                .addRule("R", "a(@R)b")
                 .addRule("R", "x");
 
         assertThat(grammar.accepts("x"), is(true));
@@ -200,7 +200,7 @@ public class RecexpTest {
     @Test
     public void orNamedThreeRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("R", "a($R)b")
+                .addRule("R", "a(@R)b")
                 .addRule("R", "x")
                 .addRule("R", "");
 
@@ -224,9 +224,9 @@ public class RecexpTest {
     @Test
     public void orNamedTransitiveThreeRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("R", "a($R)b")
-                .addRule("R", "$X")
-                .addRule("R", "$EPS")
+                .addRule("R", "a(@R)b")
+                .addRule("R", "@X")
+                .addRule("R", "@EPS")
                 .addRule("X", "x")
                 .addRule("EPS", "");
 
@@ -250,7 +250,7 @@ public class RecexpTest {
     @Test
     public void twoRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("RULE_AB", "a($RULE_C)b")
+                .addRule("RULE_AB", "a(@RULE_C)b")
                 .addRule("RULE_C", "c");
 
         assertThat(grammar.accepts("c"), is(true));
@@ -269,8 +269,8 @@ public class RecexpTest {
     @Test
     public void orThreeRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("RULE_AB", "a($RULE_C)b|$RULE_X")
-                .addRule("RULE_CD", "c($RULE_A)d")
+                .addRule("RULE_AB", "a(@RULE_C)b|@RULE_X")
+                .addRule("RULE_CD", "c(@RULE_A)d")
                 .addRule("RULE_X", "x");
 
         assertThat(grammar.accepts("x"), is(true));
@@ -304,12 +304,13 @@ public class RecexpTest {
         RecexpMatcher matcher = grammar.matcher(input);
 
         assertThat(matcher.value(), is(input));
+        assertThat(matcher.groupCount(), is(0));
         assertThat(matcher.groups().length, is(0));
     }
 
     @Test
     public void basicRecursiveGroupTest() {
-        RecexpGrammar grammar = new RecexpGrammar("a($this?)b");
+        RecexpGrammar grammar = new RecexpGrammar("a(@this?)b");
 
         RecexpMatcher matcher1 = grammar.matcher("ab");
 
@@ -319,7 +320,7 @@ public class RecexpTest {
         assertThat(matcher1.value(), is("ab"));
 
         assertThat(matcher1.group(0).value(), is(matcher1.value()));
-        assertThat(matcher1.group("a($this?)b").value(), is(matcher1.value()));
+        assertThat(matcher1.group("a(@this?)b").value(), is(matcher1.value()));
 
         assertThat(matcher1.group(0).groupCount(), is(matcher1.groupCount()));
         assertThat(matcher1.group(0).groups().length, is(matcher1.groups().length));
@@ -342,13 +343,13 @@ public class RecexpTest {
         assertThat(matcher2.value(), is("aabb"));
 
         assertThat(matcher2.group(0).value(), is("aabb"));
-        assertThat(matcher2.group("a($this?)b").value(), is("aabb"));
+        assertThat(matcher2.group("a(@this?)b").value(), is("aabb"));
 
         assertThat(matcher2.group(1).value(), is("a"));
         assertThat(matcher2.group("a").value(), is("a"));
 
         assertThat(matcher2.group(2).value(), is("ab"));
-        assertThat(matcher2.group("$this?").value(), is("ab"));
+        assertThat(matcher2.group("@this?").value(), is("ab"));
 
         assertThat(matcher2.group(3).value(), is("b"));
         assertThat(matcher2.group("b").value(), is("b"));
@@ -369,7 +370,7 @@ public class RecexpTest {
 
     @Test
     public void customSubgroupsTest() {
-        RecexpGrammar grammar = new RecexpGrammar("fi(r)st($this?)second");
+        RecexpGrammar grammar = new RecexpGrammar("fi(r)st(@this?)second");
 
         RecexpMatcher matcher1 = grammar.matcher("firstsecond");
 
@@ -461,7 +462,7 @@ public class RecexpTest {
 
     @Test
     public void recursiveGroupTest() {
-        RecexpGrammar grammar = new RecexpGrammar("a$this?b");
+        RecexpGrammar grammar = new RecexpGrammar("a@this?b");
         RecexpMatcher matcher = grammar.matcher("aabb");
 
         assertThat(matcher.groupCount(), is(1));
@@ -470,13 +471,13 @@ public class RecexpTest {
         assertThat(matcher.value(), is("aabb"));
         assertThat(matcher.group(1).value(), is("ab"));
 
-        assertThat(matcher.name(), is("a$this?b"));
-        assertThat(matcher.group(1).name(), is("a$this?b"));
+        assertThat(matcher.name(), is("a@this?b"));
+        assertThat(matcher.group(1).name(), is("a@this?b"));
     }
 
     @Test
     public void recursiveGroupExplicitGroupTest() {
-        RecexpGrammar grammar = new RecexpGrammar("a($this?)b");
+        RecexpGrammar grammar = new RecexpGrammar("a(@this?)b");
         RecexpMatcher matcher = grammar.matcher("aabb");
 
         assertThat(matcher.groupCount(), is(1));
@@ -487,8 +488,8 @@ public class RecexpTest {
         assertThat(matcher.group(1).value(), is("ab"));
         assertThat(matcher.group(1).group(1).value(), is("ab"));
 
-        assertThat(matcher.name(), is("a($this?)b"));
-        assertThat(matcher.group(1).name(), is("$this?"));
-        assertThat(matcher.group(1).group(1).name(), is("a($this?)b"));
+        assertThat(matcher.name(), is("a(@this?)b"));
+        assertThat(matcher.group(1).name(), is("@this?"));
+        assertThat(matcher.group(1).group(1).name(), is("a(@this?)b"));
     }
 }
