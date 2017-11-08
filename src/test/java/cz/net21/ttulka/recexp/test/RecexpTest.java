@@ -423,7 +423,7 @@ public class RecexpTest {
         RecexpGrammar grammar = new RecexpGrammar("(a(b(c)(d))e)");
         RecexpMatcher matcher = grammar.matcher("abcde");
 
-        assertThat(matcher.groupCount(), is(2));    // 4 in case of RegExp
+        assertThat(matcher.groupCount(), is(1));    // 3 in case of RegExp
         assertThat(matcher.group(1).groupCount(), is(1));
         assertThat(matcher.group(1).group(1).groupCount(), is(2));
         assertThat(matcher.group(1).group(1).group(1).groupCount(), is(0));

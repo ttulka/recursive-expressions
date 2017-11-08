@@ -104,22 +104,10 @@ public class RecexpGrammar {
             throw new RecexpEmptyRulesException("Input: '" + input + "'.");
         }
 
-        /*
-        for each rule:
-            1. split the input by '(..)' and create candidate groups for the actual level
-                "a(b(c))$D" -> part("a") + part("b(c)",isGroup=true) + part("$D",isGroup=true,name=D)
-
-            2. replace groups with (.*) and try to match, if matches then level += 1 and go to 3
-
-            3. try to resolve named groups, this = actual group
-                input^i+1 = resolve(part1) + .. + resolve(partN)
-
-            4. go to 1
-         */
         for (RecexpRule rule : this.rules) {
 
             if (isApplicable(rule.getExpression(), input)) {
-                List<RecexpGroup> groups = getGroups(rule.getName(), rule.getExpression(), input);
+                List<RecexpGroup> groups = getGroups(rule.getExpression(), input);
                 return new RecexpMatcher(rule.getName(), input, groups.toArray(new RecexpGroup[0]));
             }
         }
@@ -219,8 +207,114 @@ public class RecexpGrammar {
         return parts;
     }
 
-    List<RecexpGroup> getGroups(String name, String expression, String input) {
-        return null;    // TODO
+    List<RecexpGroup> getGroups(String expression, String input) {
+        List<RecexpGroup> groups = new ArrayList<RecexpGroup>();
+
+        for (String groupExp : separateGroups(expression)) {
+            // TODO
+        }
+
+        return groups;
+    }
+
+    List<String> separateGroups(String expression) {
+        List<String> groups = new ArrayList<String>();
+
+        int endBracketNeeded = 0;
+        char previous = '\0';
+
+        StringBuilder sb = new StringBuilder();
+
+        int i = 0;
+        while (i < expression.length()) {
+            char ch = expression.charAt(i);
+
+            if (ch == '@' && previous != '\\' && endBracketNeeded == 0) {
+                String var = getVariable(expression, i);
+                if (var != null) {
+                    groups.add(sb.toString());
+                    sb = new StringBuilder();
+
+                    i += var.length() - 1;
+                    groups.add(var);
+                } else {
+                    sb.append(ch);
+                }
+
+            } else if (ch == '(' && previous != '\\') {
+                int endBracketPosition = pairEndBracketPosition(expression, i);
+
+                if (endBracketPosition != -1) {
+                    if (sb.length() > 0) {
+                        groups.add(sb.toString());
+                        sb = new StringBuilder();
+                    }
+                    groups.add(expression.substring(i + 1, endBracketPosition));
+                    i = endBracketPosition;
+
+                } else {
+                    sb.append(ch);
+                }
+
+            } else {
+                sb.append(ch);
+            }
+            previous = ch;
+            i++;
+        }
+
+        if (sb.length() > 0) {
+            groups.add(sb.toString());
+        }
+
+        return groups;
+    }
+
+    private int pairEndBracketPosition(String expression, int start) {
+        char previous = expression.charAt(start);
+        int skip = 1;
+        for (int i = start + 1; i < expression.length(); i++) {
+            char ch = expression.charAt(i);
+            if (ch == '(' && previous != '\\') {
+                skip++;
+
+            } else if (ch == ')' && previous != '\\') {
+                skip--;
+                if (skip == 0) {
+                    return i;
+
+                }
+            }
+
+            previous = ch;
+        }
+        return -1;
+    }
+
+    private String getVariable(String expression, int start) {
+        // must start with letter or underscore
+        if (!Pattern.matches("[a-zA-Z_]", Character.toString(expression.charAt(start + 1)))) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        int i = start;
+        sb.append(expression.charAt(i++));  // @
+        sb.append(expression.charAt(i++));  // first letter
+
+        while (Pattern.matches("\\w", Character.toString(expression.charAt(i)))) {
+            sb.append(expression.charAt(i++));
+        }
+
+        // try to get quantifiers
+        String rest = expression.substring(i);
+        Matcher quantifiersMatcher = Pattern.compile("(([?*+]|\\{\\d+,?\\d*})[?+]?)(.*)").matcher(rest);
+        if (quantifiersMatcher.matches()) {
+            sb.append(quantifiersMatcher.group(1));
+        }
+
+        return sb.toString();
     }
 
     // replace rule references with (.*)
