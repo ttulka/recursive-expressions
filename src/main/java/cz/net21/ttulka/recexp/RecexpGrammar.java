@@ -212,6 +212,10 @@ public class RecexpGrammar {
 
         for (String groupExp : separateGroups(expression)) {
             // TODO
+            // 1. put groupExps into RegExp groups: ( groupExp1 ) + .. + ( groupExpN )
+            // 2. replace variables with (.*)
+            // 3. parse Recexp groups from Regexp groups
+            // 4. recursively solve each sub-group
         }
 
         return groups;
@@ -231,12 +235,14 @@ public class RecexpGrammar {
 
             if (ch == '@' && previous != '\\' && endBracketNeeded == 0) {
                 String var = getVariable(expression, i);
+
                 if (var != null) {
                     groups.add(sb.toString());
                     sb = new StringBuilder();
 
                     i += var.length() - 1;
                     groups.add(var);
+
                 } else {
                     sb.append(ch);
                 }
@@ -273,8 +279,10 @@ public class RecexpGrammar {
     private int pairEndBracketPosition(String expression, int start) {
         char previous = expression.charAt(start);
         int skip = 1;
+
         for (int i = start + 1; i < expression.length(); i++) {
             char ch = expression.charAt(i);
+
             if (ch == '(' && previous != '\\') {
                 skip++;
 
@@ -282,7 +290,6 @@ public class RecexpGrammar {
                 skip--;
                 if (skip == 0) {
                     return i;
-
                 }
             }
 
