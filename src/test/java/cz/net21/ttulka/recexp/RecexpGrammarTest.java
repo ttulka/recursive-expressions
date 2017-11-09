@@ -147,6 +147,10 @@ public class RecexpGrammarTest {
         assertThat(grammar.getExpressionParts("a(b)(\\@this)@this"), contains("a(b)(\\@this)", "@this"));
         assertThat(grammar.getExpressionParts("a(b)(@this)@this"), contains("a(b)(", "@this", ")", "@this"));
         assertThat(grammar.getExpressionParts("a(b)(@AB)@CD"), contains("a(b)(", "@AB", ")", "@CD"));
+
+        assertThat(grammar.getExpressionParts("@A@this"), contains("@A", "@this"));
+        assertThat(grammar.getExpressionParts("@A@this?"), contains("@A", "@this", "?"));
+        assertThat(grammar.getExpressionParts("@A(@this)?"), contains("@A", "(", "@this", ")?"));
     }
 
     @Test
@@ -183,18 +187,18 @@ public class RecexpGrammarTest {
                 .addRule("A", "a")
                 .addRule("A", "@A@this?");
 
-        assertThat(grammar.isApplicable("A", ""), is(false));
-        assertThat(grammar.isApplicable("A", "aa"), is(true));
-        assertThat(grammar.isApplicable("A", "aaa"), is(true));
+        assertThat(grammar.isApplicable("@A", ""), is(false));
+        assertThat(grammar.isApplicable("@A", "aa"), is(true));
+        assertThat(grammar.isApplicable("@A", "aaa"), is(true));
 
         grammar
                 .addRule("B", "b")
                 .addRule("B", "@A");
 
-        assertThat(grammar.isApplicable("B", ""), is(false));
-        assertThat(grammar.isApplicable("B", "b"), is(true));
-        assertThat(grammar.isApplicable("B", "aa"), is(true));
-        assertThat(grammar.isApplicable("B", "aaa"), is(true));
+        assertThat(grammar.isApplicable("@B", ""), is(false));
+        assertThat(grammar.isApplicable("@B", "b"), is(true));
+        assertThat(grammar.isApplicable("@B", "aa"), is(true));
+        assertThat(grammar.isApplicable("@B", "aaa"), is(true));
     }
 
     @Test

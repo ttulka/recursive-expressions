@@ -2,6 +2,7 @@ package cz.net21.ttulka.recexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +13,8 @@ import java.util.regex.Pattern;
  * @author ttulka
  */
 public class RecexpGrammar {
+
+    public static final String THIS_REFERENCE_NAME = "this";
 
     private static final String REGEXP_REFERENCE = "@((\\w)+)";
 
@@ -124,17 +127,33 @@ public class RecexpGrammar {
     }
 
     boolean isApplicable(String expression, String input) {
+        return isApplicable(expression, input, expression);
+    }
+
+    private boolean isApplicable(String expression, String input, String originalExpression) {
+        if (Pattern.matches(expression, input)) {
+            return true;
+        }
         if (!Pattern.matches(hydrateExpression(expression), input)) {
             return false;
         }
         List<Set<String>> candidates = new ArrayList<Set<String>>();
 
+        int terminalsCount = 0;
         for (String part : getExpressionParts(expression)) {
-            candidates.add(getCandidates(part));
+            candidates.add(getCandidates(part, originalExpression));
+
+            if (!isReference(part)) {
+                terminalsCount++;
+            }
+        }
+
+        if (terminalsCount > input.length()) {  // input is already longer than possible expression result
+            return false;
         }
 
         for (String candidateExp : getCartesianProduct(candidates)) {
-            if (isApplicable(candidateExp, input)) {
+            if (isApplicable(candidateExp, input, originalExpression)) {
                 return true;
             }
         }
@@ -158,22 +177,35 @@ public class RecexpGrammar {
         return cartesianProduct;
     }
 
-    Set<String> getCandidates(String part) {
+    Set<String> getCandidates(String part, String originalExpression) {
         Set<String> candidates = new HashSet<String>();
 
-        if (isReference(part)) {
+        if (!isReference(part)) {
             candidates.add(part);
 
         } else {
-            String referenceName = part.substring(1);
-
-            for (RecexpRule rule : this.rules) {
-                if (rule.getName().equals(referenceName)) {
-                    candidates.add(rule.getExpression());
-                }
-            }
+            candidates.addAll(
+                    findExpressionsByReference(part.substring(1), originalExpression));
         }
         return candidates;
+    }
+
+    private Set<String> findExpressionsByReference(String referenceName, String originalExpression) {
+        if (THIS_REFERENCE_NAME.equals(referenceName)) {
+            return Collections.singleton(originalExpression);
+        }
+
+        Set<String> expressions = new HashSet<String>();
+
+        for (RecexpRule rule : this.rules) {
+            if (rule.getName().equals(referenceName)) {
+                expressions.add(rule.getExpression());
+            }
+        }
+        if (!expressions.isEmpty()) {
+            return expressions;
+        }
+        throw new RecexpRuleNotFoundException(referenceName);
     }
 
     boolean isReference(String expression) {
@@ -189,7 +221,7 @@ public class RecexpGrammar {
         int restStarts = 0;
 
         while (matcher.find()) {
-            if (matcher.start() > 0) {
+            if (matcher.start() > restStarts) {
                 parts.add(resetReference(
                         expression.substring(restStarts, matcher.start())
                 ));
