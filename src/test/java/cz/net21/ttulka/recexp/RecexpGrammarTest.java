@@ -302,6 +302,15 @@ public class RecexpGrammarTest {
 
         groups = new RecexpGrammar().separateGroups("(a@this{1,23}+");
         assertThat(groups, contains("(a", "@this{1,23}+"));
+
+        groups = new RecexpGrammar().separateGroups("(a@this{,}++");
+        assertThat(groups, contains("(a", "@this", "{,}++"));
+
+        groups = new RecexpGrammar().separateGroups("(a@this{}++");
+        assertThat(groups, contains("(a", "@this", "{}++"));
+
+        groups = new RecexpGrammar().separateGroups("(a@this{,1}++");
+        assertThat(groups, contains("(a", "@this", "{,1}++"));
     }
 
     @Test
