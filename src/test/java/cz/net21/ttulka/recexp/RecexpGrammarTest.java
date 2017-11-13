@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.fail;
@@ -138,19 +137,108 @@ public class RecexpGrammarTest {
     public void getExpressionPartsTest() {
         RecexpGrammar grammar = new RecexpGrammar();
 
-        assertThat(grammar.getExpressionParts("a"), contains("a"));
-        assertThat(grammar.getExpressionParts("ab"), contains("ab"));
-        assertThat(grammar.getExpressionParts("a(b)"), contains("a(b)"));
-        assertThat(grammar.getExpressionParts("a(b)@this"), contains("a(b)", "@this"));
-        assertThat(grammar.getExpressionParts("a(b)(@this)"), contains("a(b)(", "@this", ")"));
-        assertThat(grammar.getExpressionParts("a(b)(\\@this)"), contains("a(b)(\\@this)"));
-        assertThat(grammar.getExpressionParts("a(b)(\\@this)@this"), contains("a(b)(\\@this)", "@this"));
-        assertThat(grammar.getExpressionParts("a(b)(@this)@this"), contains("a(b)(", "@this", ")", "@this"));
-        assertThat(grammar.getExpressionParts("a(b)(@AB)@CD"), contains("a(b)(", "@AB", ")", "@CD"));
+        assertThat(grammar.getExpressionParts("").toString(), is("[]"));
+        assertThat(grammar.getExpressionParts("a").toString(), is("[a]"));
+        assertThat(grammar.getExpressionParts("ab").toString(), is("[ab]"));
+        assertThat(grammar.getExpressionParts("a(b)").toString(), is("[a, (b)]"));
+        assertThat(grammar.getExpressionParts("a(b)@this").toString(), is("[a, (b), @this]"));
+        assertThat(grammar.getExpressionParts("a(b)(@this)").toString(), is("[a, (b), (@this)]"));
+        assertThat(grammar.getExpressionParts("a(b)(\\@this)").toString(), is("[a, (b), (\\@this)]"));
+        assertThat(grammar.getExpressionParts("a(b)(\\@this)@this").toString(), is("[a, (b), (\\@this), @this]"));
+        assertThat(grammar.getExpressionParts("a(b)(@this)@this").toString(), is("[a, (b), (@this), @this]"));
+        assertThat(grammar.getExpressionParts("a(b)(@AB)@CD").toString(), is("[a, (b), (@AB), @CD]"));
 
-        assertThat(grammar.getExpressionParts("@A@this"), contains("@A", "@this"));
-        assertThat(grammar.getExpressionParts("@A@this?"), contains("@A", "@this", "?"));
-        assertThat(grammar.getExpressionParts("@A(@this)?"), contains("@A", "(", "@this", ")?"));
+        assertThat(grammar.getExpressionParts("(a)(@A)?").toString(), is("[(a), (@A)?]"));
+
+        assertThat(grammar.getExpressionParts("@A@this").toString(), is("[@A, @this]"));
+        assertThat(grammar.getExpressionParts("@A@this?").toString(), is("[@A, @this?]"));
+        assertThat(grammar.getExpressionParts("@A(@this)?").toString(), is("[@A, (@this)?]"));
+        assertThat(grammar.getExpressionParts("(@A(@this)?)").toString(), is("[(@A(@this)?)]"));
+
+        assertThat(grammar.getExpressionParts("()").toString(), is("[()]"));
+        assertThat(grammar.getExpressionParts("(())").toString(), is("[(())]"));
+        assertThat(grammar.getExpressionParts("()()").toString(), is("[(), ()]"));
+        assertThat(grammar.getExpressionParts("(()())").toString(), is("[(()())]"));
+
+        assertThat(grammar.getExpressionParts("a@this?b").toString(), is("[a, @this?, b]"));
+        assertThat(grammar.getExpressionParts("a(@this?)b").toString(), is("[a, (@this?), b]"));
+        assertThat(grammar.getExpressionParts("a(@this?)b").toString(), is("[a, (@this?), b]"));
+        assertThat(grammar.getExpressionParts("(a)(@this?)(b)").toString(), is("[(a), (@this?), (b)]"));
+        assertThat(grammar.getExpressionParts("((a))((@this?))((b))").toString(), is("[((a)), ((@this?)), ((b))]"));
+        assertThat(grammar.getExpressionParts("a(@this?)b\\)\\)").toString(), is("[a, (@this?), b\\)\\)]"));
+
+        assertThat(grammar.getExpressionParts("a@this?").toString(), is("[a, @this?]"));
+        assertThat(grammar.getExpressionParts("a@this*").toString(), is("[a, @this*]"));
+        assertThat(grammar.getExpressionParts("a@this+").toString(), is("[a, @this+]"));
+        assertThat(grammar.getExpressionParts("a@this{1}").toString(), is("[a, @this{1}]"));
+        assertThat(grammar.getExpressionParts("a@this{123}").toString(), is("[a, @this{123}]"));
+        assertThat(grammar.getExpressionParts("a@this{1,}").toString(), is("[a, @this{1,}]"));
+        assertThat(grammar.getExpressionParts("a@this{123,}").toString(), is("[a, @this{123,}]"));
+        assertThat(grammar.getExpressionParts("a@this{1,2}").toString(), is("[a, @this{1,2}]"));
+        assertThat(grammar.getExpressionParts("a@this{1,23}").toString(), is("[a, @this{1,23}]"));
+        assertThat(grammar.getExpressionParts("a@this??").toString(), is("[a, @this??]"));
+        assertThat(grammar.getExpressionParts("a@this*?").toString(), is("[a, @this*?]"));
+        assertThat(grammar.getExpressionParts("a@this+?").toString(), is("[a, @this+?]"));
+        assertThat(grammar.getExpressionParts("a@this{1}?").toString(), is("[a, @this{1}?]"));
+        assertThat(grammar.getExpressionParts("a@this{123}?").toString(), is("[a, @this{123}?]"));
+        assertThat(grammar.getExpressionParts("a@this{1,}?").toString(), is("[a, @this{1,}?]"));
+        assertThat(grammar.getExpressionParts("a@this{123,}?").toString(), is("[a, @this{123,}?]"));
+        assertThat(grammar.getExpressionParts("a@this{1,2}?").toString(), is("[a, @this{1,2}?]"));
+        assertThat(grammar.getExpressionParts("a@this{1,23}?").toString(), is("[a, @this{1,23}?]"));
+        assertThat(grammar.getExpressionParts("a@this?+").toString(), is("[a, @this?+]"));
+        assertThat(grammar.getExpressionParts("a@this*+").toString(), is("[a, @this*+]"));
+        assertThat(grammar.getExpressionParts("a@this++").toString(), is("[a, @this++]"));
+        assertThat(grammar.getExpressionParts("a@this{1}+").toString(), is("[a, @this{1}+]"));
+        assertThat(grammar.getExpressionParts("a@this{123}+").toString(), is("[a, @this{123}+]"));
+        assertThat(grammar.getExpressionParts("a@this{1,}+").toString(), is("[a, @this{1,}+]"));
+        assertThat(grammar.getExpressionParts("a@this{123,}+").toString(), is("[a, @this{123,}+]"));
+        assertThat(grammar.getExpressionParts("a@this{1,2}+").toString(), is("[a, @this{1,2}+]"));
+        assertThat(grammar.getExpressionParts("a@this{1,23}+").toString(), is("[a, @this{1,23}+]"));
+        assertThat(grammar.getExpressionParts("a@this{,}++").toString(), is("[a, @this, {,}++]"));
+        assertThat(grammar.getExpressionParts("a@this{}++").toString(), is("[a, @this, {}++]"));
+        assertThat(grammar.getExpressionParts("a@this{,1}++").toString(), is("[a, @this, {,1}++]"));
+
+        try {
+            grammar.getExpressionParts("@A(@this)?)");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            grammar.getExpressionParts("(@A(@this)?");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            grammar.getExpressionParts("(");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            grammar.getExpressionParts(")");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            grammar.getExpressionParts("())");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            grammar.getExpressionParts("(()");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
     }
 
     @Test
@@ -178,208 +266,164 @@ public class RecexpGrammarTest {
         RecexpGrammar grammar = new RecexpGrammar();
 
         assertThat(grammar.getCartesianProduct(candidates), containsInAnyOrder(
-                "aA1", "aA2", "aA3", "bA1", "bA2", "bA3"));
+                "(a)(A)(1)", "(a)(A)(2)", "(a)(A)(3)", "(b)(A)(1)", "(b)(A)(2)", "(b)(A)(3)"));
     }
 
     @Test
-    public void isApplicableTest() {
-        RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("A", "a")
-                .addRule("A", "@A@this?");
+    public void isClosedInBracketsTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
 
-        assertThat(grammar.isApplicable("@A", ""), is(false));
-        assertThat(grammar.isApplicable("@A", "aa"), is(true));
-        assertThat(grammar.isApplicable("@A", "aaa"), is(true));
+        assertThat(grammar.isClosedInBrackets(""), is(false));
+        assertThat(grammar.isClosedInBrackets("("), is(false));
+        assertThat(grammar.isClosedInBrackets(")"), is(false));
+        assertThat(grammar.isClosedInBrackets(")("), is(false));
+        assertThat(grammar.isClosedInBrackets("()()"), is(false));
+        assertThat(grammar.isClosedInBrackets("()("), is(false));
+        assertThat(grammar.isClosedInBrackets(")()"), is(false));
+        assertThat(grammar.isClosedInBrackets("()(())"), is(false));
+        assertThat(grammar.isClosedInBrackets("())"), is(false));
+        assertThat(grammar.isClosedInBrackets("()))"), is(false));
+        assertThat(grammar.isClosedInBrackets("())()"), is(false));
+        assertThat(grammar.isClosedInBrackets("(()"), is(false));
+        assertThat(grammar.isClosedInBrackets("((()"), is(false));
 
-        grammar
-                .addRule("B", "b")
-                .addRule("B", "@A");
+        assertThat(grammar.isClosedInBrackets("a"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a"), is(false));
+        assertThat(grammar.isClosedInBrackets("a)"), is(false));
+        assertThat(grammar.isClosedInBrackets(")a("), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)a(a)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)("), is(false));
+        assertThat(grammar.isClosedInBrackets(")(a)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)((a))"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))a)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))(a)"), is(false));
+        assertThat(grammar.isClosedInBrackets("((a)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(a(a(a)"), is(false));
 
-        assertThat(grammar.isApplicable("@B", ""), is(false));
-        assertThat(grammar.isApplicable("@B", "b"), is(true));
-        assertThat(grammar.isApplicable("@B", "aa"), is(true));
-        assertThat(grammar.isApplicable("@B", "aaa"), is(true));
-    }
+        assertThat(grammar.isClosedInBrackets("()"), is(true));
+        assertThat(grammar.isClosedInBrackets("(())"), is(true));
+        assertThat(grammar.isClosedInBrackets("(()())"), is(true));
+        assertThat(grammar.isClosedInBrackets("(()()())"), is(true));
+        assertThat(grammar.isClosedInBrackets("((()()))"), is(true));
 
-    @Test
-    public void separateGroupsTest() {
-        List<String> groups;
+        assertThat(grammar.isClosedInBrackets("(\\)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(()\\)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(()()\\)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(()()()\\)"), is(false));
+        assertThat(grammar.isClosedInBrackets("((()())\\)"), is(false));
 
-        groups = new RecexpGrammar().separateGroups("a@this?b");
-        assertThat(groups, contains("a", "@this?", "b"));
+        assertThat(grammar.isClosedInBrackets("\\()"), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(())"), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(()())"), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(()()())"), is(false));
+        assertThat(grammar.isClosedInBrackets("\\((()()))"), is(false));
 
-        groups = new RecexpGrammar().separateGroups("a(@this?)b");
-        assertThat(groups, contains("a", "@this?", "b"));
+        assertThat(grammar.isClosedInBrackets("(a)"), is(true));
+        assertThat(grammar.isClosedInBrackets("((a))"), is(true));
+        assertThat(grammar.isClosedInBrackets("((a)(a))"), is(true));
+        assertThat(grammar.isClosedInBrackets("(()(a)())"), is(true));
+        assertThat(grammar.isClosedInBrackets("(a(a(a)a(a)a)a)"), is(true));
 
-        groups = new RecexpGrammar().separateGroups("(a)(@this?)(b)");
-        assertThat(groups, contains("a", "@this?", "b"));
-
-        groups = new RecexpGrammar().separateGroups("((a))((@this?))((b))");
-        assertThat(groups, contains("(a)", "(@this?)", "(b)"));
-
-        groups = new RecexpGrammar().separateGroups("(a))@this?((b)");
-        assertThat(groups, contains("a", ")", "@this?", "(", "b"));
-
-        groups = new RecexpGrammar().separateGroups("\\((a))(\\(@this?))((b\\)\\)");
-        assertThat(groups, contains("\\(", "a", ")", "\\(@this?", ")((b\\)\\)"));
-
-        groups = new RecexpGrammar().separateGroups("(a(@this?)((b\\)\\)");
-        assertThat(groups, contains("(a", "@this?", "((b\\)\\)"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this?");
-        assertThat(groups, contains("(a", "@this?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this*");
-        assertThat(groups, contains("(a", "@this*"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this+");
-        assertThat(groups, contains("(a", "@this+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1}");
-        assertThat(groups, contains("(a", "@this{1}"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{123}");
-        assertThat(groups, contains("(a", "@this{123}"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,}");
-        assertThat(groups, contains("(a", "@this{1,}"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{123,}");
-        assertThat(groups, contains("(a", "@this{123,}"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,2}");
-        assertThat(groups, contains("(a", "@this{1,2}"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,23}");
-        assertThat(groups, contains("(a", "@this{1,23}"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this??");
-        assertThat(groups, contains("(a", "@this??"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this*?");
-        assertThat(groups, contains("(a", "@this*?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this+?");
-        assertThat(groups, contains("(a", "@this+?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1}?");
-        assertThat(groups, contains("(a", "@this{1}?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{123}?");
-        assertThat(groups, contains("(a", "@this{123}?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,}?");
-        assertThat(groups, contains("(a", "@this{1,}?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{123,}?");
-        assertThat(groups, contains("(a", "@this{123,}?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,2}?");
-        assertThat(groups, contains("(a", "@this{1,2}?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,23}?");
-        assertThat(groups, contains("(a", "@this{1,23}?"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this?+");
-        assertThat(groups, contains("(a", "@this?+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this*+");
-        assertThat(groups, contains("(a", "@this*+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this++");
-        assertThat(groups, contains("(a", "@this++"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1}+");
-        assertThat(groups, contains("(a", "@this{1}+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{123}+");
-        assertThat(groups, contains("(a", "@this{123}+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,}+");
-        assertThat(groups, contains("(a", "@this{1,}+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{123,}+");
-        assertThat(groups, contains("(a", "@this{123,}+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,2}+");
-        assertThat(groups, contains("(a", "@this{1,2}+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{1,23}+");
-        assertThat(groups, contains("(a", "@this{1,23}+"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{,}++");
-        assertThat(groups, contains("(a", "@this", "{,}++"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{}++");
-        assertThat(groups, contains("(a", "@this", "{}++"));
-
-        groups = new RecexpGrammar().separateGroups("(a@this{,1}++");
-        assertThat(groups, contains("(a", "@this", "{,1}++"));
+        assertThat(grammar.isClosedInBrackets("(a)?"), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)+"), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)*"), is(true));
+        assertThat(grammar.isClosedInBrackets("(a){1,2}"), is(true));
     }
 
     @Test
     public void getGroupsTest() {
-        List<RecexpGroup> groups1 = new RecexpGrammar().getGroups("a(@this?)b", "ab");
+        List<RecexpGroup> groups;
 
-        assertThat(groups1.size(), is(2));
+        groups = new RecexpGrammar()
+                .getGroups("a@this?b", "ab");
 
-        assertThat(groups1.get(0).name(), is("a"));
-        assertThat(groups1.get(0).value(), is("a"));
-        assertThat(groups1.get(0).groupCount(), is(0));
+        assertThat(groups.size(), is(2));
 
-        assertThat(groups1.get(1).name(), is("b"));
-        assertThat(groups1.get(1).value(), is("b"));
-        assertThat(groups1.get(1).groupCount(), is(0));
+        assertThat(groups.get(0).name(), is("a"));
+        assertThat(groups.get(0).value(), is("a"));
+        assertThat(groups.get(0).groupCount(), is(0));
 
-        List<RecexpGroup> groups2 = new RecexpGrammar().getGroups("a(@this?)b", "aabb");
+        assertThat(groups.get(1).name(), is("b"));
+        assertThat(groups.get(1).value(), is("b"));
+        assertThat(groups.get(1).groupCount(), is(0));
 
-        assertThat(groups2.size(), is(3));
+        groups = new RecexpGrammar()
+                .getGroups("a(@this?)b", "ab");
 
-        assertThat(groups2.get(1).name(), is("a"));
-        assertThat(groups2.get(1).value(), is("a"));
-        assertThat(groups2.get(1).groupCount(), is(0));
+        assertThat(groups.size(), is(2));
 
-        assertThat(groups2.get(2).name(), is("@this?"));
-        assertThat(groups2.get(2).value(), is("ab"));
-        assertThat(groups2.get(2).groupCount(), is(2));
+        assertThat(groups.get(0).name(), is("a"));
+        assertThat(groups.get(0).value(), is("a"));
+        assertThat(groups.get(0).groupCount(), is(0));
 
-        assertThat(groups2.get(3).name(), is("b"));
-        assertThat(groups2.get(3).value(), is("b"));
-        assertThat(groups2.get(3).groupCount(), is(0));
+        assertThat(groups.get(1).name(), is("b"));
+        assertThat(groups.get(1).value(), is("b"));
+        assertThat(groups.get(1).groupCount(), is(0));
 
-        assertThat(groups2.get(2).group(1).name(), is("a"));
-        assertThat(groups2.get(2).group(1).value(), is("a"));
-        assertThat(groups2.get(2).group(1).groupCount(), is(0));
+        groups = new RecexpGrammar()
+                .getGroups("a(@this)?b", "ab");
 
-        assertThat(groups2.get(2).group(2).name(), is("b"));
-        assertThat(groups2.get(2).group(2).value(), is("b"));
-        assertThat(groups2.get(2).group(2).groupCount(), is(0));
+        assertThat(groups.size(), is(2));
 
-        List<RecexpGroup> groups3 = new RecexpGrammar()
+        assertThat(groups.get(0).name(), is("a"));
+        assertThat(groups.get(0).value(), is("a"));
+        assertThat(groups.get(0).groupCount(), is(0));
+
+        assertThat(groups.get(1).name(), is("b"));
+        assertThat(groups.get(1).value(), is("b"));
+        assertThat(groups.get(1).groupCount(), is(0));
+
+        groups = new RecexpGrammar()
+                .getGroups("a(@this?)b", "aabb");
+
+        assertThat(groups.size(), is(3));
+
+        assertThat(groups.get(1).name(), is("a"));
+        assertThat(groups.get(1).value(), is("a"));
+        assertThat(groups.get(1).groupCount(), is(0));
+
+        assertThat(groups.get(2).name(), is("@this?"));
+        assertThat(groups.get(2).value(), is("ab"));
+        assertThat(groups.get(2).groupCount(), is(2));
+
+        assertThat(groups.get(3).name(), is("b"));
+        assertThat(groups.get(3).value(), is("b"));
+        assertThat(groups.get(3).groupCount(), is(0));
+
+        assertThat(groups.get(2).group(1).name(), is("a"));
+        assertThat(groups.get(2).group(1).value(), is("a"));
+        assertThat(groups.get(2).group(1).groupCount(), is(0));
+
+        assertThat(groups.get(2).group(2).name(), is("b"));
+        assertThat(groups.get(2).group(2).value(), is("b"));
+        assertThat(groups.get(2).group(2).groupCount(), is(0));
+
+        groups = new RecexpGrammar()
                 .addRule("A", "a")
                 .addRule("B", "b")
                 .getGroups("@A@this?@B", "aabb");
 
-        assertThat(groups3.size(), is(3));
+        assertThat(groups.size(), is(3));
 
-        assertThat(groups3.get(1).name(), is("@A"));
-        assertThat(groups3.get(1).value(), is("a"));
-        assertThat(groups3.get(1).groupCount(), is(0));
+        assertThat(groups.get(1).name(), is("@A"));
+        assertThat(groups.get(1).value(), is("a"));
+        assertThat(groups.get(1).groupCount(), is(0));
 
-        assertThat(groups3.get(2).name(), is("@this?"));
-        assertThat(groups3.get(2).value(), is("ab"));
-        assertThat(groups3.get(2).groupCount(), is(2));
+        assertThat(groups.get(2).name(), is("@this?"));
+        assertThat(groups.get(2).value(), is("ab"));
+        assertThat(groups.get(2).groupCount(), is(2));
 
-        assertThat(groups3.get(3).name(), is("@B"));
-        assertThat(groups3.get(3).value(), is("b"));
-        assertThat(groups3.get(3).groupCount(), is(0));
+        assertThat(groups.get(3).name(), is("@B"));
+        assertThat(groups.get(3).value(), is("b"));
+        assertThat(groups.get(3).groupCount(), is(0));
 
-        assertThat(groups3.get(2).group(1).name(), is("@A"));
-        assertThat(groups3.get(2).group(1).value(), is("a"));
-        assertThat(groups3.get(2).group(1).groupCount(), is(0));
+        assertThat(groups.get(2).group(1).name(), is("@A"));
+        assertThat(groups.get(2).group(1).value(), is("a"));
+        assertThat(groups.get(2).group(1).groupCount(), is(0));
 
-        assertThat(groups3.get(2).group(2).name(), is("@B"));
-        assertThat(groups3.get(2).group(2).value(), is("b"));
-        assertThat(groups3.get(2).group(2).groupCount(), is(0));
+        assertThat(groups.get(2).group(2).name(), is("@B"));
+        assertThat(groups.get(2).group(2).value(), is("b"));
+        assertThat(groups.get(2).group(2).groupCount(), is(0));
     }
 }

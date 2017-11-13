@@ -16,7 +16,10 @@ public class RecexpGrammar {
 
     public static final String THIS_REFERENCE_NAME = "this";
 
-    private static final String REGEXP_REFERENCE = "@((\\w)+)";
+    public static final char REFERENCE_PREFIX = '@';
+
+    private static final String REGEXP_REFERENCE = REFERENCE_PREFIX + "((\\w)+)";
+    private static final String REGEXP_QUANTIFIER = "(([?*+]|\\{\\d+,?\\d*})[?+]?)";
 
     protected final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
@@ -109,8 +112,8 @@ public class RecexpGrammar {
 
         for (RecexpRule rule : this.rules) {
 
-            if (isApplicable(rule.getExpression(), input)) {
-                List<RecexpGroup> groups = getGroups(rule.getExpression(), input);
+            List<RecexpGroup> groups = getGroups(rule.getExpression(), input);
+            if (groups != null && !groups.isEmpty()) {
                 return new RecexpMatcher(rule.getName(), input, groups.toArray(new RecexpGroup[0]));
             }
         }
@@ -126,66 +129,158 @@ public class RecexpGrammar {
         };
     }
 
-    boolean isApplicable(String expression, String input) {
-        return isApplicable(expression, input, expression);
+    List<RecexpGroup> getGroups(String expression, String input) {
+        return getGroups(expression, input, expression);
     }
 
-    private boolean isApplicable(String expression, String input, String originalExpression) {
+    private List<RecexpGroup> getGroups(String expression, String input, String originalExpression) {
+        if (isClosedInBrackets(expression)) {
+            return getGroups(removeClosingBrackets(expression), input, originalExpression);
+        }
         if (Pattern.matches(expression, input)) {
-            return true;
+            return Collections.singletonList(new RecexpGroup(expression, input, new RecexpGroup[0]));
         }
         if (!Pattern.matches(hydrateExpression(expression), input)) {
-            return false;
+            return null;
         }
         List<Set<String>> candidates = new ArrayList<Set<String>>();
 
         int terminalsCount = 0;
-        for (String part : getExpressionParts(expression)) {
+        for (ExpressionPart part : getExpressionParts(expression)) {
             candidates.add(getCandidates(part, originalExpression));
 
-            if (!isReference(part)) {
+            if (isTerminal(part)) {
                 terminalsCount++;
             }
         }
 
         if (terminalsCount > input.length()) {  // input is already longer than possible expression result
-            return false;
+            return null;
         }
 
         for (String candidateExp : getCartesianProduct(candidates)) {
-            if (isApplicable(candidateExp, input, originalExpression)) {
-                return true;
+            if (!candidateExp.equals(expression)) { // avoid a loop
+
+                List<RecexpGroup> groups = getGroups(candidateExp, input, originalExpression);
+                if (groups != null && !groups.isEmpty()) {
+                    return groups;
+                }
             }
         }
-        return false;
+        return null;
+    }
+
+    boolean isTerminal(ExpressionPart expressionPart) {
+        if (expressionPart.isReference()) {
+            return false;
+        }
+        if (expressionPart.isQuantified()) {
+            return false;
+        }
+        return true;
+    }
+
+    boolean isClosedInBrackets(String expression) {
+        if (isQuantified(expression)) {
+            expression = expression.substring(0, expression.length() - getQuantifier(expression).length());
+        }
+        if (!expression.startsWith("(") || !expression.endsWith(")")) {
+            return false;
+        }
+        int openBrackets = 0;
+        char previous = '\0';
+
+        for (int i = 0; i < expression.length(); i++) {
+            char ch = expression.charAt(i);
+
+            if (ch == '(' && previous != '\\' && i < expression.length()) {
+                openBrackets++;
+
+            } else if (ch == ')' && previous != '\\' && i > 0) {
+                openBrackets--;
+
+                if (openBrackets == 0 && i < expression.length() - 1) {
+                    return false;
+                }
+            }
+            previous = ch;
+        }
+        return openBrackets == 0;
+    }
+
+    private String removeClosingBrackets(String expression) {
+        return expression.substring(1, expression.length() - 1);
+    }
+
+    private String closeIntoBrackets(String expression, int bracketLevel) {
+        StringBuilder sb = new StringBuilder(expression.length() + bracketLevel * 2)
+                .append(expression);
+
+        for (int i = 0; i < bracketLevel; i++) {
+            sb.insert(0, "(").append(")");
+        }
+        return sb.toString();
     }
 
     List<String> getCartesianProduct(List<Set<String>> candidates) {
         List<String> cartesianProduct = new ArrayList<String>();
 
+        Set<String> head = candidates.get(0);
+
         if (candidates.size() > 1) {
             for (String product : getCartesianProduct(candidates.subList(1, candidates.size()))) {
 
-                for (String candidate : candidates.get(0)) {
-                    cartesianProduct.add(candidate + product);
+                for (String candidate : head) {
+                    cartesianProduct.add(putIntoBrackets(candidate) + product);
                 }
             }
 
         } else {
-            return new ArrayList<String>(candidates.get(0));
+            Set<String> result = new HashSet<String>(head.size());
+            for (String candidate : head) {
+                result.add(putIntoBrackets(candidate));
+            }
+            return new ArrayList<String>(result);
         }
         return cartesianProduct;
     }
 
-    Set<String> getCandidates(String part, String originalExpression) {
+    private String putIntoBrackets(String expression) {
+        if (isClosedInBrackets(expression) || isQuantifier(expression)
+            || "(".equals(expression) || ")".equals(expression)
+            || "\\(".equals(expression) || "\\)".equals(expression)) {
+            return expression;
+        }
+        return "(" + expression + ")";
+    }
+
+    private boolean isQuantifier(String expression) {
+        return Pattern.matches(REGEXP_QUANTIFIER, expression);
+    }
+
+    private boolean isQuantified(String expression) {
+        return Pattern.matches("(.+)" + REGEXP_QUANTIFIER, expression);
+    }
+
+    private String getQuantifier(String expression) {
+        Matcher matcher = Pattern.compile("(.+)" + REGEXP_QUANTIFIER).matcher(expression);
+        if (matcher.matches()) {
+            return matcher.group(2);
+        }
+        return null;
+    }
+
+    Set<String> getCandidates(ExpressionPart part, String originalExpression) {
         Set<String> candidates = new HashSet<String>();
 
-        if (!isReference(part)) {
-            candidates.add(part);
+        if (!part.isReference()) {
+            candidates.add(part.getWholeExpression());
 
         } else {
-            candidates.addAll(
-                    findExpressionsByReference(part.substring(1), originalExpression));
+            for (String exp : findExpressionsByReference(part.getExpression(), originalExpression)) {
+                exp = closeIntoBrackets(exp, 1) + part.getQuantifierString();
+                candidates.add(closeIntoBrackets(exp, part.getBracketLevel()));
+            }
         }
         return candidates;
     }
@@ -212,100 +307,136 @@ public class RecexpGrammar {
         return Pattern.matches(REGEXP_REFERENCE, expression);
     }
 
-    List<String> getExpressionParts(String expression) {
+    List<ExpressionPart> getExpressionParts(String expression) {
         List<String> parts = new ArrayList<String>();
 
-        expression = replaceReference(expression);
-
-        Matcher matcher = Pattern.compile(REGEXP_REFERENCE).matcher(expression);
-        int restStarts = 0;
-
-        while (matcher.find()) {
-            if (matcher.start() > restStarts) {
-                parts.add(resetReference(
-                        expression.substring(restStarts, matcher.start())
-                ));
-            }
-            restStarts = matcher.end();
-            parts.add(resetReference(
-                    expression.substring(matcher.start(), matcher.end())
-            ));
+        for (String part : getExpressionPartsCutByBrackets(expression)) {
+            parts.addAll(getExpressionPartsCutByReferences(part));
         }
-        if (restStarts < expression.length()) {
-            parts.add(resetReference(
-                    expression.substring(restStarts)
-            ));
+
+        List<ExpressionPart> expressionParts = new ArrayList<ExpressionPart>();
+
+        for (String part : parts) {
+            expressionParts.add(createExpressionPart(part));
+        }
+
+        return expressionParts;
+    }
+
+    private ExpressionPart createExpressionPart(String expression) {
+        String quantifier = getQuantifier(expression);
+        if (quantifier != null) {
+            expression = expression.substring(0, expression.length() - quantifier.length());
+        }
+
+        int bracketLevel = 0;
+        while (isClosedInBrackets(expression)) {
+            bracketLevel++;
+            expression = removeClosingBrackets(expression);
+
+            if (isQuantified(expression)) {
+                break;
+            }
+        }
+
+        boolean isReference = isReference(expression);
+        if (isReference) {
+            expression = expression.substring(1);
+        }
+
+        return new ExpressionPart(expression, quantifier, bracketLevel, isReference);
+    }
+
+    private List<String> getExpressionPartsCutByBrackets(String expression) {
+        List<String> parts = new ArrayList<String>();
+
+        StringBuilder sb = new StringBuilder(expression.length());
+        char previous = '\0';
+        int bracketsLevel = 0;
+        int lastOpeningBracketIndex = -1;
+
+        int index = 0;
+        while(index < expression.length()) {
+            char ch = expression.charAt(index);
+            sb.append(ch);
+
+            if (ch == '(' && previous != '\\') {
+                if (sb.length() > 1 && bracketsLevel == 0) {
+                    parts.add(sb.toString().substring(0, sb.length() - 1));
+                    sb = new StringBuilder(expression.length() - index).append('(');
+                }
+
+                bracketsLevel++;
+                lastOpeningBracketIndex = index;
+
+            } else if (ch == ')' && previous != '\\') {
+                if (bracketsLevel > 0) {
+                    bracketsLevel--;
+
+                    if (bracketsLevel == 0) {
+                        String exp = sb.toString();
+
+                        // has this part a quantifier?
+                        String rest = expression.substring(index + 1);
+                        Matcher matcher = Pattern.compile(REGEXP_QUANTIFIER + "(.*)").matcher(rest);
+                        if (matcher.matches()) {
+                            exp += matcher.group(1);
+                            index += matcher.group(1).length();
+                        }
+
+                        parts.add(exp);
+                        sb = new StringBuilder(expression.length() - index);
+                    }
+
+                } else {
+                    throw new RecexpSyntaxException("Unmatched closing ')' near index " + index + "\n" + expression);
+                }
+            }
+
+            previous = ch;
+            index ++;
+        }
+
+        if (bracketsLevel > 0) {
+            throw new RecexpSyntaxException("Unmatched opening '(' near index " + lastOpeningBracketIndex + "\n" + expression);
+        }
+
+        if (sb.length() > 0) {
+            parts.add(sb.toString());
         }
         return parts;
     }
 
-    List<RecexpGroup> getGroups(String expression, String input) {
-        List<RecexpGroup> groups = new ArrayList<RecexpGroup>();
-
-        for (String groupExp : separateGroups(expression)) {
-            // TODO
-            // 1. put groupExps into RegExp groups: ( groupExp1 ) + .. + ( groupExpN )
-            // 2. replace variables with (.*)
-            // 3. parse Recexp groups from Regexp groups
-            // 4. recursively solve each sub-group
+    private List<String> getExpressionPartsCutByReferences(String expression) {
+        if (isClosedInBrackets(expression)) {
+            return Collections.singletonList(expression);
         }
 
-        return groups;
-    }
+        Matcher matcher = Pattern.compile(REGEXP_REFERENCE + REGEXP_QUANTIFIER + "?").matcher(expression);
 
-    List<String> separateGroups(String expression) {
-        List<String> groups = new ArrayList<String>();
+        List<String> parts = new ArrayList<String>();
 
-        int endBracketNeeded = 0;
-        char previous = '\0';
+        expression = replaceEscapedReference(expression);
 
-        StringBuilder sb = new StringBuilder();
+        int restStarts = 0;
 
-        int i = 0;
-        while (i < expression.length()) {
-            char ch = expression.charAt(i);
-
-            if (ch == '@' && previous != '\\' && endBracketNeeded == 0) {
-                String var = getVariable(expression, i);
-
-                if (var != null) {
-                    groups.add(sb.toString());
-                    sb = new StringBuilder();
-
-                    i += var.length() - 1;
-                    groups.add(var);
-
-                } else {
-                    sb.append(ch);
-                }
-
-            } else if (ch == '(' && previous != '\\') {
-                int endBracketPosition = pairEndBracketPosition(expression, i);
-
-                if (endBracketPosition != -1) {
-                    if (sb.length() > 0) {
-                        groups.add(sb.toString());
-                        sb = new StringBuilder();
-                    }
-                    groups.add(expression.substring(i + 1, endBracketPosition));
-                    i = endBracketPosition;
-
-                } else {
-                    sb.append(ch);
-                }
-
-            } else {
-                sb.append(ch);
+        while (matcher.find()) {
+            if (matcher.start() > restStarts) {
+                parts.add(resetEscapedReference(
+                        expression.substring(restStarts, matcher.start())
+                ));
             }
-            previous = ch;
-            i++;
+            restStarts = matcher.end();
+            parts.add(resetEscapedReference(
+                    expression.substring(matcher.start(), matcher.end())
+            ));
         }
-
-        if (sb.length() > 0) {
-            groups.add(sb.toString());
+        if (restStarts < expression.length()) {
+            parts.add(resetEscapedReference(
+                    expression.substring(restStarts)
+            ));
         }
-
-        return groups;
+        return parts;
     }
 
     private int pairEndBracketPosition(String expression, int start) {
@@ -339,7 +470,7 @@ public class RecexpGrammar {
         StringBuilder sb = new StringBuilder();
 
         int i = start;
-        sb.append(expression.charAt(i++));  // @
+        sb.append(expression.charAt(i++));  // REFERENCE_PREFIX
         sb.append(expression.charAt(i++));  // first letter
 
         while (Pattern.matches("\\w", Character.toString(expression.charAt(i)))) {
@@ -348,7 +479,7 @@ public class RecexpGrammar {
 
         // try to get quantifiers
         String rest = expression.substring(i);
-        Matcher quantifiersMatcher = Pattern.compile("(([?*+]|\\{\\d+,?\\d*})[?+]?)(.*)").matcher(rest);
+        Matcher quantifiersMatcher = Pattern.compile(REGEXP_QUANTIFIER + "(.*)").matcher(rest);
         if (quantifiersMatcher.matches()) {
             sb.append(quantifiersMatcher.group(1));
         }
@@ -358,17 +489,17 @@ public class RecexpGrammar {
 
     // replace rule references with (.*)
     String hydrateExpression(String expression) {
-        return resetReference(
-                replaceReference(expression).replaceAll(REGEXP_REFERENCE, "(.*)")
+        return resetEscapedReference(
+                replaceEscapedReference(expression).replaceAll(REGEXP_REFERENCE, "(.*)")
         );
     }
 
-    private String replaceReference(String expression) {
-        return expression.replaceAll("[\\\\]" + REGEXP_REFERENCE, "\\\\__RecexpAt__$1");
+    private String replaceEscapedReference(String expression) {
+        return expression.replaceAll("\\\\" + REGEXP_REFERENCE, "\\\\__RecexpRefPrefix__$1");
     }
 
-    private String resetReference(String expression) {
-        return expression.replaceAll("\\\\__RecexpAt__", "\\\\@");
+    private String resetEscapedReference(String expression) {
+        return expression.replaceAll("\\\\__RecexpRefPrefix__", "\\\\" + REFERENCE_PREFIX);
     }
 
     @Override
@@ -376,9 +507,95 @@ public class RecexpGrammar {
         return this.rules.toString();
     }
 
-    class GroupCandidate {
-        String expression;
-        String name;
-        boolean isRuleReference;
+    protected class ExpressionPart {
+
+        private final String expression;
+        private final String quantifier;
+        private final int bracketLevel;
+        private final boolean reference;
+
+        public ExpressionPart(String expression, String quantifier, int bracketLevel, boolean reference) {
+            this.expression = expression;
+            this.quantifier = quantifier;
+            this.bracketLevel = bracketLevel;
+            this.reference = reference;
+        }
+
+        public String getWholeExpression() {
+            StringBuilder sb = new StringBuilder(expression.length() + getQuantifierString().length() + bracketLevel * 2 + (reference ? 1 : 0))
+                    .append(expression);
+
+            if (reference) {
+                sb.insert(0, REFERENCE_PREFIX);
+            }
+
+            String exp = closeIntoBrackets(sb.toString(), bracketLevel);
+
+            if (quantifier != null) {
+                exp += quantifier;
+            }
+            return exp;
+        }
+
+        public String getExpression() {
+            return expression;
+        }
+
+        public String getQuantifier() {
+            return quantifier;
+        }
+
+        public boolean isQuantified() {
+            return quantifier != null && !quantifier.isEmpty();
+        }
+
+        public String getQuantifierString() {
+            return isQuantified() ? quantifier : "";
+        }
+
+        public int getBracketLevel() {
+            return bracketLevel;
+        }
+
+        public boolean isReference() {
+            return reference;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            ExpressionPart that = (ExpressionPart) o;
+
+            if (bracketLevel != that.bracketLevel) {
+                return false;
+            }
+            if (reference != that.reference) {
+                return false;
+            }
+            if (!expression.equals(that.expression)) {
+                return false;
+            }
+            return quantifier != null ? quantifier.equals(that.quantifier) : that.quantifier == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = expression.hashCode();
+            result = 31 * result + (quantifier != null ? quantifier.hashCode() : 0);
+            result = 31 * result + bracketLevel;
+            result = 31 * result + (reference ? 1 : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return getWholeExpression();
+        }
     }
 }
