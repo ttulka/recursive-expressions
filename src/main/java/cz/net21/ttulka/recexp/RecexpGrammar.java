@@ -134,11 +134,11 @@ public class RecexpGrammar {
     }
 
     private List<RecexpGroup> getGroups(String expression, String input, String originalExpression) {
-        if (isClosedInBrackets(expression)) {
+        if (isClosedInBrackets(expression, false)) {
             return getGroups(removeClosingBrackets(expression), input, originalExpression);
         }
         if (Pattern.matches(expression, input)) {
-            return Collections.singletonList(new RecexpGroup(expression, input, new RecexpGroup[0]));
+            //return Collections.singletonList(new RecexpGroup(expression, input, new RecexpGroup[0]));
         }
         if (!Pattern.matches(hydrateExpression(expression), input)) {
             return null;
@@ -161,6 +161,23 @@ public class RecexpGrammar {
         for (String candidateExp : getCartesianProduct(candidates)) {
             if (!candidateExp.equals(expression)) { // avoid a loop
 
+                // if this candidate matches, separate it into groups
+                Matcher matcher = Pattern.compile(candidateExp).matcher(input);
+                if (matcher.matches()) {
+                    List<RecexpGroup> groups = new ArrayList<RecexpGroup>();
+
+                    List<ExpressionPart> parts = getExpressionParts(candidateExp);
+
+                    for (int i = 1; i <= matcher.groupCount(); i++) {
+                        String matchedExp = removeClosingBrackets(parts.get(i - 1).getWholeExpression());
+                        String matchedInp = matcher.group(i);
+
+                        groups.add(new RecexpGroup(matchedExp, matchedInp, new RecexpGroup[0]));
+                    }
+
+                    return groups;
+                }
+
                 List<RecexpGroup> groups = getGroups(candidateExp, input, originalExpression);
                 if (groups != null && !groups.isEmpty()) {
                     return groups;
@@ -177,11 +194,18 @@ public class RecexpGrammar {
         if (expressionPart.isQuantified()) {
             return false;
         }
+        if (Pattern.matches(expressionPart.getWholeExpression(), "")) {
+            return false;
+        }
+        if (expressionPart.getBracketLevel() > 0) {
+            return isTerminal(new ExpressionPart(
+                    expressionPart.getExpression(), expressionPart.getQuantifier(), 0, expressionPart.isReference()));
+        }
         return true;
     }
 
-    boolean isClosedInBrackets(String expression) {
-        if (isQuantified(expression)) {
+    boolean isClosedInBrackets(String expression, boolean acceptQuantified) {
+        if (acceptQuantified && isQuantified(expression)) {
             expression = expression.substring(0, expression.length() - getQuantifier(expression).length());
         }
         if (!expression.startsWith("(") || !expression.endsWith(")")) {
@@ -209,7 +233,10 @@ public class RecexpGrammar {
     }
 
     private String removeClosingBrackets(String expression) {
-        return expression.substring(1, expression.length() - 1);
+        if (isClosedInBrackets(expression, false)) {
+            return expression.substring(1, expression.length() - 1);
+        }
+        return expression;
     }
 
     private String closeIntoBrackets(String expression, int bracketLevel) {
@@ -231,14 +258,20 @@ public class RecexpGrammar {
             for (String product : getCartesianProduct(candidates.subList(1, candidates.size()))) {
 
                 for (String candidate : head) {
-                    cartesianProduct.add(putIntoBrackets(candidate) + product);
+                    if (!candidate.isEmpty()) {
+                        candidate = putIntoBrackets(candidate);
+                    }
+                    cartesianProduct.add(candidate + product);
                 }
             }
 
         } else {
             Set<String> result = new HashSet<String>(head.size());
             for (String candidate : head) {
-                result.add(putIntoBrackets(candidate));
+                if (!candidate.isEmpty()) {
+                    candidate = putIntoBrackets(candidate);
+                }
+                result.add(candidate);
             }
             return new ArrayList<String>(result);
         }
@@ -246,7 +279,7 @@ public class RecexpGrammar {
     }
 
     private String putIntoBrackets(String expression) {
-        if (isClosedInBrackets(expression) || isQuantifier(expression)
+        if (isClosedInBrackets(expression, true) || isQuantifier(expression)
             || "(".equals(expression) || ")".equals(expression)
             || "\\(".equals(expression) || "\\)".equals(expression)) {
             return expression;
@@ -272,6 +305,10 @@ public class RecexpGrammar {
 
     Set<String> getCandidates(ExpressionPart part, String originalExpression) {
         Set<String> candidates = new HashSet<String>();
+
+        if (Pattern.matches("x" + part.getQuantifierString(), "")) {
+            candidates.add("");
+        }
 
         if (!part.isReference()) {
             candidates.add(part.getWholeExpression());
@@ -317,25 +354,26 @@ public class RecexpGrammar {
         List<ExpressionPart> expressionParts = new ArrayList<ExpressionPart>();
 
         for (String part : parts) {
-            expressionParts.add(createExpressionPart(part));
+            expressionParts.add(createExpressionPart(part, 0));
         }
 
         return expressionParts;
     }
 
-    private ExpressionPart createExpressionPart(String expression) {
+    private ExpressionPart createExpressionPart(String expression, int bracketLevel) {
         String quantifier = getQuantifier(expression);
         if (quantifier != null) {
             expression = expression.substring(0, expression.length() - quantifier.length());
         }
 
-        int bracketLevel = 0;
-        while (isClosedInBrackets(expression)) {
-            bracketLevel++;
-            expression = removeClosingBrackets(expression);
+        if (isClosedInBrackets(expression, false)) {
+            return createExpressionPart(removeClosingBrackets(expression), bracketLevel + 1);
+        }
 
-            if (isQuantified(expression)) {
-                break;
+        if (quantifier == null) {
+            quantifier = getQuantifier(expression);
+            if (quantifier != null) {
+                expression = expression.substring(0, expression.length() - quantifier.length());
             }
         }
 
@@ -356,7 +394,7 @@ public class RecexpGrammar {
         int lastOpeningBracketIndex = -1;
 
         int index = 0;
-        while(index < expression.length()) {
+        while (index < expression.length()) {
             char ch = expression.charAt(index);
             sb.append(ch);
 
@@ -394,7 +432,7 @@ public class RecexpGrammar {
             }
 
             previous = ch;
-            index ++;
+            index++;
         }
 
         if (bracketsLevel > 0) {
@@ -408,7 +446,7 @@ public class RecexpGrammar {
     }
 
     private List<String> getExpressionPartsCutByReferences(String expression) {
-        if (isClosedInBrackets(expression)) {
+        if (isClosedInBrackets(expression, true)) {
             return Collections.singletonList(expression);
         }
 

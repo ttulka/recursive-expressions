@@ -270,70 +270,136 @@ public class RecexpGrammarTest {
     }
 
     @Test
+    public void getCartesianProductWithEpsilonTest() {
+        List<Set<String>> candidates = new ArrayList<Set<String>>();
+
+        Set<String> candidate1 = new HashSet<String>();
+        candidate1.add("a");
+        candidate1.add("b");
+
+        candidates.add(candidate1);
+
+        Set<String> candidate2 = new HashSet<String>();
+        candidate2.add("1");
+        candidate2.add("");
+
+        candidates.add(candidate2);
+
+        RecexpGrammar grammar = new RecexpGrammar();
+
+        assertThat(grammar.getCartesianProduct(candidates), containsInAnyOrder(
+                "(a)(1)", "(b)(1)", "(a)", "(b)"));
+    }
+
+    @Test
     public void isClosedInBracketsTest() {
         RecexpGrammar grammar = new RecexpGrammar();
 
-        assertThat(grammar.isClosedInBrackets(""), is(false));
-        assertThat(grammar.isClosedInBrackets("("), is(false));
-        assertThat(grammar.isClosedInBrackets(")"), is(false));
-        assertThat(grammar.isClosedInBrackets(")("), is(false));
-        assertThat(grammar.isClosedInBrackets("()()"), is(false));
-        assertThat(grammar.isClosedInBrackets("()("), is(false));
-        assertThat(grammar.isClosedInBrackets(")()"), is(false));
-        assertThat(grammar.isClosedInBrackets("()(())"), is(false));
-        assertThat(grammar.isClosedInBrackets("())"), is(false));
-        assertThat(grammar.isClosedInBrackets("()))"), is(false));
-        assertThat(grammar.isClosedInBrackets("())()"), is(false));
-        assertThat(grammar.isClosedInBrackets("(()"), is(false));
-        assertThat(grammar.isClosedInBrackets("((()"), is(false));
+        assertThat(grammar.isClosedInBrackets("", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")(", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()(", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()(())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()))", true), is(false));
+        assertThat(grammar.isClosedInBrackets("())()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("((()", true), is(false));
 
-        assertThat(grammar.isClosedInBrackets("a"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a"), is(false));
-        assertThat(grammar.isClosedInBrackets("a)"), is(false));
-        assertThat(grammar.isClosedInBrackets(")a("), is(false));
-        assertThat(grammar.isClosedInBrackets("(a)a(a)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a)("), is(false));
-        assertThat(grammar.isClosedInBrackets(")(a)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a)((a))"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a))"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a))a)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a))(a)"), is(false));
-        assertThat(grammar.isClosedInBrackets("((a)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(a(a(a)"), is(false));
+        assertThat(grammar.isClosedInBrackets("a", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a", true), is(false));
+        assertThat(grammar.isClosedInBrackets("a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")a(", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)a(a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)(", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")(a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)((a))", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))(a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("((a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a(a(a)", true), is(false));
 
-        assertThat(grammar.isClosedInBrackets("()"), is(true));
-        assertThat(grammar.isClosedInBrackets("(())"), is(true));
-        assertThat(grammar.isClosedInBrackets("(()())"), is(true));
-        assertThat(grammar.isClosedInBrackets("(()()())"), is(true));
-        assertThat(grammar.isClosedInBrackets("((()()))"), is(true));
+        assertThat(grammar.isClosedInBrackets("()", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(()())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(()()())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("((()()))", true), is(true));
 
-        assertThat(grammar.isClosedInBrackets("(\\)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(()\\)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(()()\\)"), is(false));
-        assertThat(grammar.isClosedInBrackets("(()()()\\)"), is(false));
-        assertThat(grammar.isClosedInBrackets("((()())\\)"), is(false));
+        assertThat(grammar.isClosedInBrackets("(\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()()\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()()()\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("((()())\\)", true), is(false));
 
-        assertThat(grammar.isClosedInBrackets("\\()"), is(false));
-        assertThat(grammar.isClosedInBrackets("\\(())"), is(false));
-        assertThat(grammar.isClosedInBrackets("\\(()())"), is(false));
-        assertThat(grammar.isClosedInBrackets("\\(()()())"), is(false));
-        assertThat(grammar.isClosedInBrackets("\\((()()))"), is(false));
+        assertThat(grammar.isClosedInBrackets("\\()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(()())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(()()())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\((()()))", true), is(false));
 
-        assertThat(grammar.isClosedInBrackets("(a)"), is(true));
-        assertThat(grammar.isClosedInBrackets("((a))"), is(true));
-        assertThat(grammar.isClosedInBrackets("((a)(a))"), is(true));
-        assertThat(grammar.isClosedInBrackets("(()(a)())"), is(true));
-        assertThat(grammar.isClosedInBrackets("(a(a(a)a(a)a)a)"), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)", true), is(true));
+        assertThat(grammar.isClosedInBrackets("((a))", true), is(true));
+        assertThat(grammar.isClosedInBrackets("((a)(a))", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(()(a)())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a(a(a)a(a)a)a)", true), is(true));
 
-        assertThat(grammar.isClosedInBrackets("(a)?"), is(true));
-        assertThat(grammar.isClosedInBrackets("(a)+"), is(true));
-        assertThat(grammar.isClosedInBrackets("(a)*"), is(true));
-        assertThat(grammar.isClosedInBrackets("(a){1,2}"), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)?", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)+", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)*", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a){1,2}", true), is(true));
+
+        assertThat(grammar.isClosedInBrackets("(a)?", false), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)+", false), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)*", false), is(false));
+        assertThat(grammar.isClosedInBrackets("(a){1,2}", false), is(false));
+    }
+
+    @Test
+    public void isTerminalTest() {
+        RecexpGrammar g = new RecexpGrammar();
+
+        assertThat(g.isTerminal(g.new ExpressionPart("a", null, 0, false)), is(true));
+
+        assertThat(g.isTerminal(g.new ExpressionPart("a", "?", 1, false)), is(false));
+        assertThat(g.isTerminal(g.new ExpressionPart("this", null, 0, true)), is(false));
+        assertThat(g.isTerminal(g.new ExpressionPart("this", "?", 0, true)), is(false));
+        assertThat(g.isTerminal(g.new ExpressionPart("this", "?", 1, true)), is(false));
     }
 
     @Test
     public void getGroupsTest() {
         List<RecexpGroup> groups;
+
+//        groups = new RecexpGrammar()
+//                .getGroups("a", "a");
+//
+//        assertThat(groups.size(), is(1));
+//
+//        assertThat(groups.get(0).name(), is("a"));
+//        assertThat(groups.get(0).value(), is("a"));
+//        assertThat(groups.get(0).groupCount(), is(0));
+
+        groups = new RecexpGrammar()
+                .getGroups("a?", "a");
+
+        assertThat(groups.size(), is(1));
+
+        assertThat(groups.get(0).name(), is("(a)?"));
+        assertThat(groups.get(0).value(), is("a"));
+        assertThat(groups.get(0).groupCount(), is(0));
+
+        groups = new RecexpGrammar()
+                .getGroups("a|b", "a");
+
+        assertThat(groups.size(), is(1));
+
+        assertThat(groups.get(0).name(), is("a|b"));
+        assertThat(groups.get(0).value(), is("a"));
+        assertThat(groups.get(0).groupCount(), is(0));
 
         groups = new RecexpGrammar()
                 .getGroups("a@this?b", "ab");
