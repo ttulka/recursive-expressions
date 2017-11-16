@@ -169,7 +169,7 @@ public class RecexpGrammar {
     }
 
     private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree tree) {
-        Set<LeafCombination> combinations = generateCombinations(tree.getLeaves());
+        Set<LeafCombination> combinations = generateCombinations(tree.getEndLeaves());
         return getCartesianProduct(combinations);
     }
 
@@ -206,7 +206,7 @@ public class RecexpGrammar {
         return cartesianProduct;
     }
 
-    private Set<LeafCombination> generateCombinations(Iterable<ExpressionTree.Leaf> leaves) {
+    private Set<LeafCombination> generateCombinations(List<ExpressionTree.Leaf> leaves) {
         Set<LeafCombination> combinations = new HashSet<LeafCombination>();
 
         for (ExpressionTree.Leaf leaf : leaves) {
@@ -251,6 +251,93 @@ public class RecexpGrammar {
     @Override
     public String toString() {
         return this.rules.toString();
+    }
+
+    static class ExpressionTree {
+
+        private final Leaf root;
+
+        public ExpressionTree(Leaf root) {
+            this.root = root;
+        }
+
+        public Leaf getRoot() {
+            return root;
+        }
+
+        public String getSentence() {
+            StringBuilder sb = new StringBuilder();
+
+            for (Leaf leaf : getEndLeaves()) {
+                sb.append(leaf.getWord());
+            }
+            return sb.toString();
+        }
+
+        public List<Leaf> getEndLeaves() {
+            return getEndLeaves(root);
+        }
+
+        private List<Leaf> getEndLeaves(Leaf leaf) {
+            List<Leaf> leaves = new ArrayList<Leaf>();
+
+            if (leaf.getLeaves().isEmpty()) {
+                leaves.add(leaf);
+
+            } else {
+                for (Leaf l : leaf.getLeaves()) {
+                    leaves.addAll(getEndLeaves(l));
+                }
+            }
+            return leaves;
+        }
+
+        public static class Leaf {
+
+            private final String expression;
+            private final String quantifier;
+            private final boolean reference;
+
+            private final List<Leaf> leaves = new ArrayList<Leaf>();
+
+            public Leaf(String expression, String quantifier, boolean reference) {
+                this.expression = expression;
+                this.quantifier = quantifier;
+                this.reference = reference;
+            }
+
+            public String getExpression() {
+                return expression;
+            }
+
+            public String getQuantifier() {
+                return quantifier;
+            }
+
+            public boolean isReference() {
+                return reference;
+            }
+
+            public List<Leaf> getLeaves() {
+                return leaves;
+            }
+
+            public String getWord() {
+                StringBuilder sb = new StringBuilder()
+                        .append("(");
+
+                if (reference) {
+                    sb.append(REFERENCE_PREFIX);
+                }
+                sb.append(expression)
+                        .append(")");
+
+                if (quantifier != null) {
+                    sb.append(quantifier);
+                }
+                return sb.toString();
+            }
+        }
     }
 
     class LeafCombination {
@@ -331,26 +418,6 @@ public class RecexpGrammar {
             int result = leaf.hashCode();
             result = 31 * result + expression.hashCode();
             return result;
-        }
-    }
-
-    class ExpressionTree {
-
-        private Leaf root;
-
-        public String getSentence() {
-            return null; // TODO
-        }
-
-        public Set<Leaf> getLeaves() {
-            return null; // TODO
-        }
-
-        public class Leaf {
-
-            public boolean isReference() {
-                return false; // TODO
-            }
         }
     }
 }

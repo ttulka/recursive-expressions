@@ -13,9 +13,12 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author ttulka
@@ -140,20 +143,12 @@ public class RecexpGrammarTest {
 
     @Test
     public void getCartesianProductTest() {
-        RecexpGrammar g = new RecexpGrammar();
-        RecexpGrammar.ExpressionTree tree = g.new ExpressionTree();
+        Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(
+                createLeafCombination("A", "B"),
+                createLeafCombination("o"),
+                createLeafCombination("x", "y", "z"));
 
-        RecexpGrammar.ExpressionTree.Leaf leaf1 = tree.new Leaf();
-        RecexpGrammar.ExpressionTree.Leaf leaf2 = tree.new Leaf();
-        RecexpGrammar.ExpressionTree.Leaf leaf3 = tree.new Leaf();
-
-        RecexpGrammar.LeafCombination lc1 = g.new LeafCombination(leaf1, new HashSet<String>(Arrays.asList("A", "B")));
-        RecexpGrammar.LeafCombination lc2 = g.new LeafCombination(leaf2, new HashSet<String>(Arrays.asList("o")));
-        RecexpGrammar.LeafCombination lc3 = g.new LeafCombination(leaf3, new HashSet<String>(Arrays.asList("x", "y", "z")));
-
-        Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(lc1, lc2, lc3);
-
-        Set<Set<RecexpGrammar.LeafCandidate>> product = g.getCartesianProduct(combinations);
+        Set<Set<RecexpGrammar.LeafCandidate>> product = new RecexpGrammar().getCartesianProduct(combinations);
 
         assertThat(getStringsFromCartesianProduct(product), containsInAnyOrder(
                 "Aox", "Aoy", "Aoz", "Box", "Boy", "Boz"
@@ -162,22 +157,22 @@ public class RecexpGrammarTest {
 
     @Test
     public void getCartesianProductWithEpsilonTest() {
-        RecexpGrammar g = new RecexpGrammar();
-        RecexpGrammar.ExpressionTree tree = g.new ExpressionTree();
+        Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(
+                createLeafCombination("a", "b"),
+                createLeafCombination("x", ""));
 
-        RecexpGrammar.ExpressionTree.Leaf leaf1 = tree.new Leaf();
-        RecexpGrammar.ExpressionTree.Leaf leaf2 = tree.new Leaf();
-
-        RecexpGrammar.LeafCombination lc1 = g.new LeafCombination(leaf1, new HashSet<String>(Arrays.asList("a", "b")));
-        RecexpGrammar.LeafCombination lc2 = g.new LeafCombination(leaf2, new HashSet<String>(Arrays.asList("x", "")));
-
-        Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(lc1, lc2);
-
-        Set<Set<RecexpGrammar.LeafCandidate>> product = g.getCartesianProduct(combinations);
+        Set<Set<RecexpGrammar.LeafCandidate>> product = new RecexpGrammar().getCartesianProduct(combinations);
 
         assertThat(getStringsFromCartesianProduct(product), containsInAnyOrder(
                 "ax", "bx", "a", "b"
         ));
+    }
+
+    private RecexpGrammar.LeafCombination createLeafCombination(String... combinations) {
+        RecexpGrammar.LeafCombination lc = mock(RecexpGrammar.LeafCombination.class);
+        when(lc.getCombinations()).thenReturn(new HashSet<String>(Arrays.asList(combinations)));
+        when(lc.getLeaf()).thenReturn(mock(RecexpGrammar.ExpressionTree.Leaf.class));
+        return lc;
     }
 
     private Set<String> getStringsFromCartesianProduct(Set<Set<RecexpGrammar.LeafCandidate>> product) {
@@ -198,6 +193,87 @@ public class RecexpGrammarTest {
             candidates.add(sb.toString());
         }
         return candidates;
+    }
+
+    @Test
+    public void ExpressionTree_getRootTest() {
+        RecexpGrammar.ExpressionTree tree = createSimpleTree();
+
+        assertThat(tree.getRoot().getExpression(), is("A"));
+    }
+
+    @Test
+    public void ExpressionTree_getEndLeavesTest() {
+        RecexpGrammar.ExpressionTree tree = createSimpleTree();
+
+        assertThat(tree.getEndLeaves().toString(), is("[D, G, F]"));
+    }
+
+    @Test
+    public void ExpressionTree_getSentenceTest() {
+        RecexpGrammar.ExpressionTree tree = createSimpleTree();
+
+        assertThat(tree.getSentence(), is("(D)(G)(F)"));
+    }
+
+    @Test
+    public void ExpressionTree_getWordTest() {
+        RecexpGrammar.ExpressionTree.Leaf leaf;
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, false);
+        assertThat(leaf.getWord(), is("(A)"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", null, false);
+        assertThat(leaf.getWord(), is("(AB)"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", "?", false);
+        assertThat(leaf.getWord(), is("(AB)?"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", "{1,2}", false);
+        assertThat(leaf.getWord(), is("(AB){1,2}"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", "{1,2}", true);
+        assertThat(leaf.getWord(), is("(@AB){1,2}"));
+    }
+
+    /**
+     *           A
+     *         /  \
+     *        B    C
+     *      /  \    \
+     *     D    E    F
+     *           \
+     *            G
+     */
+    private RecexpGrammar.ExpressionTree createSimpleTree() {
+        RecexpGrammar.ExpressionTree.Leaf A = createSimpleLeaf("A");
+        RecexpGrammar.ExpressionTree.Leaf B = createSimpleLeaf("B");
+        RecexpGrammar.ExpressionTree.Leaf C = createSimpleLeaf("C");
+        RecexpGrammar.ExpressionTree.Leaf D = createSimpleLeaf("D");
+        RecexpGrammar.ExpressionTree.Leaf E = createSimpleLeaf("E");
+        RecexpGrammar.ExpressionTree.Leaf F = createSimpleLeaf("F");
+        RecexpGrammar.ExpressionTree.Leaf G = createSimpleLeaf("G");
+
+        A.getLeaves().add(B);
+        A.getLeaves().add(C);
+
+        B.getLeaves().add(D);
+        B.getLeaves().add(E);
+
+        E.getLeaves().add(G);
+
+        C.getLeaves().add(F);
+
+        return new RecexpGrammar.ExpressionTree(A);
+    }
+
+    private RecexpGrammar.ExpressionTree.Leaf createSimpleLeaf(final String expression) {
+        return new RecexpGrammar.ExpressionTree.Leaf(expression, null, false) {
+            @Override
+            public String toString() {
+                return getExpression();
+            }
+        };
     }
 
     // ########################################################################################
