@@ -2,11 +2,10 @@ package cz.net21.ttulka.recexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -112,7 +111,7 @@ public class RecexpGrammar {
 
         for (RecexpRule rule : this.rules) {
 
-            List<RecexpGroup> groups = getGroups(rule.getExpression(), input);
+            List<RecexpGroup> groups = getGroups(createTree(rule.getExpression()), input, new HashSet<String>());
             if (groups != null && !groups.isEmpty()) {
                 return new RecexpMatcher(rule.getName(), input, groups.toArray(new RecexpGroup[0]));
             }
@@ -129,403 +128,112 @@ public class RecexpGrammar {
         };
     }
 
-    List<RecexpGroup> getGroups(String expression, String input) {
-        return getGroups(expression, input, expression);
-    }
+    /**
+     * Returns groups for the expression and input, or <code>null</code> if it doesn't match.
+     */
+    List<RecexpGroup> getGroups(ExpressionTree tree, String input, Set<String> alreadySeen) {
+        String sentence = tree.getSentence();
 
-    private List<RecexpGroup> getGroups(String expression, String input, String originalExpression) {
-        if (isClosedInBrackets(expression, false)) {
-            return getGroups(removeClosingBrackets(expression), input, originalExpression);
-        }
-        if (Pattern.matches(expression, input)) {
-            //return Collections.singletonList(new RecexpGroup(expression, input, new RecexpGroup[0]));
-        }
-        if (!Pattern.matches(hydrateExpression(expression), input)) {
+        if (alreadySeen.contains(sentence)) {
             return null;
         }
-        List<Set<String>> candidates = new ArrayList<Set<String>>();
+        alreadySeen.add(sentence);
 
-        int terminalsCount = 0;
-        for (ExpressionPart part : getExpressionParts(expression)) {
-            candidates.add(getCandidates(part, originalExpression));
+        String hydratedSentence = hydrateExpression(sentence);
 
-            if (isTerminal(part)) {
-                terminalsCount++;
-            }
-        }
-
-        if (terminalsCount > input.length()) {  // input is already longer than possible expression result
+        if (!Pattern.matches(hydratedSentence, input)) {
             return null;
         }
 
-        for (String candidateExp : getCartesianProduct(candidates)) {
-            if (!candidateExp.equals(expression)) { // avoid a loop
+        // no more references
+        if (hydratedSentence.equals(sentence)) {
+            return reduceTree(tree);
+        }
 
-                // if this candidate matches, separate it into groups
-                Matcher matcher = Pattern.compile(candidateExp).matcher(input);
-                if (matcher.matches()) {
-                    List<RecexpGroup> groups = new ArrayList<RecexpGroup>();
-
-                    List<ExpressionPart> parts = getExpressionParts(candidateExp);
-
-                    for (int i = 1; i <= matcher.groupCount(); i++) {
-                        String matchedExp = removeClosingBrackets(parts.get(i - 1).getWholeExpression());
-                        String matchedInp = matcher.group(i);
-
-                        groups.add(new RecexpGroup(matchedExp, matchedInp, new RecexpGroup[0]));
-                    }
-
-                    return groups;
-                }
-
-                List<RecexpGroup> groups = getGroups(candidateExp, input, originalExpression);
-                if (groups != null && !groups.isEmpty()) {
-                    return groups;
-                }
+        for (ExpressionTree candidate : generateCandidates(tree)) {
+            List<RecexpGroup> groups = getGroups(candidate, input, alreadySeen);
+            if (groups != null) {
+                return groups;
             }
         }
         return null;
     }
 
-    boolean isTerminal(ExpressionPart expressionPart) {
-        if (expressionPart.isReference()) {
-            return false;
-        }
-        if (expressionPart.isQuantified()) {
-            return false;
-        }
-        if (Pattern.matches(expressionPart.getWholeExpression(), "")) {
-            return false;
-        }
-        if (expressionPart.getBracketLevel() > 0) {
-            return isTerminal(new ExpressionPart(
-                    expressionPart.getExpression(), expressionPart.getQuantifier(), 0, expressionPart.isReference()));
-        }
-        return true;
-    }
+    private Set<ExpressionTree> generateCandidates(ExpressionTree tree) {
+        Set<ExpressionTree> candidates = new HashSet<ExpressionTree>();
 
-    boolean isClosedInBrackets(String expression, boolean acceptQuantified) {
-        if (acceptQuantified && isQuantified(expression)) {
-            expression = expression.substring(0, expression.length() - getQuantifier(expression).length());
-        }
-        if (!expression.startsWith("(") || !expression.endsWith(")")) {
-            return false;
-        }
-        int openBrackets = 0;
-        char previous = '\0';
-
-        for (int i = 0; i < expression.length(); i++) {
-            char ch = expression.charAt(i);
-
-            if (ch == '(' && previous != '\\' && i < expression.length()) {
-                openBrackets++;
-
-            } else if (ch == ')' && previous != '\\' && i > 0) {
-                openBrackets--;
-
-                if (openBrackets == 0 && i < expression.length() - 1) {
-                    return false;
-                }
-            }
-            previous = ch;
-        }
-        return openBrackets == 0;
-    }
-
-    private String removeClosingBrackets(String expression) {
-        if (isClosedInBrackets(expression, false)) {
-            return expression.substring(1, expression.length() - 1);
-        }
-        return expression;
-    }
-
-    private String closeIntoBrackets(String expression, int bracketLevel) {
-        StringBuilder sb = new StringBuilder(expression.length() + bracketLevel * 2)
-                .append(expression);
-
-        for (int i = 0; i < bracketLevel; i++) {
-            sb.insert(0, "(").append(")");
-        }
-        return sb.toString();
-    }
-
-    List<String> getCartesianProduct(List<Set<String>> candidates) {
-        List<String> cartesianProduct = new ArrayList<String>();
-
-        Set<String> head = candidates.get(0);
-
-        if (candidates.size() > 1) {
-            for (String product : getCartesianProduct(candidates.subList(1, candidates.size()))) {
-
-                for (String candidate : head) {
-                    if (!candidate.isEmpty()) {
-                        candidate = putIntoBrackets(candidate);
-                    }
-                    cartesianProduct.add(candidate + product);
-                }
-            }
-
-        } else {
-            Set<String> result = new HashSet<String>(head.size());
-            for (String candidate : head) {
-                if (!candidate.isEmpty()) {
-                    candidate = putIntoBrackets(candidate);
-                }
-                result.add(candidate);
-            }
-            return new ArrayList<String>(result);
-        }
-        return cartesianProduct;
-    }
-
-    private String putIntoBrackets(String expression) {
-        if (isClosedInBrackets(expression, true) || isQuantifier(expression)
-            || "(".equals(expression) || ")".equals(expression)
-            || "\\(".equals(expression) || "\\)".equals(expression)) {
-            return expression;
-        }
-        return "(" + expression + ")";
-    }
-
-    private boolean isQuantifier(String expression) {
-        return Pattern.matches(REGEXP_QUANTIFIER, expression);
-    }
-
-    private boolean isQuantified(String expression) {
-        return Pattern.matches("(.+)" + REGEXP_QUANTIFIER, expression);
-    }
-
-    private String getQuantifier(String expression) {
-        Matcher matcher = Pattern.compile("(.+)" + REGEXP_QUANTIFIER).matcher(expression);
-        if (matcher.matches()) {
-            return matcher.group(2);
-        }
-        return null;
-    }
-
-    Set<String> getCandidates(ExpressionPart part, String originalExpression) {
-        Set<String> candidates = new HashSet<String>();
-
-        if (Pattern.matches("x" + part.getQuantifierString(), "")) {
-            candidates.add("");
-        }
-
-        if (!part.isReference()) {
-            candidates.add(part.getWholeExpression());
-
-        } else {
-            for (String exp : findExpressionsByReference(part.getExpression(), originalExpression)) {
-                exp = closeIntoBrackets(exp, 1) + part.getQuantifierString();
-                candidates.add(closeIntoBrackets(exp, part.getBracketLevel()));
-            }
+        for (Set<LeafCandidate> leafCandidates : getCartesianProduct(tree)) {
+            candidates.add(extendTree(tree, leafCandidates));
         }
         return candidates;
     }
 
-    private Set<String> findExpressionsByReference(String referenceName, String originalExpression) {
-        if (THIS_REFERENCE_NAME.equals(referenceName)) {
-            return Collections.singleton(originalExpression);
-        }
-
-        Set<String> expressions = new HashSet<String>();
-
-        for (RecexpRule rule : this.rules) {
-            if (rule.getName().equals(referenceName)) {
-                expressions.add(rule.getExpression());
-            }
-        }
-        if (!expressions.isEmpty()) {
-            return expressions;
-        }
-        throw new RecexpRuleNotFoundException(referenceName);
+    private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree tree) {
+        Set<LeafCombination> combinations = generateCombinations(tree.getLeaves());
+        return getCartesianProduct(combinations);
     }
 
-    boolean isReference(String expression) {
-        return Pattern.matches(REGEXP_REFERENCE, expression);
-    }
+    Set<Set<LeafCandidate>> getCartesianProduct(Collection<LeafCombination> combinations) {
+        Set<Set<LeafCandidate>> cartesianProduct = new HashSet<Set<LeafCandidate>>();
 
-    List<ExpressionPart> getExpressionParts(String expression) {
-        List<String> parts = new ArrayList<String>();
-
-        for (String part : getExpressionPartsCutByBrackets(expression)) {
-            parts.addAll(getExpressionPartsCutByReferences(part));
+        if (combinations.isEmpty()) {
+            return cartesianProduct;
         }
 
-        List<ExpressionPart> expressionParts = new ArrayList<ExpressionPart>();
+        List<LeafCombination> combinationList = new ArrayList<LeafCombination>(combinations);
 
-        for (String part : parts) {
-            expressionParts.add(createExpressionPart(part, 0));
-        }
+        LeafCombination head = combinationList.get(0);
 
-        return expressionParts;
-    }
+        if (combinations.size() > 1) {
+            for (Set<LeafCandidate> tail : getCartesianProduct(combinationList.subList(1, combinationList.size()))) {
 
-    private ExpressionPart createExpressionPart(String expression, int bracketLevel) {
-        String quantifier = getQuantifier(expression);
-        if (quantifier != null) {
-            expression = expression.substring(0, expression.length() - quantifier.length());
-        }
+                for (String candidate : head.getCombinations()) {
+                    Set<LeafCandidate> product = new HashSet<LeafCandidate>(tail);
+                    product.add(new LeafCandidate(head.getLeaf(), candidate));
 
-        if (isClosedInBrackets(expression, false)) {
-            return createExpressionPart(removeClosingBrackets(expression), bracketLevel + 1);
-        }
-
-        if (quantifier == null) {
-            quantifier = getQuantifier(expression);
-            if (quantifier != null) {
-                expression = expression.substring(0, expression.length() - quantifier.length());
-            }
-        }
-
-        boolean isReference = isReference(expression);
-        if (isReference) {
-            expression = expression.substring(1);
-        }
-
-        return new ExpressionPart(expression, quantifier, bracketLevel, isReference);
-    }
-
-    private List<String> getExpressionPartsCutByBrackets(String expression) {
-        List<String> parts = new ArrayList<String>();
-
-        StringBuilder sb = new StringBuilder(expression.length());
-        char previous = '\0';
-        int bracketsLevel = 0;
-        int lastOpeningBracketIndex = -1;
-
-        int index = 0;
-        while (index < expression.length()) {
-            char ch = expression.charAt(index);
-            sb.append(ch);
-
-            if (ch == '(' && previous != '\\') {
-                if (sb.length() > 1 && bracketsLevel == 0) {
-                    parts.add(sb.toString().substring(0, sb.length() - 1));
-                    sb = new StringBuilder(expression.length() - index).append('(');
-                }
-
-                bracketsLevel++;
-                lastOpeningBracketIndex = index;
-
-            } else if (ch == ')' && previous != '\\') {
-                if (bracketsLevel > 0) {
-                    bracketsLevel--;
-
-                    if (bracketsLevel == 0) {
-                        String exp = sb.toString();
-
-                        // has this part a quantifier?
-                        String rest = expression.substring(index + 1);
-                        Matcher matcher = Pattern.compile(REGEXP_QUANTIFIER + "(.*)").matcher(rest);
-                        if (matcher.matches()) {
-                            exp += matcher.group(1);
-                            index += matcher.group(1).length();
-                        }
-
-                        parts.add(exp);
-                        sb = new StringBuilder(expression.length() - index);
-                    }
-
-                } else {
-                    throw new RecexpSyntaxException("Unmatched closing ')' near index " + index + "\n" + expression);
+                    cartesianProduct.add(product);
                 }
             }
 
-            previous = ch;
-            index++;
-        }
+        } else {
+            for (String candidate : head.getCombinations()) {
+                Set<LeafCandidate> product = new HashSet<LeafCandidate>();
+                product.add(new LeafCandidate(head.getLeaf(), candidate));
 
-        if (bracketsLevel > 0) {
-            throw new RecexpSyntaxException("Unmatched opening '(' near index " + lastOpeningBracketIndex + "\n" + expression);
-        }
-
-        if (sb.length() > 0) {
-            parts.add(sb.toString());
-        }
-        return parts;
-    }
-
-    private List<String> getExpressionPartsCutByReferences(String expression) {
-        if (isClosedInBrackets(expression, true)) {
-            return Collections.singletonList(expression);
-        }
-
-        Matcher matcher = Pattern.compile(REGEXP_REFERENCE + REGEXP_QUANTIFIER + "?").matcher(expression);
-
-        List<String> parts = new ArrayList<String>();
-
-        expression = replaceEscapedReference(expression);
-
-        int restStarts = 0;
-
-        while (matcher.find()) {
-            if (matcher.start() > restStarts) {
-                parts.add(resetEscapedReference(
-                        expression.substring(restStarts, matcher.start())
-                ));
+                cartesianProduct.add(product);
             }
-            restStarts = matcher.end();
-            parts.add(resetEscapedReference(
-                    expression.substring(matcher.start(), matcher.end())
-            ));
         }
-        if (restStarts < expression.length()) {
-            parts.add(resetEscapedReference(
-                    expression.substring(restStarts)
-            ));
-        }
-        return parts;
+        return cartesianProduct;
     }
 
-    private int pairEndBracketPosition(String expression, int start) {
-        char previous = expression.charAt(start);
-        int skip = 1;
+    private Set<LeafCombination> generateCombinations(Iterable<ExpressionTree.Leaf> leaves) {
+        Set<LeafCombination> combinations = new HashSet<LeafCombination>();
 
-        for (int i = start + 1; i < expression.length(); i++) {
-            char ch = expression.charAt(i);
-
-            if (ch == '(' && previous != '\\') {
-                skip++;
-
-            } else if (ch == ')' && previous != '\\') {
-                skip--;
-                if (skip == 0) {
-                    return i;
-                }
+        for (ExpressionTree.Leaf leaf : leaves) {
+            if (leaf.isReference()) {
+                combinations.add(new LeafCombination(leaf, generateCombinations(leaf)));
             }
-
-            previous = ch;
         }
-        return -1;
+        return combinations;
     }
 
-    private String getVariable(String expression, int start) {
-        // must start with letter or underscore
-        if (!Pattern.matches("[a-zA-Z_]", Character.toString(expression.charAt(start + 1)))) {
-            return null;
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        int i = start;
-        sb.append(expression.charAt(i++));  // REFERENCE_PREFIX
-        sb.append(expression.charAt(i++));  // first letter
-
-        while (Pattern.matches("\\w", Character.toString(expression.charAt(i)))) {
-            sb.append(expression.charAt(i++));
-        }
-
-        // try to get quantifiers
-        String rest = expression.substring(i);
-        Matcher quantifiersMatcher = Pattern.compile(REGEXP_QUANTIFIER + "(.*)").matcher(rest);
-        if (quantifiersMatcher.matches()) {
-            sb.append(quantifiersMatcher.group(1));
-        }
-
-        return sb.toString();
+    Set<String> generateCombinations(ExpressionTree.Leaf leaf) {
+        return null; // TODO
     }
 
-    // replace rule references with (.*)
+    ExpressionTree createTree(String expression) {
+        return null; // TODO
+    }
+
+    ExpressionTree extendTree(ExpressionTree tree, Set<LeafCandidate> leafCandidates) {
+        return null; // TODO
+    }
+
+    List<RecexpGroup> reduceTree(ExpressionTree tree) {
+        return null; // TODO
+    }
+
+    // replaces references with (.*)
     String hydrateExpression(String expression) {
         return resetEscapedReference(
                 replaceEscapedReference(expression).replaceAll(REGEXP_REFERENCE, "(.*)")
@@ -545,58 +253,22 @@ public class RecexpGrammar {
         return this.rules.toString();
     }
 
-    protected class ExpressionPart {
+    class LeafCombination {
 
-        private final String expression;
-        private final String quantifier;
-        private final int bracketLevel;
-        private final boolean reference;
+        final ExpressionTree.Leaf leaf;
+        final Set<String> combinations;
 
-        public ExpressionPart(String expression, String quantifier, int bracketLevel, boolean reference) {
-            this.expression = expression;
-            this.quantifier = quantifier;
-            this.bracketLevel = bracketLevel;
-            this.reference = reference;
+        public LeafCombination(ExpressionTree.Leaf leaf, Set<String> combinations) {
+            this.leaf = leaf;
+            this.combinations = combinations;
         }
 
-        public String getWholeExpression() {
-            StringBuilder sb = new StringBuilder(expression.length() + getQuantifierString().length() + bracketLevel * 2 + (reference ? 1 : 0))
-                    .append(expression);
-
-            if (reference) {
-                sb.insert(0, REFERENCE_PREFIX);
-            }
-
-            String exp = closeIntoBrackets(sb.toString(), bracketLevel);
-
-            if (quantifier != null) {
-                exp += quantifier;
-            }
-            return exp;
+        public ExpressionTree.Leaf getLeaf() {
+            return leaf;
         }
 
-        public String getExpression() {
-            return expression;
-        }
-
-        public String getQuantifier() {
-            return quantifier;
-        }
-
-        public boolean isQuantified() {
-            return quantifier != null && !quantifier.isEmpty();
-        }
-
-        public String getQuantifierString() {
-            return isQuantified() ? quantifier : "";
-        }
-
-        public int getBracketLevel() {
-            return bracketLevel;
-        }
-
-        public boolean isReference() {
-            return reference;
+        public Set<String> getCombinations() {
+            return combinations;
         }
 
         @Override
@@ -608,32 +280,77 @@ public class RecexpGrammar {
                 return false;
             }
 
-            ExpressionPart that = (ExpressionPart) o;
+            LeafCombination that = (LeafCombination) o;
 
-            if (bracketLevel != that.bracketLevel) {
-                return false;
-            }
-            if (reference != that.reference) {
-                return false;
-            }
-            if (!expression.equals(that.expression)) {
-                return false;
-            }
-            return quantifier != null ? quantifier.equals(that.quantifier) : that.quantifier == null;
+            return leaf.equals(that.leaf);
         }
 
         @Override
         public int hashCode() {
-            int result = expression.hashCode();
-            result = 31 * result + (quantifier != null ? quantifier.hashCode() : 0);
-            result = 31 * result + bracketLevel;
-            result = 31 * result + (reference ? 1 : 0);
-            return result;
+            return leaf.hashCode();
+        }
+    }
+
+    class LeafCandidate {
+
+        final ExpressionTree.Leaf leaf;
+        final String expression;
+
+        public LeafCandidate(ExpressionTree.Leaf leaf, String expression) {
+            this.leaf = leaf;
+            this.expression = expression;
+        }
+
+        public ExpressionTree.Leaf getLeaf() {
+            return leaf;
+        }
+
+        public String getExpression() {
+            return expression;
         }
 
         @Override
-        public String toString() {
-            return getWholeExpression();
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            LeafCandidate candidate = (LeafCandidate) o;
+
+            if (!leaf.equals(candidate.leaf)) {
+                return false;
+            }
+            return expression.equals(candidate.expression);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = leaf.hashCode();
+            result = 31 * result + expression.hashCode();
+            return result;
+        }
+    }
+
+    class ExpressionTree {
+
+        private Leaf root;
+
+        public String getSentence() {
+            return null; // TODO
+        }
+
+        public Set<Leaf> getLeaves() {
+            return null; // TODO
+        }
+
+        public class Leaf {
+
+            public boolean isReference() {
+                return false; // TODO
+            }
         }
     }
 }
