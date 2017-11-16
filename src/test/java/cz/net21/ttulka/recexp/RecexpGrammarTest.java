@@ -220,6 +220,12 @@ public class RecexpGrammarTest {
     public void ExpressionTree_getWordTest() {
         RecexpGrammar.ExpressionTree.Leaf leaf;
 
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("", null, false);
+        assertThat(leaf.getWord(), is(""));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("", "?", true);
+        assertThat(leaf.getWord(), is(""));
+
         leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, false);
         assertThat(leaf.getWord(), is("(A)"));
 
@@ -237,11 +243,11 @@ public class RecexpGrammarTest {
     }
 
     /**
-     *           A
-     *         /  \
-     *        B    C
-     *      /  \    \
-     *     D    E    F
+     *            A
+     *          /   \
+     *         B     C
+     *       / \    / \
+     *      D   E  F  eps
      *           \
      *            G
      */
@@ -253,6 +259,7 @@ public class RecexpGrammarTest {
         RecexpGrammar.ExpressionTree.Leaf E = createSimpleLeaf("E");
         RecexpGrammar.ExpressionTree.Leaf F = createSimpleLeaf("F");
         RecexpGrammar.ExpressionTree.Leaf G = createSimpleLeaf("G");
+        RecexpGrammar.ExpressionTree.Leaf eps = createSimpleLeaf("");
 
         A.getLeaves().add(B);
         A.getLeaves().add(C);
@@ -263,6 +270,7 @@ public class RecexpGrammarTest {
         E.getLeaves().add(G);
 
         C.getLeaves().add(F);
+        C.getLeaves().add(eps);
 
         return new RecexpGrammar.ExpressionTree(A);
     }

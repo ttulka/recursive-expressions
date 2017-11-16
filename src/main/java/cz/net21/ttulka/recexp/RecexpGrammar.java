@@ -282,7 +282,9 @@ public class RecexpGrammar {
             List<Leaf> leaves = new ArrayList<Leaf>();
 
             if (leaf.getLeaves().isEmpty()) {
-                leaves.add(leaf);
+                if (!leaf.isEpsilon()) {
+                    leaves.add(leaf);
+                }
 
             } else {
                 for (Leaf l : leaf.getLeaves()) {
@@ -318,22 +320,29 @@ public class RecexpGrammar {
                 return reference;
             }
 
+            public boolean isEpsilon() {
+                return expression == null || expression.isEmpty();
+            }
+
             public List<Leaf> getLeaves() {
                 return leaves;
             }
 
             public String getWord() {
+                if (isEpsilon()) {
+                    return "";
+                }
                 StringBuilder sb = new StringBuilder()
                         .append("(");
 
-                if (reference) {
+                if (isReference()) {
                     sb.append(REFERENCE_PREFIX);
                 }
-                sb.append(expression)
+                sb.append(getExpression())
                         .append(")");
 
-                if (quantifier != null) {
-                    sb.append(quantifier);
+                if (getQuantifier() != null) {
+                    sb.append(getQuantifier());
                 }
                 return sb.toString();
             }
