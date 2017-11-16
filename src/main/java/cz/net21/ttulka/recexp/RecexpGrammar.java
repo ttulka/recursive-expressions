@@ -151,7 +151,7 @@ public class RecexpGrammar {
         }
 
         for (ExpressionTree candidate : generateCandidates(tree)) {
-            List<RecexpGroup> groups = getGroups(candidate, input, alreadySeen);
+            List<RecexpGroup> groups = getGroups(normalizeTree(candidate), input, alreadySeen);
             if (groups != null) {
                 return groups;
             }
@@ -173,6 +173,9 @@ public class RecexpGrammar {
         return getCartesianProduct(combinations);
     }
 
+    /**
+     * Generates the Cartesian product for the leaf combinations.
+     */
     Set<Set<LeafCandidate>> getCartesianProduct(Collection<LeafCombination> combinations) {
         Set<Set<LeafCandidate>> cartesianProduct = new HashSet<Set<LeafCandidate>>();
 
@@ -217,23 +220,44 @@ public class RecexpGrammar {
         return combinations;
     }
 
+    /**
+     * Generates combination for the leaf - epsilon and references substitution.
+     */
     Set<String> generateCombinations(ExpressionTree.Leaf leaf) {
         return null; // TODO
     }
 
+    /**
+     * Creates a tree from an expression.
+     */
     ExpressionTree createTree(String expression) {
         return null; // TODO
     }
 
+    /**
+     * Normalize the tree to the normal form (every end leaf is either a simple reference or a terminal containing no reference whatsoever).
+     */
+    ExpressionTree normalizeTree(ExpressionTree tree) {
+        return null; // TODO
+    }
+
+    /**
+     * Expands the tree's end leaves by the leaf candidates.
+     */
     ExpressionTree extendTree(ExpressionTree tree, Set<LeafCandidate> leafCandidates) {
         return null; // TODO
     }
 
+    /**
+     * Reduces the tree to groups.
+     */
     List<RecexpGroup> reduceTree(ExpressionTree tree) {
         return null; // TODO
     }
 
-    // replaces references with (.*)
+    /**
+     * Replaces references with (.*).
+     */
     String hydrateExpression(String expression) {
         return resetEscapedReference(
                 replaceEscapedReference(expression).replaceAll(REGEXP_REFERENCE, "(.*)")
@@ -253,6 +277,9 @@ public class RecexpGrammar {
         return this.rules.toString();
     }
 
+    /**
+     * Tree representation of an expression.
+     */
     static class ExpressionTree {
 
         private final Leaf root;
@@ -349,6 +376,9 @@ public class RecexpGrammar {
         }
     }
 
+    /**
+     * Expression combination for a leaf.
+     */
     class LeafCombination {
 
         final ExpressionTree.Leaf leaf;
@@ -387,6 +417,9 @@ public class RecexpGrammar {
         }
     }
 
+    /**
+     * Expression candidate for a leaf.
+     */
     class LeafCandidate {
 
         final ExpressionTree.Leaf leaf;
