@@ -224,7 +224,37 @@ public class RecexpGrammar {
      * Generates combination for the leaf - epsilon and references substitution.
      */
     Set<String> generateCombinations(ExpressionTree.Leaf leaf) {
-        return null; // TODO
+        Set<String> combinations = new HashSet<String>();
+
+        String word = leaf.getWord();
+
+        if (hasEpsilon(word)) {
+            combinations.add("");
+        }
+
+        if (!leaf.isReference()) {
+            combinations.add(word);
+
+        } else {
+            for (RecexpRule rule : rules) {
+                if (rule.getName().equals(leaf.getExpression())) {
+                    word = rule.getExpression();
+                    if (!word.isEmpty()) {
+                        word = "(" + word + ")";
+                    }
+                    combinations.add(word);
+
+                    if (hasEpsilon(word)) {
+                        combinations.add("");
+                    }
+                }
+            }
+        }
+        return combinations;
+    }
+
+    private boolean hasEpsilon(String expression) {
+        return Pattern.matches(expression, "");
     }
 
     /**
@@ -302,23 +332,7 @@ public class RecexpGrammar {
         }
 
         public List<Leaf> getEndLeaves() {
-            return getEndLeaves(root);
-        }
-
-        private List<Leaf> getEndLeaves(Leaf leaf) {
-            List<Leaf> leaves = new ArrayList<Leaf>();
-
-            if (leaf.getLeaves().isEmpty()) {
-                if (!leaf.isEpsilon()) {
-                    leaves.add(leaf);
-                }
-
-            } else {
-                for (Leaf l : leaf.getLeaves()) {
-                    leaves.addAll(getEndLeaves(l));
-                }
-            }
-            return leaves;
+            return root.getEndLeaves();
         }
 
         public static class Leaf {
@@ -372,6 +386,26 @@ public class RecexpGrammar {
                     sb.append(getQuantifier());
                 }
                 return sb.toString();
+            }
+
+            List<Leaf> getEndLeaves() {
+                return getEndLeaves(this);
+            }
+
+            private List<Leaf> getEndLeaves(Leaf leaf) {
+                List<Leaf> leaves = new ArrayList<Leaf>();
+
+                if (leaf.getLeaves().isEmpty()) {
+                    if (!leaf.isEpsilon()) {
+                        leaves.add(leaf);
+                    }
+
+                } else {
+                    for (Leaf l : leaf.getLeaves()) {
+                        leaves.addAll(getEndLeaves(l));
+                    }
+                }
+                return leaves;
             }
         }
     }

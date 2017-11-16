@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.fail;
@@ -196,6 +195,35 @@ public class RecexpGrammarTest {
     }
 
     @Test
+    public void generateCombinationsTest() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("A", "a@this")
+                .addRule("A", "a")
+                .addRule("A", "")
+
+                .addRule("B", "b?")
+
+                .addRule("C", "c");
+
+        RecexpGrammar.ExpressionTree.Leaf leaf;
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, false);
+        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(A)"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, true);
+        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(a@this)", "(a)", ""));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("B", null, true);
+        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(b?)", ""));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("C", null, true);
+        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(c)"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("C", "?", true);
+        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(c)", ""));
+    }
+
+    @Test
     public void ExpressionTree_getRootTest() {
         RecexpGrammar.ExpressionTree tree = createSimpleTree();
 
@@ -242,15 +270,15 @@ public class RecexpGrammarTest {
         assertThat(leaf.getWord(), is("(@AB){1,2}"));
     }
 
-    /**
-     *            A
-     *          /   \
-     *         B     C
-     *       / \    / \
-     *      D   E  F  eps
-     *           \
-     *            G
-     */
+    //
+    //            A
+    //          /   \
+    //         B     C
+    //       / \    / \
+    //      D   E  F   eps
+    //           \
+    //            G
+    //
     private RecexpGrammar.ExpressionTree createSimpleTree() {
         RecexpGrammar.ExpressionTree.Leaf A = createSimpleLeaf("A");
         RecexpGrammar.ExpressionTree.Leaf B = createSimpleLeaf("B");
