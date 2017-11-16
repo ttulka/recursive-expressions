@@ -16,6 +16,7 @@ public class RecexpGrammar {
     public static final String THIS_REFERENCE_NAME = "this";
 
     public static final char REFERENCE_PREFIX = '@';
+    public static final String EPSILON = "";
 
     private static final String REGEXP_REFERENCE = REFERENCE_PREFIX + "((\\w)+)";
     private static final String REGEXP_QUANTIFIER = "(([?*+]|\\{\\d+,?\\d*})[?+]?)";
@@ -229,7 +230,7 @@ public class RecexpGrammar {
         String word = leaf.getWord();
 
         if (hasEpsilon(word)) {
-            combinations.add("");
+            combinations.add(EPSILON);
         }
 
         if (!leaf.isReference()) {
@@ -245,7 +246,7 @@ public class RecexpGrammar {
                     combinations.add(word);
 
                     if (hasEpsilon(word)) {
-                        combinations.add("");
+                        combinations.add(EPSILON);
                     }
                 }
             }
@@ -254,7 +255,7 @@ public class RecexpGrammar {
     }
 
     private boolean hasEpsilon(String expression) {
-        return Pattern.matches(expression, "");
+        return Pattern.matches(expression, EPSILON);
     }
 
     /**
@@ -371,7 +372,7 @@ public class RecexpGrammar {
 
             public String getWord() {
                 if (isEpsilon()) {
-                    return "";
+                    return EPSILON;
                 }
                 StringBuilder sb = new StringBuilder()
                         .append("(");
