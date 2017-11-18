@@ -13,9 +13,8 @@ import java.util.regex.Pattern;
  */
 public class RecexpGrammar {
 
-    public static final String THIS_REFERENCE_NAME = "this";
-
     public static final char REFERENCE_PREFIX = '@';
+    public static final String THIS_REFERENCE_NAME = "this";
     public static final String EPSILON = "";
 
     private static final String REGEXP_REFERENCE = REFERENCE_PREFIX + "((\\w)+)";
