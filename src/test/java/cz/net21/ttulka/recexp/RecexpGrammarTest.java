@@ -18,7 +18,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -248,10 +247,10 @@ public class RecexpGrammarTest {
         assertThat(tree.getSentence(), is("(@A)"));
         assertThat(tree.getEndLeaves().size(), is(1));
 
-        tree = new RecexpGrammar().createTree("x@Ay");
+        tree = new RecexpGrammar().createTree("x(@A)y");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(x@Ay)"));
-        assertThat(tree.getSentence(), is("(x@Ay)"));
+        assertThat(tree.getRoot().getWord(), is("(x(@A)y)"));
+        assertThat(tree.getSentence(), is("(x)(@A)(y)"));
         assertThat(tree.getEndLeaves().size(), is(3));
         assertThat(tree.getRoot().getLeaves().size(), is(3));
         assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(x)"));
@@ -261,7 +260,7 @@ public class RecexpGrammarTest {
         tree = new RecexpGrammar().createTree("@A@B");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().getWord(), is("(@A@B)"));
-        assertThat(tree.getSentence(), is("(@A@B)"));
+        assertThat(tree.getSentence(), is("(@A)(@B)"));
         assertThat(tree.getEndLeaves().size(), is(2));
         assertThat(tree.getRoot().getLeaves().size(), is(2));
         assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(@A)"));
@@ -270,7 +269,7 @@ public class RecexpGrammarTest {
         tree = new RecexpGrammar().createTree("a@this?b");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().getWord(), is("(a@this?b)"));
-        assertThat(tree.getSentence(), is("(a@this?b)"));
+        assertThat(tree.getSentence(), is("(a)(@this)?(b)"));
         assertThat(tree.getEndLeaves().size(), is(3));
         assertThat(tree.getRoot().getLeaves().size(), is(3));
         assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(a)"));
@@ -279,20 +278,20 @@ public class RecexpGrammarTest {
 
         tree = new RecexpGrammar().createTree("ab(12)@this@A?(@B)(@C)?cd?((@D))((@E)(@F))?(a@REF)");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("ab(12)@this@A?(@B)(@C)?cd?((@D))((@E)(@F))?(a@REF)"));
-        assertThat(tree.getSentence(), is("ab(12)@this@A?(@B)(@C)?cd?((@D))((@E)(@F))?(a@REF)"));
-        assertThat(tree.getEndLeaves().size(), is(11));
+        assertThat(tree.getRoot().getWord(), is("(ab(12)@this@A?(@B)(@C)?cd?((@D))((@E)(@F))?(a@REF))"));
+        assertThat(tree.getSentence(), is("(ab)(12)(@this)(@A)?(@B)(@C)?(cd)?((@D))((@E)(@F))?((a)(@REF))"));
+        assertThat(tree.getEndLeaves().size(), is(12));
         assertThat(tree.getRoot().getLeaves().size(), is(10));
         assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(ab)"));
         assertThat(tree.getRoot().getLeaves().get(1).getWord(), is("(12)"));
-        assertThat(tree.getRoot().getLeaves().get(2).getWord(), is("(@this)?"));
+        assertThat(tree.getRoot().getLeaves().get(2).getWord(), is("(@this)"));
         assertThat(tree.getRoot().getLeaves().get(3).getWord(), is("(@A)?"));
         assertThat(tree.getRoot().getLeaves().get(4).getWord(), is("(@B)"));
         assertThat(tree.getRoot().getLeaves().get(5).getWord(), is("(@C)?"));
         assertThat(tree.getRoot().getLeaves().get(6).getWord(), is("(cd)?"));
         assertThat(tree.getRoot().getLeaves().get(7).getWord(), is("((@D))"));
-        assertThat(tree.getRoot().getLeaves().get(7).getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getLeaves().get(7).getLeaves().get(0).getWord(), is("(@D)"));
+        //assertThat(tree.getRoot().getLeaves().get(7).getLeaves().size(), is(1));
+        //assertThat(tree.getRoot().getLeaves().get(7).getLeaves().get(0).getWord(), is("(@D)"));
         assertThat(tree.getRoot().getLeaves().get(8).getWord(), is("((@E)(@F))?"));
         assertThat(tree.getRoot().getLeaves().get(8).getLeaves().size(), is(2));
         assertThat(tree.getRoot().getLeaves().get(8).getLeaves().get(0).getWord(), is("(@E)"));
@@ -301,6 +300,73 @@ public class RecexpGrammarTest {
         assertThat(tree.getRoot().getLeaves().get(9).getLeaves().size(), is(2));
         assertThat(tree.getRoot().getLeaves().get(9).getLeaves().get(0).getWord(), is("(a)"));
         assertThat(tree.getRoot().getLeaves().get(9).getLeaves().get(1).getWord(), is("(@REF)"));
+    }
+
+    @Test
+    public void isClosedInBracketsTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+
+        assertThat(grammar.isClosedInBrackets("", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")(", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()(", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()(())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("()))", true), is(false));
+        assertThat(grammar.isClosedInBrackets("())()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("((()", true), is(false));
+
+        assertThat(grammar.isClosedInBrackets("a", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a", true), is(false));
+        assertThat(grammar.isClosedInBrackets("a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")a(", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)a(a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)(", true), is(false));
+        assertThat(grammar.isClosedInBrackets(")(a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)((a))", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a))(a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("((a)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(a(a(a)", true), is(false));
+
+        assertThat(grammar.isClosedInBrackets("()", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(()())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(()()())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("((()()))", true), is(true));
+
+        assertThat(grammar.isClosedInBrackets("(\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()()\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("(()()()\\)", true), is(false));
+        assertThat(grammar.isClosedInBrackets("((()())\\)", true), is(false));
+
+        assertThat(grammar.isClosedInBrackets("\\()", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(()())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\(()()())", true), is(false));
+        assertThat(grammar.isClosedInBrackets("\\((()()))", true), is(false));
+
+        assertThat(grammar.isClosedInBrackets("(a)", true), is(true));
+        assertThat(grammar.isClosedInBrackets("((a))", true), is(true));
+        assertThat(grammar.isClosedInBrackets("((a)(a))", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(()(a)())", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a(a(a)a(a)a)a)", true), is(true));
+
+        assertThat(grammar.isClosedInBrackets("(a)?", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)+", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a)*", true), is(true));
+        assertThat(grammar.isClosedInBrackets("(a){1,2}", true), is(true));
+
+        assertThat(grammar.isClosedInBrackets("(a)?", false), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)+", false), is(false));
+        assertThat(grammar.isClosedInBrackets("(a)*", false), is(false));
+        assertThat(grammar.isClosedInBrackets("(a){1,2}", false), is(false));
     }
 
     @Test
@@ -321,10 +387,21 @@ public class RecexpGrammarTest {
     public void ExpressionTree_getSentenceTest() {
         assertThat(createSimpleTree().getSentence(), is("(D)(G)(F)"));
 
-        RecexpGrammar.ExpressionTree.Leaf leaf = new RecexpGrammar.ExpressionTree.Leaf("@A@B", "?", false);
+        RecexpGrammar.ExpressionTree.Leaf leaf;
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("@A@B", null, false, true);
+        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("A", null, true));
+        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("B", null, true));
+        assertThat(new RecexpGrammar.ExpressionTree(leaf).getSentence(), is("((@A)(@B))"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("@A@B", "?", false);
         leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("A", null, true));
         leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("B", null, true));
         assertThat(new RecexpGrammar.ExpressionTree(leaf).getSentence(), is("((@A)(@B))?"));
+
+        leaf = new RecexpGrammar.ExpressionTree.Leaf("((a))", null, false);
+        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("(a)", null, false, true));
+        assertThat(new RecexpGrammar.ExpressionTree(leaf).getSentence(), is("((a))"));
     }
 
     @Test
