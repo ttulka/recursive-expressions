@@ -53,7 +53,7 @@ public class RecexpGrammar {
     }
 
     /**
-     * Adds a rule .
+     * Adds a rule.
      *
      * @param rule the rule
      * @return this grammar
@@ -323,12 +323,27 @@ public class RecexpGrammar {
         }
 
         public String getSentence() {
-            StringBuilder sb = new StringBuilder();
+            return getSentence(root, new StringBuilder()).toString();
+        }
 
-            for (Leaf leaf : getEndLeaves()) {
+        private StringBuilder getSentence(Leaf leaf, StringBuilder sb) {
+            if (leaf.getLeaves().isEmpty()) {
                 sb.append(leaf.getWord());
+
+            } else {
+                if (leaf.isQuantified()) {
+                    sb.append("(");
+                }
+
+                for (Leaf l : leaf.getLeaves()) {
+                    sb = getSentence(l, sb);
+                }
+
+                if (leaf.isQuantified()) {
+                    sb.append(")").append(leaf.getQuantifier());
+                }
             }
-            return sb.toString();
+            return sb;
         }
 
         public List<Leaf> getEndLeaves() {
@@ -355,6 +370,10 @@ public class RecexpGrammar {
 
             public String getQuantifier() {
                 return quantifier;
+            }
+
+            public boolean isQuantified() {
+                return quantifier != null && !quantifier.isEmpty();
             }
 
             public boolean isReference() {
