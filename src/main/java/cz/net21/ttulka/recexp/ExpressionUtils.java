@@ -25,16 +25,20 @@ class ExpressionUtils {
      * Replaces references with (.*).
      */
     public static String hydrateExpression(String expression) {
+        return hydrateExpression(expression, "(.*)");
+    }
+
+    private static String hydrateExpression(String expression, String replacement) {
         return resetEscapedReference(
-                replaceEscapedReference(expression).replaceAll(REGEXP_REFERENCE, "(.*)")
+                replaceEscapedReference(expression).replaceAll(REGEXP_REFERENCE, replacement)
         );
     }
 
-    public static String replaceEscapedReference(String expression) {
+    private static String replaceEscapedReference(String expression) {
         return expression.replaceAll("\\\\" + REGEXP_REFERENCE, "\\\\__RecexpRefPrefix__$1");
     }
 
-    public static String resetEscapedReference(String expression) {
+    private static String resetEscapedReference(String expression) {
         return expression.replaceAll("\\\\__RecexpRefPrefix__", "\\\\" + REFERENCE_PREFIX);
     }
 
@@ -177,10 +181,10 @@ class ExpressionUtils {
     }
 
     public static boolean isReference(String expression) {
-        return Pattern.matches(REGEXP_REFERENCE, expression);
+        return Pattern.matches(REGEXP_REFERENCE + "(" + REGEXP_QUANTIFIER + ")?", expression);
     }
 
-    public static String removeReference(String expression) {
+    public static String removeReferencePrefix(String expression) {
         if (isReference(expression)) {
             return expression.substring(1);
         }
@@ -194,12 +198,13 @@ class ExpressionUtils {
     public static String getQuantifier(String expression) {
         Matcher matcher = Pattern.compile("(.+)" + REGEXP_QUANTIFIER).matcher(expression);
         if (matcher.matches()) {
-            return matcher.group(2);
+            String quantifier = getQuantifier(matcher.group(1));
+            return (quantifier != null ? quantifier : "") + matcher.group(2);
         }
         return null;
     }
 
     public static boolean containsEpsilon(String expression) {
-        return Pattern.matches(expression, EPSILON);
+        return Pattern.matches(hydrateExpression(expression, "X"), EPSILON);
     }
 }

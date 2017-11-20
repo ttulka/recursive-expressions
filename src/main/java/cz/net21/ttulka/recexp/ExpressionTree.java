@@ -88,7 +88,7 @@ class ExpressionTree {
 
             boolean isReference = ExpressionUtils.isReference(expression);
             if (isReference) {
-                expression = ExpressionUtils.removeReference(expression);
+                expression = ExpressionUtils.removeReferencePrefix(expression);
             }
 
             ExpressionTree.Node node = new ExpressionTree.Node(
