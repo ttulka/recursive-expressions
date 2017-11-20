@@ -6,23 +6,23 @@ package cz.net21.ttulka.recexp;
 public class RecexpRule {
 
     private final String name;
-    private final String expression;    // TODO is Expression object
+    private final ExpressionTree expression;
 
     public RecexpRule(String expression) {
         this.name = expression;
-        this.expression = expression;
+        this.expression = ExpressionTree.parseTree(expression);
     }
 
     public RecexpRule(String name, String expression) {
         this.name = name;
-        this.expression = expression;
+        this.expression = ExpressionTree.parseTree(expression);
     }
 
     public String getName() {
         return name;
     }
 
-    public String getExpression() {
+    public ExpressionTree getExpression() {
         return expression;
     }
 
@@ -40,18 +40,16 @@ public class RecexpRule {
         if (!name.equals(that.name)) {
             return false;
         }
-        return expression.equals(that.expression);
+        return expression.getSentence().equals(that.expression.getSentence());
     }
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + expression.hashCode();
-        return result;
+        return 31 * name.hashCode();
     }
 
     @Override
     public String toString() {
-        return !name.equals(expression) ? name + "=" + expression : expression;
+        return getName();
     }
 }

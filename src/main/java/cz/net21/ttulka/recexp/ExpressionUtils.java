@@ -103,7 +103,7 @@ class ExpressionUtils {
             throw new RecexpSyntaxException("Unmatched opening '(' near index " + lastOpeningBracketIndex + "\n" + expression);
         }
 
-        if (sb.length() > 0) {
+        if (sb.length() > 0 || index == 0) {
             parts.add(sb.toString());
         }
         return parts;
@@ -133,7 +133,7 @@ class ExpressionUtils {
                     expression.substring(matcher.start(), matcher.end())
             ));
         }
-        if (restStarts < expression.length()) {
+        if (restStarts < expression.length() || expression.isEmpty()) {
             parts.add(resetEscapedReference(
                     expression.substring(restStarts)
             ));

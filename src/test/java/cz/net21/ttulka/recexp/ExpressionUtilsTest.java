@@ -92,7 +92,7 @@ public class ExpressionUtilsTest {
 
     @Test
     public void splitTest() {
-        assertThat(split("").toString(), is("[]"));
+        assertThat(split("").size(), is(1));
         assertThat(split("a").toString(), is("[a]"));
         assertThat(split("ab").toString(), is("[ab]"));
         assertThat(split("a(b)").toString(), is("[a, (b)]"));

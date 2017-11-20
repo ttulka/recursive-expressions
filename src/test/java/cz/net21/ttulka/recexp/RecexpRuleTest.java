@@ -15,7 +15,7 @@ public class RecexpRuleTest {
         RecexpRule rule = new RecexpRule("a");
 
         assertThat(rule.getName(), is("a"));
-        assertThat(rule.getExpression(), is("a"));
+        assertThat(rule.getExpression().getRoot().getExpression().getText(), is("a"));
     }
 
     @Test
@@ -23,7 +23,7 @@ public class RecexpRuleTest {
         RecexpRule rule = new RecexpRule("A", "a");
 
         assertThat(rule.getName(), is("A"));
-        assertThat(rule.getExpression(), is("a"));
+        assertThat(rule.getExpression().getRoot().getExpression().getText(), is("a"));
     }
 
     @Test

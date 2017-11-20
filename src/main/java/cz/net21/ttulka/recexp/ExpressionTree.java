@@ -16,6 +16,10 @@ class ExpressionTree {
         this.root = root;
     }
 
+    public static ExpressionTree parseTree(String expression) {
+        return new ExpressionTree(ExpressionTree.Node.parseNode(expression));
+    }
+
     public Node getRoot() {
         return root;
     }
@@ -68,6 +72,42 @@ class ExpressionTree {
 
         public Node(Expression expression) {
             this(expression, false);
+        }
+
+        public static ExpressionTree.Node parseNode(String expression) {
+            String quantifier = ExpressionUtils.getQuantifier(expression);
+            if (quantifier != null && !quantifier.isEmpty()) {
+                expression = expression.substring(0, expression.length() - quantifier.length());
+            }
+
+            // TODO get the quantifier even if it is in the brackets
+            boolean isClosedInBrackets = ExpressionUtils.isClosedInBrackets(expression, true);
+            if (isClosedInBrackets) {
+                expression = ExpressionUtils.removeClosingBrackets(expression);
+            }
+
+            boolean isReference = ExpressionUtils.isReference(expression);
+            if (isReference) {
+                expression = ExpressionUtils.removeReference(expression);
+            }
+
+            ExpressionTree.Node node = new ExpressionTree.Node(
+                    new Expression(expression, quantifier, isReference), isClosedInBrackets);
+
+            List<String> expressionParts = ExpressionUtils.split(expression);
+
+            if (expressionParts.size() > 1 || !expressionParts.get(0).equals(expression)) {
+                for (String part : expressionParts) {
+                    node.getNodes().add(parseNode(part));
+                }
+
+            } else {
+                if (ExpressionUtils.isClosedInBrackets(expression, true)) {
+                    node.getNodes().add(parseNode(expression));
+                }
+            }
+
+            return node;
         }
 
         public Expression getExpression() {

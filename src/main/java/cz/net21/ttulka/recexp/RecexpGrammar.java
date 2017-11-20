@@ -3,7 +3,6 @@ package cz.net21.ttulka.recexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,7 +104,7 @@ public class RecexpGrammar {
 
         for (RecexpRule rule : this.rules) {
 
-            List<RecexpGroup> groups = getGroups(createTree(rule.getExpression()), input, new HashSet<String>());
+            List<RecexpGroup> groups = getGroups(rule.getExpression(), input, new HashSet<String>());
             if (groups != null && !groups.isEmpty()) {
                 return new RecexpMatcher(rule.getName(), input, groups.toArray(new RecexpGroup[0]));
             }
@@ -235,7 +234,7 @@ public class RecexpGrammar {
                 for (RecexpRule rule : rules) {
                     if (rule.getName().equals(leaf.getExpression().getText())) {
 
-                        word = toCombination(leaf, rule.getExpression());
+                        word = toCombination(leaf, rule.getExpression().getSentence());
                         combinations.add(word);
                     }
                 }
@@ -256,56 +255,20 @@ public class RecexpGrammar {
         StringBuilder sb = new StringBuilder();
 
         if (!expression.isEmpty()) {
-            sb.append("(").append(expression).append(")");
+            if (leaf.isClosedInBrackets() || leaf.getExpression().isQuantified()) {
+                sb.append("(");
+            }
 
+            sb.append(ExpressionUtils.removeClosingBrackets(expression));
+
+            if (leaf.isClosedInBrackets() || leaf.getExpression().isQuantified()) {
+                sb.append(")");
+            }
             if (leaf.getExpression().isQuantified()) {
                 sb.append(leaf.getExpression().getQuantifier());
             }
         }
         return sb.toString();
-    }
-
-    /**
-     * Creates a tree from an expression.
-     */
-    ExpressionTree createTree(String expression) {
-        return new ExpressionTree(createLeaf(expression));
-    }
-
-    private ExpressionTree.Node createLeaf(String expression) {
-        String quantifier = ExpressionUtils.getQuantifier(expression);
-        if (quantifier != null && !quantifier.isEmpty()) {
-            expression = expression.substring(0, expression.length() - quantifier.length());
-        }
-
-        // TODO get the quantifier even if it is in the brackets
-        boolean isClosedInBrackets = ExpressionUtils.isClosedInBrackets(expression, true);
-        if (isClosedInBrackets) {
-            expression = ExpressionUtils.removeClosingBrackets(expression);
-        }
-
-        boolean isReference = ExpressionUtils.isReference(expression);
-        if (isReference) {
-            expression = ExpressionUtils.removeReference(expression);
-        }
-
-        ExpressionTree.Node node = new ExpressionTree.Node(
-                new Expression(expression, quantifier, isReference), isClosedInBrackets);
-
-        List<String> expressionParts = ExpressionUtils.split(expression);
-
-        if (expressionParts.size() > 1 || !expressionParts.get(0).equals(expression)) {
-            for (String part : expressionParts) {
-                node.getNodes().add(createLeaf(part));
-            }
-
-        } else {
-            if (ExpressionUtils.isClosedInBrackets(expression, true)) {
-                node.getNodes().add(createLeaf(expression));
-            }
-        }
-
-        return node;
     }
 
     /**
