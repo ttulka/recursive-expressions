@@ -5,6 +5,10 @@ package cz.net21.ttulka.recexp;
  */
 class Expression {
 
+    public static final char REFERENCE_PREFIX = '@';
+    public static final String THIS_REFERENCE_NAME = "this";
+    public static final String EPSILON = "";
+
     private final String text;
     private final String quantifier;
     private final boolean reference;
@@ -37,13 +41,13 @@ class Expression {
 
     public String toWord() {
         if (isEpsilon()) {
-            return RecexpGrammar.EPSILON;
+            return EPSILON;
         }
         StringBuilder sb = new StringBuilder()
                 .append("(");
 
         if (isReference()) {
-            sb.append(RecexpGrammar.REFERENCE_PREFIX);
+            sb.append(REFERENCE_PREFIX);
         }
         sb.append(getText())
                 .append(")");

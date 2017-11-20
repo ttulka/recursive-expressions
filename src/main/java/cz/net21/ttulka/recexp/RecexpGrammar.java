@@ -13,13 +13,6 @@ import java.util.regex.Pattern;
  */
 public class RecexpGrammar {
 
-    public static final char REFERENCE_PREFIX = '@';
-    public static final String THIS_REFERENCE_NAME = "this";
-    public static final String EPSILON = "";
-
-    private static final String REGEXP_REFERENCE = REFERENCE_PREFIX + "((\\w)+)";
-    private static final String REGEXP_QUANTIFIER = "(([?*+]|\\{\\d+,?\\d*})[?+]?)";
-
     protected final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
     /**
@@ -228,8 +221,8 @@ public class RecexpGrammar {
 
         String word = node.toWord();
 
-        if (containsEpsilon(word)) {
-            combinations.add(EPSILON);
+        if (ExpressionUtils.containsEpsilon(word)) {
+            combinations.add(Expression.EPSILON);
         }
 
         if (!node.getExpression().isReference()) {
@@ -244,17 +237,13 @@ public class RecexpGrammar {
                     }
                     combinations.add(word);
 
-                    if (containsEpsilon(word)) {
-                        combinations.add(EPSILON);
+                    if (ExpressionUtils.containsEpsilon(word)) {
+                        combinations.add(Expression.EPSILON);
                     }
                 }
             }
         }
         return combinations;
-    }
-
-    private boolean containsEpsilon(String expression) {
-        return Pattern.matches(expression, EPSILON);
     }
 
     /**
