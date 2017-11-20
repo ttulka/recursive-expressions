@@ -6,7 +6,7 @@ package cz.net21.ttulka.recexp;
 public class RecexpRule {
 
     private final String name;
-    private final String expression;
+    private final String expression;    // TODO is Expression object
 
     public RecexpRule(String expression) {
         this.name = expression;

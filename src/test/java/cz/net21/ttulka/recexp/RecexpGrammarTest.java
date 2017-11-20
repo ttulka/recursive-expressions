@@ -199,19 +199,25 @@ public class RecexpGrammarTest {
         ExpressionTree.Node node;
 
         node = new ExpressionTree.Node(new Expression("A", null, false));
-        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(A)"));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(A)"));
 
         node = new ExpressionTree.Node(new Expression("A", null, true));
-        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(a@this)", "(a)", ""));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(a@this)", "(a)", ""));
 
         node = new ExpressionTree.Node(new Expression("B", null, true));
-        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(b?)", ""));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(b?)", ""));
 
         node = new ExpressionTree.Node(new Expression("C", null, true));
-        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(c)"));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(c)"));
 
         node = new ExpressionTree.Node(new Expression("C", "?", true));
-        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(c)", ""));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(c)?", ""));
+
+        node = new ExpressionTree.Node(new Expression("this", null, true));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(@this)"));
+
+        node = new ExpressionTree.Node(new Expression("this", "?", true));
+        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(@this)?", ""));
     }
 
     @Test

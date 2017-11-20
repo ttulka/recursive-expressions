@@ -3,6 +3,7 @@ package cz.net21.ttulka.recexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -162,7 +163,7 @@ public class RecexpGrammar {
     }
 
     private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree tree) {
-        Set<LeafCombination> combinations = generateCombinations(tree.getLeaves());
+        Set<LeafCombination> combinations = generateCombinations(tree);
         return getCartesianProduct(combinations);
     }
 
@@ -202,12 +203,12 @@ public class RecexpGrammar {
         return cartesianProduct;
     }
 
-    private Set<LeafCombination> generateCombinations(List<ExpressionTree.Node> leaves) {
+    private Set<LeafCombination> generateCombinations(ExpressionTree tree) {
         Set<LeafCombination> combinations = new HashSet<LeafCombination>();
 
-        for (ExpressionTree.Node node : leaves) {
-            if (node.getExpression().isReference()) {
-                combinations.add(new LeafCombination(node, generateCombinations(node)));
+        for (ExpressionTree.Node leaf : tree.getLeaves()) {
+            if (leaf.getExpression().isReference()) {
+                combinations.add(new LeafCombination(leaf, generateCombinations(leaf, tree.getRoot())));
             }
         }
         return combinations;
@@ -216,34 +217,52 @@ public class RecexpGrammar {
     /**
      * Generates combination for the node - epsilon and references substitution.
      */
-    Set<String> generateCombinations(ExpressionTree.Node node) {
+    Set<String> generateCombinations(ExpressionTree.Node leaf, ExpressionTree.Node root) {
         Set<String> combinations = new HashSet<String>();
 
-        String word = node.toWord();
-
-        if (ExpressionUtils.containsEpsilon(word)) {
-            combinations.add(Expression.EPSILON);
-        }
-
-        if (!node.getExpression().isReference()) {
-            combinations.add(word);
+        // this
+        if (leaf.getExpression().isReference()
+            && Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
+            combinations.add(root.getExpression().toWord());
 
         } else {
-            for (RecexpRule rule : rules) {
-                if (rule.getName().equals(node.getExpression().getText())) {
-                    word = rule.getExpression();
-                    if (!word.isEmpty()) {
-                        word = "(" + word + ")";
-                    }
-                    combinations.add(word);
+            String word = leaf.toWord();
 
-                    if (ExpressionUtils.containsEpsilon(word)) {
-                        combinations.add(Expression.EPSILON);
+            if (!leaf.getExpression().isReference()) {
+                combinations.add(word);
+
+            } else {
+                for (RecexpRule rule : rules) {
+                    if (rule.getName().equals(leaf.getExpression().getText())) {
+
+                        word = toCombination(leaf, rule.getExpression());
+                        combinations.add(word);
                     }
                 }
             }
         }
+
+        for (String word : combinations) {
+            if (ExpressionUtils.containsEpsilon(word)) {
+                combinations.add(Expression.EPSILON);
+                break;
+            }
+        }
+
         return combinations;
+    }
+
+    private String toCombination(ExpressionTree.Node leaf, String expression) {
+        StringBuilder sb = new StringBuilder();
+
+        if (!expression.isEmpty()) {
+            sb.append("(").append(expression).append(")");
+
+            if (leaf.getExpression().isQuantified()) {
+                sb.append(leaf.getExpression().getQuantifier());
+            }
+        }
+        return sb.toString();
     }
 
     /**
