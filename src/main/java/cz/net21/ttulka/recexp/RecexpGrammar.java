@@ -272,7 +272,8 @@ public class RecexpGrammar {
             expression = expression.substring(0, expression.length() - quantifier.length());
         }
 
-        boolean isClosedInBrackets = isClosedInBrackets(expression, false);
+        // TODO get the quantifier even if it is in the brackets
+        boolean isClosedInBrackets = isClosedInBrackets(expression, true);
         if (isClosedInBrackets) {
             expression = removeClosingBrackets(expression);
         }
@@ -298,7 +299,7 @@ public class RecexpGrammar {
             }
 
         } else {
-            if (isClosedInBrackets(expression, false)) {
+            if (isClosedInBrackets(expression, true)) {
                 leaf.getLeaves().add(createLeaf(expression));
             }
         }
