@@ -171,12 +171,12 @@ public class RecexpGrammar {
     }
 
     private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree tree) {
-        Set<LeafCombination> combinations = generateCombinations(tree.getEndLeaves());
+        Set<LeafCombination> combinations = generateCombinations(tree.getLeaves());
         return getCartesianProduct(combinations);
     }
 
     /**
-     * Generates the Cartesian product for the leaf combinations.
+     * Generates the Cartesian product for the node combinations.
      */
     Set<Set<LeafCandidate>> getCartesianProduct(Collection<LeafCombination> combinations) {
         Set<Set<LeafCandidate>> cartesianProduct = new HashSet<Set<LeafCandidate>>();
@@ -194,7 +194,7 @@ public class RecexpGrammar {
 
                 for (String candidate : head.getCombinations()) {
                     Set<LeafCandidate> product = new HashSet<LeafCandidate>(tail);
-                    product.add(new LeafCandidate(head.getLeaf(), candidate));
+                    product.add(new LeafCandidate(head.getNode(), candidate));
 
                     cartesianProduct.add(product);
                 }
@@ -203,7 +203,7 @@ public class RecexpGrammar {
         } else {
             for (String candidate : head.getCombinations()) {
                 Set<LeafCandidate> product = new HashSet<LeafCandidate>();
-                product.add(new LeafCandidate(head.getLeaf(), candidate));
+                product.add(new LeafCandidate(head.getNode(), candidate));
 
                 cartesianProduct.add(product);
             }
@@ -211,42 +211,42 @@ public class RecexpGrammar {
         return cartesianProduct;
     }
 
-    private Set<LeafCombination> generateCombinations(List<ExpressionTree.Leaf> leaves) {
+    private Set<LeafCombination> generateCombinations(List<ExpressionTree.Node> leaves) {
         Set<LeafCombination> combinations = new HashSet<LeafCombination>();
 
-        for (ExpressionTree.Leaf leaf : leaves) {
-            if (leaf.isReference()) {
-                combinations.add(new LeafCombination(leaf, generateCombinations(leaf)));
+        for (ExpressionTree.Node node : leaves) {
+            if (node.getExpression().isReference()) {
+                combinations.add(new LeafCombination(node, generateCombinations(node)));
             }
         }
         return combinations;
     }
 
     /**
-     * Generates combination for the leaf - epsilon and references substitution.
+     * Generates combination for the node - epsilon and references substitution.
      */
-    Set<String> generateCombinations(ExpressionTree.Leaf leaf) {
+    Set<String> generateCombinations(ExpressionTree.Node node) {
         Set<String> combinations = new HashSet<String>();
 
-        String word = leaf.getWord();
+        String word = node.toWord();
 
-        if (hasEpsilon(word)) {
+        if (containsEpsilon(word)) {
             combinations.add(EPSILON);
         }
 
-        if (!leaf.isReference()) {
+        if (!node.getExpression().isReference()) {
             combinations.add(word);
 
         } else {
             for (RecexpRule rule : rules) {
-                if (rule.getName().equals(leaf.getExpression())) {
+                if (rule.getName().equals(node.getExpression().getText())) {
                     word = rule.getExpression();
                     if (!word.isEmpty()) {
                         word = "(" + word + ")";
                     }
                     combinations.add(word);
 
-                    if (hasEpsilon(word)) {
+                    if (containsEpsilon(word)) {
                         combinations.add(EPSILON);
                     }
                 }
@@ -255,7 +255,7 @@ public class RecexpGrammar {
         return combinations;
     }
 
-    private boolean hasEpsilon(String expression) {
+    private boolean containsEpsilon(String expression) {
         return Pattern.matches(expression, EPSILON);
     }
 
@@ -266,7 +266,7 @@ public class RecexpGrammar {
         return new ExpressionTree(createLeaf(expression));
     }
 
-    private ExpressionTree.Leaf createLeaf(String expression) {
+    private ExpressionTree.Node createLeaf(String expression) {
         String quantifier = getQuantifier(expression);
         if (quantifier != null && !quantifier.isEmpty()) {
             expression = expression.substring(0, expression.length() - quantifier.length());
@@ -283,7 +283,8 @@ public class RecexpGrammar {
             expression = removeReference(expression);
         }
 
-        ExpressionTree.Leaf leaf = new ExpressionTree.Leaf(expression, quantifier, isReference, isClosedInBrackets);
+        ExpressionTree.Node node = new ExpressionTree.Node(
+                new Expression(expression, quantifier, isReference), isClosedInBrackets);
 
         List<String> expressionParts = new ArrayList<String>();
 
@@ -295,27 +296,27 @@ public class RecexpGrammar {
 
         if (expressionParts.size() > 1 || !expressionParts.get(0).equals(expression)) {
             for (String part : expressionParts) {
-                leaf.getLeaves().add(createLeaf(part));
+                node.getNodes().add(createLeaf(part));
             }
 
         } else {
             if (isClosedInBrackets(expression, true)) {
-                leaf.getLeaves().add(createLeaf(expression));
+                node.getNodes().add(createLeaf(expression));
             }
         }
 
-        return leaf;
+        return node;
     }
 
     /**
-     * Normalize the tree to the normal form (every end leaf is either a simple reference or a terminal containing no reference whatsoever).
+     * Normalize the tree to the normal form (every end node is either a simple reference or a terminal containing no reference whatsoever).
      */
     ExpressionTree normalizeTree(ExpressionTree tree) {
         return null; // TODO
     }
 
     /**
-     * Expands the tree's end leaves by the leaf candidates.
+     * Expands the tree's end leaves by the node candidates.
      */
     ExpressionTree extendTree(ExpressionTree tree, Set<LeafCandidate> leafCandidates) {
         return null; // TODO
@@ -505,165 +506,20 @@ public class RecexpGrammar {
     }
 
     /**
-     * Tree representation of an expression.
-     */
-    static class ExpressionTree {
-
-        private final Leaf root;
-
-        public ExpressionTree(Leaf root) {
-            this.root = root;
-        }
-
-        public Leaf getRoot() {
-            return root;
-        }
-
-        public String getSentence() {
-            return getSentence(root, new StringBuilder()).toString();
-        }
-
-        private StringBuilder getSentence(Leaf leaf, StringBuilder sb) {
-            if (leaf.getLeaves().isEmpty()) {
-                sb.append(leaf.getWord());
-
-            } else {
-                if (leaf.isQuantified() || leaf.isClosedInBrackets()) {
-                    sb.append("(");
-                }
-
-                for (Leaf l : leaf.getLeaves()) {
-                    sb = getSentence(l, sb);
-                }
-
-                if (leaf.isQuantified() || leaf.isClosedInBrackets()) {
-                    sb.append(")");
-                }
-                if (leaf.isQuantified()) {
-                    sb.append(leaf.getQuantifier());
-                }
-            }
-            return sb;
-        }
-
-        public List<Leaf> getEndLeaves() {
-            return root.getEndLeaves();
-        }
-
-        public static class Leaf {
-
-            private final String expression;
-            private final String quantifier;
-            private final boolean reference;
-            private final boolean closedInBrackets;
-
-            private final List<Leaf> leaves = new ArrayList<Leaf>();
-
-            public Leaf(String expression, String quantifier, boolean reference, boolean closedInBrackets) {
-                this.expression = expression;
-                this.quantifier = quantifier;
-                this.reference = reference;
-                this.closedInBrackets = closedInBrackets;
-            }
-
-            public Leaf(String expression, String quantifier, boolean reference) {
-                this(expression, quantifier, reference, false);
-            }
-
-            public String getExpression() {
-                return expression;
-            }
-
-            public String getQuantifier() {
-                return quantifier;
-            }
-
-            public boolean isClosedInBrackets() {
-                return closedInBrackets;
-            }
-
-            public boolean isQuantified() {
-                return quantifier != null && !quantifier.isEmpty();
-            }
-
-            public boolean isReference() {
-                return reference;
-            }
-
-            public boolean isEpsilon() {
-                return expression == null || expression.isEmpty();
-            }
-
-            public List<Leaf> getLeaves() {
-                return leaves;
-            }
-
-            public String getWord() {
-                if (isEpsilon()) {
-                    return EPSILON;
-                }
-                StringBuilder sb = new StringBuilder()
-                        .append("(");
-
-                if (isReference()) {
-                    sb.append(REFERENCE_PREFIX);
-                }
-                sb.append(getExpression())
-                        .append(")");
-
-                if (getQuantifier() != null) {
-                    sb.append(getQuantifier());
-                }
-                return sb.toString();
-            }
-
-            List<Leaf> getEndLeaves() {
-                return getEndLeaves(this);
-            }
-
-            private List<Leaf> getEndLeaves(Leaf leaf) {
-                List<Leaf> leaves = new ArrayList<Leaf>();
-
-                if (leaf.getLeaves().isEmpty()) {
-                    if (!leaf.isEpsilon()) {
-                        leaves.add(leaf);
-                    }
-
-                } else {
-                    for (Leaf l : leaf.getLeaves()) {
-                        leaves.addAll(getEndLeaves(l));
-                    }
-                }
-                return leaves;
-            }
-
-            @Override
-            public String toString() {
-                return "Leaf{" +
-                       "expression='" + expression + '\'' +
-                       ", quantifier='" + quantifier + '\'' +
-                       ", reference=" + reference +
-                       ", leaves=" + leaves +
-                       '}';
-            }
-        }
-    }
-
-    /**
-     * Expression combination for a leaf.
+     * Expression combination for a node.
      */
     class LeafCombination {
 
-        final ExpressionTree.Leaf leaf;
+        final ExpressionTree.Node node;
         final Set<String> combinations;
 
-        public LeafCombination(ExpressionTree.Leaf leaf, Set<String> combinations) {
-            this.leaf = leaf;
+        public LeafCombination(ExpressionTree.Node node, Set<String> combinations) {
+            this.node = node;
             this.combinations = combinations;
         }
 
-        public ExpressionTree.Leaf getLeaf() {
-            return leaf;
+        public ExpressionTree.Node getNode() {
+            return node;
         }
 
         public Set<String> getCombinations() {
@@ -681,30 +537,30 @@ public class RecexpGrammar {
 
             LeafCombination that = (LeafCombination) o;
 
-            return leaf.equals(that.leaf);
+            return node.equals(that.node);
         }
 
         @Override
         public int hashCode() {
-            return leaf.hashCode();
+            return node.hashCode();
         }
     }
 
     /**
-     * Expression candidate for a leaf.
+     * Expression candidate for a node.
      */
     class LeafCandidate {
 
-        final ExpressionTree.Leaf leaf;
+        final ExpressionTree.Node node;
         final String expression;
 
-        public LeafCandidate(ExpressionTree.Leaf leaf, String expression) {
-            this.leaf = leaf;
+        public LeafCandidate(ExpressionTree.Node node, String expression) {
+            this.node = node;
             this.expression = expression;
         }
 
-        public ExpressionTree.Leaf getLeaf() {
-            return leaf;
+        public ExpressionTree.Node getNode() {
+            return node;
         }
 
         public String getExpression() {
@@ -722,7 +578,7 @@ public class RecexpGrammar {
 
             LeafCandidate candidate = (LeafCandidate) o;
 
-            if (!leaf.equals(candidate.leaf)) {
+            if (!node.equals(candidate.node)) {
                 return false;
             }
             return expression.equals(candidate.expression);
@@ -730,7 +586,7 @@ public class RecexpGrammar {
 
         @Override
         public int hashCode() {
-            int result = leaf.hashCode();
+            int result = node.hashCode();
             result = 31 * result + expression.hashCode();
             return result;
         }

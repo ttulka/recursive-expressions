@@ -174,7 +174,7 @@ public class RecexpGrammarTest {
     private RecexpGrammar.LeafCombination createLeafCombination(String... combinations) {
         RecexpGrammar.LeafCombination lc = mock(RecexpGrammar.LeafCombination.class);
         when(lc.getCombinations()).thenReturn(new HashSet<String>(Arrays.asList(combinations)));
-        when(lc.getLeaf()).thenReturn(mock(RecexpGrammar.ExpressionTree.Leaf.class));
+        when(lc.getNode()).thenReturn(mock(ExpressionTree.Node.class));
         return lc;
     }
 
@@ -209,114 +209,114 @@ public class RecexpGrammarTest {
 
                 .addRule("C", "c");
 
-        RecexpGrammar.ExpressionTree.Leaf leaf;
+        ExpressionTree.Node node;
 
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, false);
-        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(A)"));
+        node = new ExpressionTree.Node(new Expression("A", null, false));
+        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(A)"));
 
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, true);
-        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(a@this)", "(a)", ""));
+        node = new ExpressionTree.Node(new Expression("A", null, true));
+        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(a@this)", "(a)", ""));
 
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("B", null, true);
-        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(b?)", ""));
+        node = new ExpressionTree.Node(new Expression("B", null, true));
+        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(b?)", ""));
 
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("C", null, true);
-        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(c)"));
+        node = new ExpressionTree.Node(new Expression("C", null, true));
+        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(c)"));
 
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("C", "?", true);
-        assertThat(grammar.generateCombinations(leaf), containsInAnyOrder("(c)", ""));
+        node = new ExpressionTree.Node(new Expression("C", "?", true));
+        assertThat(grammar.generateCombinations(node), containsInAnyOrder("(c)", ""));
     }
 
     @Test
     public void createTreeTest() {
-        RecexpGrammar.ExpressionTree tree;
+        ExpressionTree tree;
 
         tree = new RecexpGrammar().createTree("a");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(a)"));
+        assertThat(tree.getRoot().toWord(), is("(a)"));
         assertThat(tree.getSentence(), is("(a)"));
-        assertThat(tree.getEndLeaves().size(), is(1));
+        assertThat(tree.getLeaves().size(), is(1));
 
         tree = new RecexpGrammar().createTree("ab");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(ab)"));
+        assertThat(tree.getRoot().toWord(), is("(ab)"));
         assertThat(tree.getSentence(), is("(ab)"));
-        assertThat(tree.getEndLeaves().size(), is(1));
+        assertThat(tree.getLeaves().size(), is(1));
 
         tree = new RecexpGrammar().createTree("@A");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(@A)"));
+        assertThat(tree.getRoot().toWord(), is("(@A)"));
         assertThat(tree.getSentence(), is("(@A)"));
-        assertThat(tree.getEndLeaves().size(), is(1));
+        assertThat(tree.getLeaves().size(), is(1));
 
         tree = new RecexpGrammar().createTree("x(@A)y");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(x(@A)y)"));
+        assertThat(tree.getRoot().toWord(), is("(x(@A)y)"));
         assertThat(tree.getSentence(), is("(x)(@A)(y)"));
-        assertThat(tree.getEndLeaves().size(), is(3));
-        assertThat(tree.getRoot().getLeaves().size(), is(3));
-        assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(x)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getWord(), is("(@A)"));
-        assertThat(tree.getRoot().getLeaves().get(2).getWord(), is("(y)"));
+        assertThat(tree.getLeaves().size(), is(3));
+        assertThat(tree.getRoot().getNodes().size(), is(3));
+        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(x)"));
+        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("(@A)"));
+        assertThat(tree.getRoot().getNodes().get(2).toWord(), is("(y)"));
 
         tree = new RecexpGrammar().createTree("@A@B");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(@A@B)"));
+        assertThat(tree.getRoot().toWord(), is("(@A@B)"));
         assertThat(tree.getSentence(), is("(@A)(@B)"));
-        assertThat(tree.getEndLeaves().size(), is(2));
-        assertThat(tree.getRoot().getLeaves().size(), is(2));
-        assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(@A)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getWord(), is("(@B)"));
+        assertThat(tree.getLeaves().size(), is(2));
+        assertThat(tree.getRoot().getNodes().size(), is(2));
+        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(@A)"));
+        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("(@B)"));
 
         tree = new RecexpGrammar().createTree("a@this?b");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(a@this?b)"));
+        assertThat(tree.getRoot().toWord(), is("(a@this?b)"));
         assertThat(tree.getSentence(), is("(a)(@this)?(b)"));
-        assertThat(tree.getEndLeaves().size(), is(3));
-        assertThat(tree.getRoot().getLeaves().size(), is(3));
-        assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(a)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getWord(), is("(@this)?"));
-        assertThat(tree.getRoot().getLeaves().get(2).getWord(), is("(b)"));
+        assertThat(tree.getLeaves().size(), is(3));
+        assertThat(tree.getRoot().getNodes().size(), is(3));
+        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(a)"));
+        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("(@this)?"));
+        assertThat(tree.getRoot().getNodes().get(2).toWord(), is("(b)"));
 
         tree = new RecexpGrammar().createTree("a((@this(x))?)b");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(a((@this(x))?)b)"));
+        assertThat(tree.getRoot().toWord(), is("(a((@this(x))?)b)"));
         assertThat(tree.getSentence(), is("(a)(((@this)(x))?)(b)"));
-        assertThat(tree.getEndLeaves().size(), is(4));
-        assertThat(tree.getRoot().getLeaves().size(), is(3));
-        assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(a)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getWord(), is("((@this(x))?)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getLeaves().get(1).getLeaves().get(0).getWord(), is("(@this(x))?"));
-        assertThat(tree.getRoot().getLeaves().get(1).getLeaves().get(0).getLeaves().size(), is(2));
-        assertThat(tree.getRoot().getLeaves().get(1).getLeaves().get(0).getLeaves().get(0).getWord(), is("(@this)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getLeaves().get(0).getLeaves().get(1).getWord(), is("(x)"));
-        assertThat(tree.getRoot().getLeaves().get(2).getWord(), is("(b)"));
+        assertThat(tree.getLeaves().size(), is(4));
+        assertThat(tree.getRoot().getNodes().size(), is(3));
+        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(a)"));
+        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("((@this(x))?)"));
+        assertThat(tree.getRoot().getNodes().get(1).getNodes().size(), is(1));
+        assertThat(tree.getRoot().getNodes().get(1).getNodes().get(0).toWord(), is("(@this(x))?"));
+        assertThat(tree.getRoot().getNodes().get(1).getNodes().get(0).getNodes().size(), is(2));
+        assertThat(tree.getRoot().getNodes().get(1).getNodes().get(0).getNodes().get(0).toWord(), is("(@this)"));
+        assertThat(tree.getRoot().getNodes().get(1).getNodes().get(0).getNodes().get(1).toWord(), is("(x)"));
+        assertThat(tree.getRoot().getNodes().get(2).toWord(), is("(b)"));
 
         tree = new RecexpGrammar().createTree("ab(12)@this@A?(@B)(@C?)cd?((@D))((@E)(@F))?(a@REF)");
         assertThat(tree, not(nullValue()));
-        assertThat(tree.getRoot().getWord(), is("(ab(12)@this@A?(@B)(@C?)cd?((@D))((@E)(@F))?(a@REF))"));
+        assertThat(tree.getRoot().toWord(), is("(ab(12)@this@A?(@B)(@C?)cd?((@D))((@E)(@F))?(a@REF))"));
         assertThat(tree.getSentence(), is("(ab)(12)(@this)(@A)?(@B)(@C?)(cd)?((@D))((@E)(@F))?((a)(@REF))"));
-        assertThat(tree.getEndLeaves().size(), is(12));
-        assertThat(tree.getRoot().getLeaves().size(), is(10));
-        assertThat(tree.getRoot().getLeaves().get(0).getWord(), is("(ab)"));
-        assertThat(tree.getRoot().getLeaves().get(1).getWord(), is("(12)"));
-        assertThat(tree.getRoot().getLeaves().get(2).getWord(), is("(@this)"));
-        assertThat(tree.getRoot().getLeaves().get(3).getWord(), is("(@A)?"));
-        assertThat(tree.getRoot().getLeaves().get(4).getWord(), is("(@B)"));
-        assertThat(tree.getRoot().getLeaves().get(5).getWord(), is("(@C?)"));
-        assertThat(tree.getRoot().getLeaves().get(6).getWord(), is("(cd)?"));
-        assertThat(tree.getRoot().getLeaves().get(7).getWord(), is("((@D))"));
-        assertThat(tree.getRoot().getLeaves().get(7).getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getLeaves().get(7).getLeaves().get(0).getWord(), is("(@D)"));
-        assertThat(tree.getRoot().getLeaves().get(8).getWord(), is("((@E)(@F))?"));
-        assertThat(tree.getRoot().getLeaves().get(8).getLeaves().size(), is(2));
-        assertThat(tree.getRoot().getLeaves().get(8).getLeaves().get(0).getWord(), is("(@E)"));
-        assertThat(tree.getRoot().getLeaves().get(8).getLeaves().get(1).getWord(), is("(@F)"));
-        assertThat(tree.getRoot().getLeaves().get(9).getWord(), is("(a@REF)"));
-        assertThat(tree.getRoot().getLeaves().get(9).getLeaves().size(), is(2));
-        assertThat(tree.getRoot().getLeaves().get(9).getLeaves().get(0).getWord(), is("(a)"));
-        assertThat(tree.getRoot().getLeaves().get(9).getLeaves().get(1).getWord(), is("(@REF)"));
+        assertThat(tree.getLeaves().size(), is(12));
+        assertThat(tree.getRoot().getNodes().size(), is(10));
+        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(ab)"));
+        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("(12)"));
+        assertThat(tree.getRoot().getNodes().get(2).toWord(), is("(@this)"));
+        assertThat(tree.getRoot().getNodes().get(3).toWord(), is("(@A)?"));
+        assertThat(tree.getRoot().getNodes().get(4).toWord(), is("(@B)"));
+        assertThat(tree.getRoot().getNodes().get(5).toWord(), is("(@C?)"));
+        assertThat(tree.getRoot().getNodes().get(6).toWord(), is("(cd)?"));
+        assertThat(tree.getRoot().getNodes().get(7).toWord(), is("((@D))"));
+        assertThat(tree.getRoot().getNodes().get(7).getNodes().size(), is(1));
+        assertThat(tree.getRoot().getNodes().get(7).getNodes().get(0).toWord(), is("(@D)"));
+        assertThat(tree.getRoot().getNodes().get(8).toWord(), is("((@E)(@F))?"));
+        assertThat(tree.getRoot().getNodes().get(8).getNodes().size(), is(2));
+        assertThat(tree.getRoot().getNodes().get(8).getNodes().get(0).toWord(), is("(@E)"));
+        assertThat(tree.getRoot().getNodes().get(8).getNodes().get(1).toWord(), is("(@F)"));
+        assertThat(tree.getRoot().getNodes().get(9).toWord(), is("(a@REF)"));
+        assertThat(tree.getRoot().getNodes().get(9).getNodes().size(), is(2));
+        assertThat(tree.getRoot().getNodes().get(9).getNodes().get(0).toWord(), is("(a)"));
+        assertThat(tree.getRoot().getNodes().get(9).getNodes().get(1).toWord(), is("(@REF)"));
     }
 
     @Test
@@ -384,109 +384,6 @@ public class RecexpGrammarTest {
         assertThat(grammar.isClosedInBrackets("(a)+", false), is(false));
         assertThat(grammar.isClosedInBrackets("(a)*", false), is(false));
         assertThat(grammar.isClosedInBrackets("(a){1,2}", false), is(false));
-    }
-
-    @Test
-    public void ExpressionTree_getRootTest() {
-        RecexpGrammar.ExpressionTree tree = createSimpleTree();
-
-        assertThat(tree.getRoot().getExpression(), is("A"));
-    }
-
-    @Test
-    public void ExpressionTree_getEndLeavesTest() {
-        RecexpGrammar.ExpressionTree tree = createSimpleTree();
-
-        assertThat(tree.getEndLeaves().toString(), is("[D, G, F]"));
-    }
-
-    @Test
-    public void ExpressionTree_getSentenceTest() {
-        assertThat(createSimpleTree().getSentence(), is("(D)(G)(F)"));
-
-        RecexpGrammar.ExpressionTree.Leaf leaf;
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("@A@B", null, false, true);
-        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("A", null, true));
-        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("B", null, true));
-        assertThat(new RecexpGrammar.ExpressionTree(leaf).getSentence(), is("((@A)(@B))"));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("@A@B", "?", false);
-        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("A", null, true));
-        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("B", null, true));
-        assertThat(new RecexpGrammar.ExpressionTree(leaf).getSentence(), is("((@A)(@B))?"));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("((a))", null, false);
-        leaf.getLeaves().add(new RecexpGrammar.ExpressionTree.Leaf("(a)", null, false, true));
-        assertThat(new RecexpGrammar.ExpressionTree(leaf).getSentence(), is("((a))"));
-    }
-
-    @Test
-    public void ExpressionTree_getWordTest() {
-        RecexpGrammar.ExpressionTree.Leaf leaf;
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("", null, false);
-        assertThat(leaf.getWord(), is(""));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("", "?", true);
-        assertThat(leaf.getWord(), is(""));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("A", null, false);
-        assertThat(leaf.getWord(), is("(A)"));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", null, false);
-        assertThat(leaf.getWord(), is("(AB)"));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", "?", false);
-        assertThat(leaf.getWord(), is("(AB)?"));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", "{1,2}", false);
-        assertThat(leaf.getWord(), is("(AB){1,2}"));
-
-        leaf = new RecexpGrammar.ExpressionTree.Leaf("AB", "{1,2}", true);
-        assertThat(leaf.getWord(), is("(@AB){1,2}"));
-    }
-
-    //
-    //            A
-    //          /   \
-    //         B     C
-    //       / \    / \
-    //      D   E  F   eps
-    //           \
-    //            G
-    //
-    private RecexpGrammar.ExpressionTree createSimpleTree() {
-        RecexpGrammar.ExpressionTree.Leaf A = createSimpleLeaf("A");
-        RecexpGrammar.ExpressionTree.Leaf B = createSimpleLeaf("B");
-        RecexpGrammar.ExpressionTree.Leaf C = createSimpleLeaf("C");
-        RecexpGrammar.ExpressionTree.Leaf D = createSimpleLeaf("D");
-        RecexpGrammar.ExpressionTree.Leaf E = createSimpleLeaf("E");
-        RecexpGrammar.ExpressionTree.Leaf F = createSimpleLeaf("F");
-        RecexpGrammar.ExpressionTree.Leaf G = createSimpleLeaf("G");
-        RecexpGrammar.ExpressionTree.Leaf eps = createSimpleLeaf("");
-
-        A.getLeaves().add(B);
-        A.getLeaves().add(C);
-
-        B.getLeaves().add(D);
-        B.getLeaves().add(E);
-
-        E.getLeaves().add(G);
-
-        C.getLeaves().add(F);
-        C.getLeaves().add(eps);
-
-        return new RecexpGrammar.ExpressionTree(A);
-    }
-
-    private RecexpGrammar.ExpressionTree.Leaf createSimpleLeaf(final String expression) {
-        return new RecexpGrammar.ExpressionTree.Leaf(expression, null, false) {
-            @Override
-            public String toString() {
-                return getExpression();
-            }
-        };
     }
 
     // ########################################################################################
