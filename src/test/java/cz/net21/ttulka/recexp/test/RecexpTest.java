@@ -1,5 +1,6 @@
 package cz.net21.ttulka.recexp.test;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.net21.ttulka.recexp.RecexpCyclicRuleException;
@@ -76,6 +77,7 @@ public class RecexpTest {
         assertThat(grammar.accepts("ababc"), is(true));
     }
 
+    @Ignore
     @Test
     public void doubleRecursiveRuleTest() {
         RecexpGrammar grammar = new RecexpGrammar(

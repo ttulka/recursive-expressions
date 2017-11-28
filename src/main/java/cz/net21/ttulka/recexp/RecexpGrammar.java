@@ -3,6 +3,7 @@ package cz.net21.ttulka.recexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -254,8 +255,7 @@ public class RecexpGrammar {
             && (leaf.isClosedInBrackets() || leaf.getExpression().isQuantified())) {
             combination = ExpressionTree.Node.parseNode(
                     expression.toWord() + (leaf.getExpression().isQuantified() ? leaf.getExpression().getQuantifier() : ""));
-        }
-        else  {
+        } else {
             combination = new ExpressionTree.Node(
                     new Expression(expression.getText(), expression.getQuantifier(), expression.isReference()));
         }
@@ -265,8 +265,8 @@ public class RecexpGrammar {
     /**
      * Normalize the tree to the normal form (every end node is either a simple reference or a terminal containing no reference whatsoever).
      */
-    ExpressionTree normalizeTree(ExpressionTree tree) {
-        return null; // TODO
+    private ExpressionTree normalizeTree(ExpressionTree tree) {
+        return ExpressionTree.parseTree(tree.getSentence());
     }
 
     /**
@@ -309,7 +309,21 @@ public class RecexpGrammar {
      * Reduces the tree to groups.
      */
     List<RecexpGroup> reduceTree(ExpressionTree tree) {
-        return null; // TODO
+        return Collections.singletonList(nodeToGroup(tree.getRoot()));
+    }
+
+    private RecexpGroup nodeToGroup(ExpressionTree.Node node) {
+        List<RecexpGroup> subGroups = new ArrayList<RecexpGroup>();
+
+        for (ExpressionTree.Node subNode : node.getNodes()) {
+            subGroups.add(nodeToGroup(subNode));
+        }
+
+        RecexpGroup[] groups = new RecexpGroup[subGroups.size()];
+        for (int i = 0; i < subGroups.size(); i++) {
+            groups[i] = subGroups.get(i);
+        }
+        return new RecexpGroup(node.getExpression().toWord(), node.getSentence(), groups);
     }
 
     @Override

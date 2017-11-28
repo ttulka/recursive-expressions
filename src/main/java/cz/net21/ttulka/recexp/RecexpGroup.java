@@ -64,7 +64,7 @@ public class RecexpGroup {
      * @return The (possibly empty) subgroup captured by the group, or null if the group failed to match part of the input
      */
     public RecexpGroup group(int group) {
-        if (group < 0 || group >= this.groups.length) {
+        if (group < 0 || group > this.groups.length) {
             return null;
         }
         if (group == 0) {

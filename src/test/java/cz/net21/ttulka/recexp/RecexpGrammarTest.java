@@ -355,4 +355,24 @@ public class RecexpGrammarTest {
         assertThat(extended.getRoot().getNodes().get(0).toWord(), is("(a)"));
         assertThat(extended.getRoot().getNodes().get(1).toWord(), is("(b)"));
     }
+
+    @Test
+    public void reduceTreeTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+        ExpressionTree tree = ExpressionTree.parseTree("@A@B");
+
+        List<RecexpGroup> groups = grammar.reduceTree(tree);
+
+        assertThat(groups, not(nullValue()));
+        assertThat(groups.size(), is(1));
+        assertThat(groups.get(0).name(), is("(@A@B)"));
+        assertThat(groups.get(0).value(), is("(@A)(@B)"));
+        assertThat(groups.get(0).groupCount(), is(2));
+        assertThat(groups.get(0).group(1).name(), is("(@A)"));
+        assertThat(groups.get(0).group(1).value(), is("(@A)"));
+        assertThat(groups.get(0).group(1).groupCount(), is(0));
+        assertThat(groups.get(0).group(2).name(), is("(@B)"));
+        assertThat(groups.get(0).group(2).value(), is("(@B)"));
+        assertThat(groups.get(0).group(2).groupCount(), is(0));
+    }
 }

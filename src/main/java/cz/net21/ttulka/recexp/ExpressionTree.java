@@ -24,35 +24,12 @@ class ExpressionTree {
         return root;
     }
 
-    public String getSentence() {
-        return getSentence(root, new StringBuilder()).toString();
-    }
-
-    private StringBuilder getSentence(Node node, StringBuilder sb) {
-        if (node.getNodes().isEmpty()) {
-            sb.append(node.toWord());
-
-        } else {
-            if (node.getExpression().isQuantified() || node.isClosedInBrackets()) {
-                sb.append("(");
-            }
-
-            for (Node l : node.getNodes()) {
-                sb = getSentence(l, sb);
-            }
-
-            if (node.getExpression().isQuantified() || node.isClosedInBrackets()) {
-                sb.append(")");
-            }
-            if (node.getExpression().isQuantified()) {
-                sb.append(node.getExpression().getQuantifier());
-            }
-        }
-        return sb;
-    }
-
     public List<Node> getLeaves() {
         return root.getLeaves();
+    }
+
+    public String getSentence() {
+        return root.getSentence();
     }
 
     /**
@@ -148,6 +125,33 @@ class ExpressionTree {
                 }
             }
             return leaves;
+        }
+
+        public String getSentence() {
+            return getSentence(this, new StringBuilder()).toString();
+        }
+
+        private StringBuilder getSentence(Node node, StringBuilder sb) {
+            if (node.getNodes().isEmpty()) {
+                sb.append(node.toWord());
+
+            } else {
+                if (node.getExpression().isQuantified() || node.isClosedInBrackets()) {
+                    sb.append("(");
+                }
+
+                for (Node l : node.getNodes()) {
+                    sb = getSentence(l, sb);
+                }
+
+                if (node.getExpression().isQuantified() || node.isClosedInBrackets()) {
+                    sb.append(")");
+                }
+                if (node.getExpression().isQuantified()) {
+                    sb.append(node.getExpression().getQuantifier());
+                }
+            }
+            return sb;
         }
 
         @Override
