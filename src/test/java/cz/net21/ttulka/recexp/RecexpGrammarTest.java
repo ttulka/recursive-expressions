@@ -331,15 +331,28 @@ public class RecexpGrammarTest {
         assertThat(tree.getRoot().getNodes().get(9).getNodes().get(1).toWord(), is("(@REF)"));
     }
 
-//    @Test
-//    public void isTerminalTest() {
-//        RecexpGrammar g = new RecexpGrammar();
-//
-//        assertThat(g.isTerminal(g.new ExpressionPart("a", null, 0, false)), is(true));
-//
-//        assertThat(g.isTerminal(g.new ExpressionPart("a", "?", 1, false)), is(false));
-//        assertThat(g.isTerminal(g.new ExpressionPart("this", null, 0, true)), is(false));
-//        assertThat(g.isTerminal(g.new ExpressionPart("this", "?", 0, true)), is(false));
-//        assertThat(g.isTerminal(g.new ExpressionPart("this", "?", 1, true)), is(false));
-//    }
+    @Test
+    public void extendTreeTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+        ExpressionTree tree = ExpressionTree.parseTree("@A@B");
+
+        RecexpGrammar.LeafCandidate candidate1 = grammar. new LeafCandidate(
+                tree.getLeaves().get(0), ExpressionTree.Node.parseNode("a")
+        );
+        RecexpGrammar.LeafCandidate candidate2 = grammar. new LeafCandidate(
+                tree.getLeaves().get(1), ExpressionTree.Node.parseNode("b")
+        );
+
+        ExpressionTree extended = grammar.extendTree(tree, new HashSet<RecexpGrammar.LeafCandidate>(
+                Arrays.asList(candidate1, candidate2)
+        ));
+
+        assertThat(extended, not(nullValue()));
+        assertThat(extended.getRoot().toWord(), is("(@A@B)"));
+        assertThat(extended.getSentence(), is("(a)(b)"));
+        assertThat(extended.getLeaves().size(), is(2));
+        assertThat(extended.getRoot().getNodes().size(), is(2));
+        assertThat(extended.getRoot().getNodes().get(0).toWord(), is("(a)"));
+        assertThat(extended.getRoot().getNodes().get(1).toWord(), is("(b)"));
+    }
 }

@@ -273,7 +273,36 @@ public class RecexpGrammar {
      * Expands the tree's end leaves by the node candidates.
      */
     ExpressionTree extendTree(ExpressionTree tree, Set<LeafCandidate> leafCandidates) {
-        return null; // TODO
+        ExpressionTree.Node expandedRoot = copyNode(tree.getRoot(), leafCandidates);
+        return new ExpressionTree(expandedRoot);
+    }
+
+    private ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<LeafCandidate> leafCandidates) {
+        ExpressionTree.Node copy;
+
+        ExpressionTree.Node candidate = findCandidate(node, leafCandidates);
+
+        if (candidate != null) {
+            copy = candidate;
+        } else {
+            copy = new ExpressionTree.Node(
+                    node.getExpression(), node.isClosedInBrackets()
+            );
+        }
+
+        for (ExpressionTree.Node subNode : node.getNodes()) {
+            copy.getNodes().add(copyNode(subNode, leafCandidates));
+        }
+        return copy;
+    }
+
+    private ExpressionTree.Node findCandidate(ExpressionTree.Node node, Set<LeafCandidate> leafCandidates) {
+        for (LeafCandidate candidate : leafCandidates) {
+            if (candidate.getNode().equals(node)) {
+                return candidate.getCandidate();
+            }
+        }
+        return null;
     }
 
     /**
