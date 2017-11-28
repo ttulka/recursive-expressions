@@ -6,6 +6,8 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -13,6 +15,22 @@ import static org.hamcrest.Matchers.contains;
  * @author ttulka
  */
 public class ExpressionTreeTest {
+
+    @Test
+    public void parseTreeTest() {
+        ExpressionTree tree;
+
+        tree = ExpressionTree.parseTree("@A?@B?");
+        assertThat(tree, not(nullValue()));
+        assertThat(tree.getRoot().toWord(), is("(@A?@B?)"));
+        assertThat(tree.getSentence(), is("(@A?@B?)"));
+        assertThat(tree.getLeaves().size(), is(2));
+        assertThat(tree.getRoot().getNodes().size(), is(2));
+        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(@A)?"));
+        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("(@B)?"));
+
+        // TODO more tests
+    }
 
     @Test
     public void getRootTest() {

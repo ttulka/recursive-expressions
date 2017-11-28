@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -141,7 +142,7 @@ public class RecexpGrammar {
 
         // no more references
         if (hydratedSentence.equals(sentence)) {
-            return reduceTree(tree);
+            return reduceTree(tree, input);
         }
 
         for (ExpressionTree candidate : generateCandidates(tree)) {
@@ -308,22 +309,26 @@ public class RecexpGrammar {
     /**
      * Reduces the tree to groups.
      */
-    List<RecexpGroup> reduceTree(ExpressionTree tree) {
-        return Collections.singletonList(nodeToGroup(tree.getRoot()));
+    List<RecexpGroup> reduceTree(ExpressionTree tree, String input) {
+        return Collections.singletonList(nodeToGroup(tree.getRoot(), input));
     }
 
-    private RecexpGroup nodeToGroup(ExpressionTree.Node node) {
+    private RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
         List<RecexpGroup> subGroups = new ArrayList<RecexpGroup>();
 
-        for (ExpressionTree.Node subNode : node.getNodes()) {
-            subGroups.add(nodeToGroup(subNode));
+        Matcher matcher = Pattern.compile(node.toWord()).matcher(input);
+        matcher.matches();
+
+        for (int i = 0; i < node.getNodes().size(); i ++) {
+            String value = matcher.group(i + 1);
+            subGroups.add(nodeToGroup(node.getNodes().get(i), value));
         }
 
         RecexpGroup[] groups = new RecexpGroup[subGroups.size()];
         for (int i = 0; i < subGroups.size(); i++) {
             groups[i] = subGroups.get(i);
         }
-        return new RecexpGroup(node.getExpression().toWord(), node.getSentence(), groups);
+        return new RecexpGroup(node.getExpression().toWord(), input, groups);
     }
 
     @Override
