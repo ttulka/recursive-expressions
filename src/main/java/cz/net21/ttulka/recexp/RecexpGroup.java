@@ -1,7 +1,7 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Class representing an expression group.
+ * Class representing an candidate group.
  *
  * @author ttulka
  */

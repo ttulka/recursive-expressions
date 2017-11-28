@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tree representation of an expression.
+ * Tree representation of an candidate.
  *
  * @author ttulka
  */
@@ -56,7 +56,7 @@ class ExpressionTree {
     }
 
     /**
-     * Node in the expression tree.
+     * Node in the candidate tree.
      */
     static class Node {
 

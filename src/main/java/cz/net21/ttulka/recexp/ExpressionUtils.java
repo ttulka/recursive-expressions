@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static cz.net21.ttulka.recexp.Expression.EPSILON;
 import static cz.net21.ttulka.recexp.Expression.REFERENCE_PREFIX;
 
 /**
@@ -205,6 +204,6 @@ class ExpressionUtils {
     }
 
     public static boolean containsEpsilon(String expression) {
-        return Pattern.matches(hydrateExpression(expression, "X"), EPSILON);
+        return Pattern.matches(hydrateExpression(expression, "X"), "");
     }
 }

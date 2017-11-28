@@ -7,7 +7,8 @@ class Expression {
 
     public static final char REFERENCE_PREFIX = '@';
     public static final String THIS_REFERENCE_NAME = "this";
-    public static final String EPSILON = "";
+
+    public static final Expression EPSILON = new Expression("", null, false);
 
     private final String text;
     private final String quantifier;
@@ -36,12 +37,12 @@ class Expression {
     }
 
     public boolean isEpsilon() {
-        return text == null || text.isEmpty();
+        return EPSILON.getText().equals(this.getText());
     }
 
     public String toWord() {
         if (isEpsilon()) {
-            return EPSILON;
+            return "";
         }
         StringBuilder sb = new StringBuilder()
                 .append("(");

@@ -159,8 +159,12 @@ public class RecexpGrammarTest {
     }
 
     private RecexpGrammar.LeafCombination createLeafCombination(String... combinations) {
+        Set<ExpressionTree.Node> combinationNodes = new HashSet<ExpressionTree.Node>();
+        for (String c : combinations) {
+            combinationNodes.add(ExpressionTree.Node.parseNode(c));
+        }
         RecexpGrammar.LeafCombination lc = mock(RecexpGrammar.LeafCombination.class);
-        when(lc.getCombinations()).thenReturn(new HashSet<String>(Arrays.asList(combinations)));
+        when(lc.getCombinations()).thenReturn(combinationNodes);
         when(lc.getNode()).thenReturn(mock(ExpressionTree.Node.class));
         return lc;
     }
@@ -173,12 +177,12 @@ public class RecexpGrammarTest {
             Collections.sort(candidateList, new Comparator<RecexpGrammar.LeafCandidate>() {
                 @Override
                 public int compare(RecexpGrammar.LeafCandidate o1, RecexpGrammar.LeafCandidate o2) {
-                    return o1.getExpression().compareTo(o2.getExpression());
+                    return o1.getCandidate().toWord().compareTo(o2.getCandidate().toWord());
                 }
             });
             StringBuilder sb = new StringBuilder();
             for (RecexpGrammar.LeafCandidate candidate : candidateList) {
-                sb.append(candidate.getExpression());
+                sb.append(candidate.getCandidate().getExpression().getText());
             }
             candidates.add(sb.toString());
         }
@@ -199,25 +203,40 @@ public class RecexpGrammarTest {
         ExpressionTree.Node node;
 
         node = new ExpressionTree.Node(new Expression("A", null, false));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(A)"));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(A)"));
 
         node = new ExpressionTree.Node(new Expression("A", null, true));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(a)(@this)", "a", ""));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(a@this)", "(a)", ""));
 
         node = new ExpressionTree.Node(new Expression("B", null, true));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(b)?", ""));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(b)?", ""));
 
         node = new ExpressionTree.Node(new Expression("C", null, true));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("c"));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(c)"));
 
         node = new ExpressionTree.Node(new Expression("C", "?", true));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(c)?", ""));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(c)?", ""));
 
         node = new ExpressionTree.Node(new Expression("this", null, true));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(@this)"));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(@this)"));
 
         node = new ExpressionTree.Node(new Expression("this", "?", true));
-        assertThat(grammar.generateCombinations(node, node), containsInAnyOrder("(@this)?", ""));
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                   containsInAnyOrder("(@this)?", ""));
+    }
+
+    private Set<String> combinationsToString(Set<ExpressionTree.Node> combinations) {
+        Set<String> strings = new HashSet<String>();
+        for (ExpressionTree.Node node : combinations) {
+            strings.add(node.toWord());
+        }
+        return strings;
     }
 
     @Test
