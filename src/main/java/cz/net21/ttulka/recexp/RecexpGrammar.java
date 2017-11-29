@@ -316,12 +316,24 @@ public class RecexpGrammar {
     private RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
         List<RecexpGroup> subGroups = new ArrayList<RecexpGroup>();
 
-        Matcher matcher = Pattern.compile(node.toWord()).matcher(input);
-        matcher.matches();
+        StringBuilder nodesWord = new StringBuilder();
 
-        for (int i = 0; i < node.getNodes().size(); i ++) {
-            String value = matcher.group(i + 1);
-            subGroups.add(nodeToGroup(node.getNodes().get(i), value));
+        for (ExpressionTree.Node subNode : node.getNodes()) {
+            nodesWord.append("(").append(subNode.toWord()).append(")");
+        }
+
+        for (int i = 0; i < node.getNodes().size(); i++) {
+            ExpressionTree.Node subNode = node.getNodes().get(i);
+            Matcher matcher = Pattern.compile(subNode.toWord()).matcher(input);
+
+            String value = "";
+            while (matcher.find()) {
+                String v = input.substring(matcher.start(), matcher.end());
+                if (v.length() > value.length()) {
+                    value = v;
+                }
+            }
+            subGroups.add(nodeToGroup(subNode, value));
         }
 
         RecexpGroup[] groups = new RecexpGroup[subGroups.size()];

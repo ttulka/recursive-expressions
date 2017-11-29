@@ -52,20 +52,26 @@ class ExpressionTree {
         }
 
         public static ExpressionTree.Node parseNode(String expression) {
-            String quantifier = ExpressionUtils.getQuantifier(expression);
-            if (quantifier != null && !quantifier.isEmpty()) {
-                expression = expression.substring(0, expression.length() - quantifier.length());
-            }
+            String quantifier = null;
 
             // TODO get the quantifier even if it is in the brackets
             boolean isClosedInBrackets = ExpressionUtils.isClosedInBrackets(expression, true);
             if (isClosedInBrackets) {
+                quantifier = ExpressionUtils.getQuantifier(expression);
+                if (quantifier != null && !quantifier.isEmpty()) {
+                    expression = expression.substring(0, expression.length() - quantifier.length());
+                }
                 expression = ExpressionUtils.removeClosingBrackets(expression);
             }
 
             boolean isReference = ExpressionUtils.isReference(expression);
             if (isReference) {
                 expression = ExpressionUtils.removeReferencePrefix(expression);
+
+                quantifier = ExpressionUtils.getQuantifier(expression);
+                if (quantifier != null && !quantifier.isEmpty()) {
+                    expression = expression.substring(0, expression.length() - quantifier.length());
+                }
             }
 
             ExpressionTree.Node node = new ExpressionTree.Node(

@@ -212,7 +212,7 @@ public class RecexpGrammarTest {
 
         node = new ExpressionTree.Node(new Expression("B", null, true));
         assertThat(combinationsToString(grammar.generateCombinations(node, node)),
-                   containsInAnyOrder("(b)?", ""));
+                   containsInAnyOrder("(b?)", ""));
 
         node = new ExpressionTree.Node(new Expression("C", null, true));
         assertThat(combinationsToString(grammar.generateCombinations(node, node)),
@@ -308,7 +308,7 @@ public class RecexpGrammarTest {
         tree = ExpressionTree.parseTree("ab(12)@this@A?(@B)(@C?)cd?((@D))((@E)(@F))?(a@REF)");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(ab(12)@this@A?(@B)(@C?)cd?((@D))((@E)(@F))?(a@REF))"));
-        assertThat(tree.getSentence(), is("(ab)(12)(@this)(@A)?(@B)(@C?)(cd)?((@D))((@E)(@F))?((a)(@REF))"));
+        assertThat(tree.getSentence(), is("(ab)(12)(@this)(@A)?(@B)(@C)?(cd?)((@D))((@E)(@F))?((a)(@REF))"));
         assertThat(tree.getLeaves().size(), is(12));
         assertThat(tree.getRoot().getNodes().size(), is(10));
         assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(ab)"));
@@ -316,8 +316,8 @@ public class RecexpGrammarTest {
         assertThat(tree.getRoot().getNodes().get(2).toWord(), is("(@this)"));
         assertThat(tree.getRoot().getNodes().get(3).toWord(), is("(@A)?"));
         assertThat(tree.getRoot().getNodes().get(4).toWord(), is("(@B)"));
-        assertThat(tree.getRoot().getNodes().get(5).toWord(), is("(@C?)"));
-        assertThat(tree.getRoot().getNodes().get(6).toWord(), is("(cd)?"));
+        assertThat(tree.getRoot().getNodes().get(5).toWord(), is("(@C)?"));
+        assertThat(tree.getRoot().getNodes().get(6).toWord(), is("(cd?)"));
         assertThat(tree.getRoot().getNodes().get(7).toWord(), is("((@D))"));
         assertThat(tree.getRoot().getNodes().get(7).getNodes().size(), is(1));
         assertThat(tree.getRoot().getNodes().get(7).getNodes().get(0).toWord(), is("(@D)"));
@@ -362,35 +362,29 @@ public class RecexpGrammarTest {
         ExpressionTree tree;
         List<RecexpGroup> groups;
 
-        tree = ExpressionTree.parseTree("(@A?)(@B?)");
+        tree = ExpressionTree.parseTree("(a?)(b?)");
         groups = grammar.reduceTree(tree, "ab");
 
         assertThat(groups, not(nullValue()));
         assertThat(groups.size(), is(1));
-        assertThat(groups.get(0).name(), is("(@A?@B?)"));
+        assertThat(groups.get(0).name(), is("((a?)(b?))"));
         assertThat(groups.get(0).value(), is("ab"));
         assertThat(groups.get(0).groupCount(), is(2));
-        assertThat(groups.get(0).group(1).name(), is("(@A)?"));
+        assertThat(groups.get(0).group(1).name(), is("(a?)"));
         assertThat(groups.get(0).group(1).value(), is("a"));
         assertThat(groups.get(0).group(1).groupCount(), is(0));
-        assertThat(groups.get(0).group(2).name(), is("(@B)?"));
+        assertThat(groups.get(0).group(2).name(), is("(b?)"));
         assertThat(groups.get(0).group(2).value(), is("b"));
         assertThat(groups.get(0).group(2).groupCount(), is(0));
 
-        tree = ExpressionTree.parseTree("@A?@B?");
+        tree = ExpressionTree.parseTree("a?b?");
         groups = grammar.reduceTree(tree, "ab");
 
         assertThat(groups, not(nullValue()));
         assertThat(groups.size(), is(1));
-        assertThat(groups.get(0).name(), is("(@A?@B?)"));
+        assertThat(groups.get(0).name(), is("(a?b?)"));
         assertThat(groups.get(0).value(), is("ab"));
-        assertThat(groups.get(0).groupCount(), is(2));
-        assertThat(groups.get(0).group(1).name(), is("(@A)?"));
-        assertThat(groups.get(0).group(1).value(), is("a"));
-        assertThat(groups.get(0).group(1).groupCount(), is(0));
-        assertThat(groups.get(0).group(2).name(), is("(@B)?"));
-        assertThat(groups.get(0).group(2).value(), is("b"));
-        assertThat(groups.get(0).group(2).groupCount(), is(0));
+        assertThat(groups.get(0).groupCount(), is(0));
     }
 
     @Test
@@ -411,7 +405,7 @@ public class RecexpGrammarTest {
 
         assertThat(groups.size(), is(1));
 
-        assertThat(groups.get(0).name(), is("(a)?"));
+        assertThat(groups.get(0).name(), is("(a?)"));
         assertThat(groups.get(0).value(), is("a"));
         assertThat(groups.get(0).groupCount(), is(0));
 
@@ -420,7 +414,7 @@ public class RecexpGrammarTest {
 
         assertThat(groups.size(), is(1));
 
-        assertThat(groups.get(0).name(), is("a|b"));
+        assertThat(groups.get(0).name(), is("(a|b)"));
         assertThat(groups.get(0).value(), is("a"));
         assertThat(groups.get(0).groupCount(), is(0));
 

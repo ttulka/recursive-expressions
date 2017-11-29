@@ -87,7 +87,7 @@ public class ExpressionTreeTest {
         tree = ExpressionTree.parseTree("@A?@B?");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(@A?@B?)"));
-        assertThat(tree.getSentence(), is("(@A?@B?)"));
+        assertThat(tree.getSentence(), is("(@A)?(@B)?"));
         assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getNodes().size(), is(2));
         assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(@A)?"));
@@ -96,7 +96,7 @@ public class ExpressionTreeTest {
         tree = ExpressionTree.parseTree("(@A?@B?)?");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(@A?@B?)?"));
-        assertThat(tree.getSentence(), is("(@A?@B?)?"));
+        assertThat(tree.getSentence(), is("((@A)?(@B)?)?"));
         assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getNodes().size(), is(2));
         assertThat(tree.getRoot().getNodes().get(0).toWord(), is("(@A)?"));
