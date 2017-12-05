@@ -73,9 +73,11 @@ class ExpressionTree {
             if (isReference) {
                 expression = ExpressionUtils.removeReferencePrefix(expression);
 
-                quantifier = ExpressionUtils.getQuantifier(expression);
-                if (quantifier != null && !quantifier.isEmpty()) {
-                    expression = expression.substring(0, expression.length() - quantifier.length());
+                if (quantifier == null) {
+                    quantifier = ExpressionUtils.getQuantifier(expression);
+                    if (quantifier != null && !quantifier.isEmpty()) {
+                        expression = expression.substring(0, expression.length() - quantifier.length());
+                    }
                 }
             }
 
