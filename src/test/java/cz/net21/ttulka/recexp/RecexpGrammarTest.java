@@ -112,16 +112,117 @@ public class RecexpGrammarTest {
 
     @Test
     public void matcherTest() {
-        RecexpGrammar grammar = new RecexpGrammar()
+        RecexpGrammar grammar;
+        RecexpMatcher matcher;
+
+        grammar = new RecexpGrammar()
+                .addRule("@A@B")
                 .addRule("A", "a")
-                .addRule("B", "b")
-                .addRule("A", "a");
+                .addRule("B", "b");
 
-        RecexpMatcher matcher = grammar.matcher("abc");
+        matcher = grammar.matcher("ab");
 
-        assertThat(matcher.value(), is("abc"));
+        assertThat(matcher.matches(), is(true));
+        assertThat(matcher.name(), is("@A@B"));
+        assertThat(matcher.value(), is("ab"));
+        assertThat(matcher.groupCount(), is(2));
+        assertThat(matcher.group(1).name(), is("(@A)"));
+        assertThat(matcher.group(1).value(), is("a"));
+        assertThat(matcher.group(1).groupCount(), is(1));
+        assertThat(matcher.group(1).group(1).name(), is("(a)"));
+        assertThat(matcher.group(1).group(1).value(), is("a"));
+        assertThat(matcher.group(1).group(1).groupCount(), is(0));
+        assertThat(matcher.group(2).name(), is("(@B)"));
+        assertThat(matcher.group(2).value(), is("b"));
+        assertThat(matcher.group(2).groupCount(), is(1));
+        assertThat(matcher.group(2).group(1).name(), is("(b)"));
+        assertThat(matcher.group(2).group(1).value(), is("b"));
+        assertThat(matcher.group(2).group(1).groupCount(), is(0));
 
-        // TODO more tests
+        grammar = new RecexpGrammar("a@this?b");
+        matcher = grammar.matcher("ab");
+
+        assertThat(matcher.matches(), is(true));
+        assertThat(matcher.name(), is("a@this?b"));
+        assertThat(matcher.value(), is("ab"));
+        assertThat(matcher.groupCount(), is(3));
+        assertThat(matcher.group(1).name(), is("(a)"));
+        assertThat(matcher.group(1).value(), is("a"));
+        assertThat(matcher.group(1).groupCount(), is(0));
+        assertThat(matcher.group(2).name(), is("(@this)?"));
+        assertThat(matcher.group(2).value(), is(""));
+        assertThat(matcher.group(2).groupCount(), is(0));
+        assertThat(matcher.group(3).name(), is("(b)"));
+        assertThat(matcher.group(3).value(), is("b"));
+        assertThat(matcher.group(3).groupCount(), is(0));
+
+        grammar = new RecexpGrammar("a(@this?)b");
+        matcher = grammar.matcher("ab");
+
+        assertThat(matcher.matches(), is(true));
+        assertThat(matcher.name(), is("a(@this?)b"));
+        assertThat(matcher.value(), is("ab"));
+        assertThat(matcher.groupCount(), is(3));
+        assertThat(matcher.group(1).name(), is("(a)"));
+        assertThat(matcher.group(1).value(), is("a"));
+        assertThat(matcher.group(1).groupCount(), is(0));
+        assertThat(matcher.group(2).name(), is("(@this)?"));
+        assertThat(matcher.group(2).value(), is(""));
+        assertThat(matcher.group(2).groupCount(), is(0));
+        assertThat(matcher.group(3).name(), is("(b)"));
+        assertThat(matcher.group(3).value(), is("b"));
+        assertThat(matcher.group(3).groupCount(), is(0));
+
+//        grammar = new RecexpGrammar("a(@this)?b");
+//        matcher = grammar.matcher("ab");
+//
+//        assertThat(matcher.matches(), is(true));
+//        assertThat(matcher.name(), is("a(@this?)b"));
+//        assertThat(matcher.value(), is("ab"));
+//        assertThat(matcher.groupCount(), is(3));
+//        assertThat(matcher.group(1).name(), is("(a)"));
+//        assertThat(matcher.group(1).value(), is("a"));
+//        assertThat(matcher.group(1).groupCount(), is(0));
+//        assertThat(matcher.group(2).name(), is("(@this)?"));
+//        assertThat(matcher.group(2).value(), is(""));
+//        assertThat(matcher.group(2).groupCount(), is(0));
+//        assertThat(matcher.group(3).name(), is("(b)"));
+//        assertThat(matcher.group(3).value(), is("b"));
+//        assertThat(matcher.group(3).groupCount(), is(0));
+
+        grammar = new RecexpGrammar("@A@this?@B")
+                .addRule("A", "a")
+                .addRule("B", "b");
+        matcher = grammar.matcher("aabb");
+
+        assertThat(matcher.matches(), is(true));
+        assertThat(matcher.name(), is("@A@this?@B"));
+        assertThat(matcher.value(), is("aabb"));
+        assertThat(matcher.groupCount(), is(3));
+        assertThat(matcher.group(1).name(), is("(@A)"));
+        assertThat(matcher.group(1).value(), is("a"));
+        assertThat(matcher.group(1).groupCount(), is(1));
+        assertThat(matcher.group(1).group(1).name(), is("(a)"));
+        assertThat(matcher.group(1).group(1).value(), is("a"));
+        assertThat(matcher.group(1).group(1).groupCount(), is(0));
+
+        assertThat(matcher.group(2).name(), is("(@this)?"));
+        assertThat(matcher.group(2).value(), is("ab"));
+        assertThat(matcher.group(2).groupCount(), is(1));
+        assertThat(matcher.group(2).group(1).name(), is("((@A@this?@B))?"));
+        assertThat(matcher.group(2).group(1).value(), is("ab"));
+        assertThat(matcher.group(2).group(1).groupCount(), is(1));
+        assertThat(matcher.group(2).group(1).group(1).name(), is("(@A@this?@B)"));
+        assertThat(matcher.group(2).group(1).group(1).value(), is("ab"));
+        assertThat(matcher.group(2).group(1).group(1).groupCount(), is(3));
+
+        assertThat(matcher.group(3).name(), is("(@B)"));
+        assertThat(matcher.group(3).value(), is("b"));
+        assertThat(matcher.group(3).groupCount(), is(1));
+        assertThat(matcher.group(3).group(1).name(), is("(b)"));
+        assertThat(matcher.group(3).group(1).value(), is("b"));
+        assertThat(matcher.group(3).group(1).groupCount(), is(0));
+        // TODO
     }
 
     @Test(expected = RecexpEmptyRulesException.class)
@@ -228,7 +329,7 @@ public class RecexpGrammarTest {
 
         node = new ExpressionTree.Node(new Expression("this", "?", true));
         assertThat(combinationsToString(grammar.generateCombinations(node, node)),
-                   containsInAnyOrder("(@this)?", ""));
+                   containsInAnyOrder("((@this)?)?", ""));
     }
 
     private Set<String> combinationsToString(Set<ExpressionTree.Node> combinations) {
@@ -336,10 +437,10 @@ public class RecexpGrammarTest {
         RecexpGrammar grammar = new RecexpGrammar();
         ExpressionTree tree = ExpressionTree.parseTree("@A@B");
 
-        RecexpGrammar.LeafCandidate candidate1 = grammar. new LeafCandidate(
+        RecexpGrammar.LeafCandidate candidate1 = grammar.new LeafCandidate(
                 tree.getLeaves().get(0), ExpressionTree.Node.parseNode("a")
         );
-        RecexpGrammar.LeafCandidate candidate2 = grammar. new LeafCandidate(
+        RecexpGrammar.LeafCandidate candidate2 = grammar.new LeafCandidate(
                 tree.getLeaves().get(1), ExpressionTree.Node.parseNode("b")
         );
 
@@ -352,8 +453,14 @@ public class RecexpGrammarTest {
         assertThat(extended.getSentence(), is("(a)(b)"));
         assertThat(extended.getLeaves().size(), is(2));
         assertThat(extended.getRoot().getNodes().size(), is(2));
-        assertThat(extended.getRoot().getNodes().get(0).toWord(), is("(a)"));
-        assertThat(extended.getRoot().getNodes().get(1).toWord(), is("(b)"));
+        assertThat(extended.getRoot().getNodes().get(0).toWord(), is("(@A)"));
+        assertThat(extended.getRoot().getNodes().get(0).getNodes().size(), is(1));
+        assertThat(extended.getRoot().getNodes().get(0).getNodes().get(0).toWord(), is("(a)"));
+        assertThat(extended.getRoot().getNodes().get(0).getNodes().get(0).getNodes().size(), is(0));
+        assertThat(extended.getRoot().getNodes().get(1).toWord(), is("(@B)"));
+        assertThat(extended.getRoot().getNodes().get(1).getNodes().size(), is(1));
+        assertThat(extended.getRoot().getNodes().get(1).getNodes().get(0).toWord(), is("(b)"));
+        assertThat(extended.getRoot().getNodes().get(1).getNodes().get(0).getNodes().size(), is(0));
     }
 
     @Test
@@ -366,25 +473,19 @@ public class RecexpGrammarTest {
         groups = grammar.reduceTree(tree, "ab");
 
         assertThat(groups, not(nullValue()));
-        assertThat(groups.size(), is(1));
-        assertThat(groups.get(0).name(), is("((a?)(b?))"));
-        assertThat(groups.get(0).value(), is("ab"));
-        assertThat(groups.get(0).groupCount(), is(2));
-        assertThat(groups.get(0).group(1).name(), is("(a?)"));
-        assertThat(groups.get(0).group(1).value(), is("a"));
-        assertThat(groups.get(0).group(1).groupCount(), is(0));
-        assertThat(groups.get(0).group(2).name(), is("(b?)"));
-        assertThat(groups.get(0).group(2).value(), is("b"));
-        assertThat(groups.get(0).group(2).groupCount(), is(0));
+        assertThat(groups.size(), is(2));
+        assertThat(groups.get(0).name(), is("(a?)"));
+        assertThat(groups.get(0).value(), is("a"));
+        assertThat(groups.get(0).groupCount(), is(0));
+        assertThat(groups.get(1).name(), is("(b?)"));
+        assertThat(groups.get(1).value(), is("b"));
+        assertThat(groups.get(1).groupCount(), is(0));
 
         tree = ExpressionTree.parseTree("a?b?");
         groups = grammar.reduceTree(tree, "ab");
 
         assertThat(groups, not(nullValue()));
-        assertThat(groups.size(), is(1));
-        assertThat(groups.get(0).name(), is("(a?b?)"));
-        assertThat(groups.get(0).value(), is("ab"));
-        assertThat(groups.get(0).groupCount(), is(0));
+        assertThat(groups.size(), is(0));
     }
 
     @Test
@@ -394,119 +495,16 @@ public class RecexpGrammarTest {
         groups = new RecexpGrammar()
                 .getGroups(ExpressionTree.parseTree("a"), "a", new HashSet<String>());
 
-        assertThat(groups.size(), is(1));
-
-        assertThat(groups.get(0).name(), is("(a)"));
-        assertThat(groups.get(0).value(), is("a"));
-        assertThat(groups.get(0).groupCount(), is(0));
+        assertThat(groups.size(), is(0));
 
         groups = new RecexpGrammar()
                 .getGroups(ExpressionTree.parseTree("a?"), "a", new HashSet<String>());
 
-        assertThat(groups.size(), is(1));
-
-        assertThat(groups.get(0).name(), is("(a?)"));
-        assertThat(groups.get(0).value(), is("a"));
-        assertThat(groups.get(0).groupCount(), is(0));
+        assertThat(groups.size(), is(0));
 
         groups = new RecexpGrammar()
                 .getGroups(ExpressionTree.parseTree("a|b"), "a", new HashSet<String>());
 
-        assertThat(groups.size(), is(1));
-
-        assertThat(groups.get(0).name(), is("(a|b)"));
-        assertThat(groups.get(0).value(), is("a"));
-        assertThat(groups.get(0).groupCount(), is(0));
-
-        groups = new RecexpGrammar()
-                .getGroups(ExpressionTree.parseTree("a@this?b"), "ab", new HashSet<String>());
-
-        assertThat(groups.size(), is(2));
-
-        assertThat(groups.get(0).name(), is("a"));
-        assertThat(groups.get(0).value(), is("a"));
-        assertThat(groups.get(0).groupCount(), is(0));
-
-        assertThat(groups.get(1).name(), is("b"));
-        assertThat(groups.get(1).value(), is("b"));
-        assertThat(groups.get(1).groupCount(), is(0));
-
-        groups = new RecexpGrammar()
-                .getGroups(ExpressionTree.parseTree("a(@this?)b"), "ab", new HashSet<String>());
-
-        assertThat(groups.size(), is(2));
-
-        assertThat(groups.get(0).name(), is("a"));
-        assertThat(groups.get(0).value(), is("a"));
-        assertThat(groups.get(0).groupCount(), is(0));
-
-        assertThat(groups.get(1).name(), is("b"));
-        assertThat(groups.get(1).value(), is("b"));
-        assertThat(groups.get(1).groupCount(), is(0));
-
-        groups = new RecexpGrammar()
-                .getGroups(ExpressionTree.parseTree("a(@this)?b"), "ab", new HashSet<String>());
-
-        assertThat(groups.size(), is(2));
-
-        assertThat(groups.get(0).name(), is("a"));
-        assertThat(groups.get(0).value(), is("a"));
-        assertThat(groups.get(0).groupCount(), is(0));
-
-        assertThat(groups.get(1).name(), is("b"));
-        assertThat(groups.get(1).value(), is("b"));
-        assertThat(groups.get(1).groupCount(), is(0));
-
-        groups = new RecexpGrammar()
-                .getGroups(ExpressionTree.parseTree("a(@this?)b"), "aabb", new HashSet<String>());
-
-        assertThat(groups.size(), is(3));
-
-        assertThat(groups.get(1).name(), is("a"));
-        assertThat(groups.get(1).value(), is("a"));
-        assertThat(groups.get(1).groupCount(), is(0));
-
-        assertThat(groups.get(2).name(), is("@this?"));
-        assertThat(groups.get(2).value(), is("ab"));
-        assertThat(groups.get(2).groupCount(), is(2));
-
-        assertThat(groups.get(3).name(), is("b"));
-        assertThat(groups.get(3).value(), is("b"));
-        assertThat(groups.get(3).groupCount(), is(0));
-
-        assertThat(groups.get(2).group(1).name(), is("a"));
-        assertThat(groups.get(2).group(1).value(), is("a"));
-        assertThat(groups.get(2).group(1).groupCount(), is(0));
-
-        assertThat(groups.get(2).group(2).name(), is("b"));
-        assertThat(groups.get(2).group(2).value(), is("b"));
-        assertThat(groups.get(2).group(2).groupCount(), is(0));
-
-        groups = new RecexpGrammar()
-                .addRule("A", "a")
-                .addRule("B", "b")
-                .getGroups(ExpressionTree.parseTree("@A@this?@B"), "aabb", new HashSet<String>());
-
-        assertThat(groups.size(), is(3));
-
-        assertThat(groups.get(1).name(), is("@A"));
-        assertThat(groups.get(1).value(), is("a"));
-        assertThat(groups.get(1).groupCount(), is(0));
-
-        assertThat(groups.get(2).name(), is("@this?"));
-        assertThat(groups.get(2).value(), is("ab"));
-        assertThat(groups.get(2).groupCount(), is(2));
-
-        assertThat(groups.get(3).name(), is("@B"));
-        assertThat(groups.get(3).value(), is("b"));
-        assertThat(groups.get(3).groupCount(), is(0));
-
-        assertThat(groups.get(2).group(1).name(), is("@A"));
-        assertThat(groups.get(2).group(1).value(), is("a"));
-        assertThat(groups.get(2).group(1).groupCount(), is(0));
-
-        assertThat(groups.get(2).group(2).name(), is("@B"));
-        assertThat(groups.get(2).group(2).value(), is("b"));
-        assertThat(groups.get(2).group(2).groupCount(), is(0));
+        assertThat(groups.size(), is(0));
     }
 }

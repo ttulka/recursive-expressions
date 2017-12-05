@@ -32,6 +32,11 @@ class ExpressionTree {
         return root.getSentence();
     }
 
+    @Override
+    public String toString() {
+        return root.toString();
+    }
+
     /**
      * Node in the candidate tree.
      */

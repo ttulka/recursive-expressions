@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -146,7 +145,7 @@ public class RecexpGrammar {
         }
 
         for (ExpressionTree candidate : generateCandidates(tree)) {
-            List<RecexpGroup> groups = getGroups(normalizeTree(candidate), input, alreadySeen);
+            List<RecexpGroup> groups = getGroups(candidate, input, alreadySeen);
             if (groups != null) {
                 return groups;
             }
@@ -224,7 +223,13 @@ public class RecexpGrammar {
         // this
         if (leaf.getExpression().isReference()
             && Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
-            combinations.add(root);
+
+            if (leaf.getExpression().isQuantified()) {
+                combinations.add(ExpressionTree.Node.parseNode("(" + root.toWord() + ")" + leaf.getExpression().getQuantifier()));
+
+            } else {
+                combinations.add(root);
+            }
 
         } else {
             if (!leaf.getExpression().isReference()) {
@@ -264,13 +269,6 @@ public class RecexpGrammar {
     }
 
     /**
-     * Normalize the tree to the normal form (every end node is either a simple reference or a terminal containing no reference whatsoever).
-     */
-    private ExpressionTree normalizeTree(ExpressionTree tree) {
-        return ExpressionTree.parseTree(tree.getSentence());
-    }
-
-    /**
      * Expands the tree's end leaves by the node candidates.
      */
     ExpressionTree extendTree(ExpressionTree tree, Set<LeafCandidate> leafCandidates) {
@@ -279,20 +277,19 @@ public class RecexpGrammar {
     }
 
     private ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<LeafCandidate> leafCandidates) {
-        ExpressionTree.Node copy;
+        ExpressionTree.Node copy = new ExpressionTree.Node(
+                node.getExpression(), node.isClosedInBrackets()
+        );
 
         ExpressionTree.Node candidate = findCandidate(node, leafCandidates);
 
         if (candidate != null) {
-            copy = candidate;
-        } else {
-            copy = new ExpressionTree.Node(
-                    node.getExpression(), node.isClosedInBrackets()
-            );
-        }
+            copy.getNodes().add(candidate);
 
-        for (ExpressionTree.Node subNode : node.getNodes()) {
-            copy.getNodes().add(copyNode(subNode, leafCandidates));
+        } else {
+            for (ExpressionTree.Node subNode : node.getNodes()) {
+                copy.getNodes().add(copyNode(subNode, leafCandidates));
+            }
         }
         return copy;
     }
@@ -310,30 +307,26 @@ public class RecexpGrammar {
      * Reduces the tree to groups.
      */
     List<RecexpGroup> reduceTree(ExpressionTree tree, String input) {
-        return Collections.singletonList(nodeToGroup(tree.getRoot(), input));
+        RecexpGroup reducedNode = nodeToGroup(tree.getRoot(), input);
+        return Arrays.asList(reducedNode.groups());
     }
 
     private RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
+        if (input.isEmpty()) {
+            return new RecexpGroup(node.getExpression().toWord(), input, new RecexpGroup[0]);
+        }
+
         List<RecexpGroup> subGroups = new ArrayList<RecexpGroup>();
 
-        StringBuilder nodesWord = new StringBuilder();
-
-        for (ExpressionTree.Node subNode : node.getNodes()) {
-            nodesWord.append("(").append(subNode.toWord()).append(")");
-        }
+        String restInput = input;
 
         for (int i = 0; i < node.getNodes().size(); i++) {
             ExpressionTree.Node subNode = node.getNodes().get(i);
-            Matcher matcher = Pattern.compile(subNode.toWord()).matcher(input);
 
-            String value = "";
-            while (matcher.find()) {
-                String v = input.substring(matcher.start(), matcher.end());
-                if (v.length() > value.length()) {
-                    value = v;
-                }
-            }
+            String value = getInputPartForNodeByLeftReduction(restInput, subNode, node.getNodes().subList(i + 1, node.getNodes().size()));
             subGroups.add(nodeToGroup(subNode, value));
+
+            restInput = restInput.substring(value.length());
         }
 
         RecexpGroup[] groups = new RecexpGroup[subGroups.size()];
@@ -341,6 +334,38 @@ public class RecexpGrammar {
             groups[i] = subGroups.get(i);
         }
         return new RecexpGroup(node.getExpression().toWord(), input, groups);
+    }
+
+    private String getInputPartForNodeByLeftReduction(String input, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {
+        String nodeSentence = node.getSentence();
+        String rightNodesSentence = getNodesSentence(rightNodes);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int index = 0; index <= input.length(); index++) {
+
+            String candidate = sb.toString();
+            String restString = input.substring(candidate.length());
+
+            if (Pattern.matches(nodeSentence, sb.toString())
+                && Pattern.matches(rightNodesSentence, restString)) {
+                return sb.toString();
+            }
+
+            if (index < input.length()) {
+                sb.append(input.charAt(index));
+            }
+        }
+        throw new IllegalStateException("Cannot reduce: input '" + input + "' doesn't match the expression: " + node.toWord() + rightNodesSentence);
+    }
+
+    private String getNodesSentence(List<ExpressionTree.Node> nodes) {
+        StringBuilder sb = new StringBuilder();
+
+        for (ExpressionTree.Node node : nodes) {
+            sb.append(node.getSentence());
+        }
+        return sb.toString();
     }
 
     @Override
