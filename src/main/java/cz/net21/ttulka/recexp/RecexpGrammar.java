@@ -3,7 +3,6 @@ package cz.net21.ttulka.recexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,9 +104,9 @@ public class RecexpGrammar {
 
         for (RecexpRule rule : this.rules) {
 
-            List<RecexpGroup> groups = getGroups(rule.getExpression(), input, new HashSet<String>());
-            if (groups != null && !groups.isEmpty()) {
-                return new RecexpMatcher(rule.getName(), input, groups.toArray(new RecexpGroup[0]));
+            RecexpGroup group = asGroup(rule.getExpression(), input, new HashSet<String>());
+            if (group != null) {
+                return new RecexpMatcher(group.name(), group.value(), group.groups());
             }
         }
         return emptyMatcher(input);
@@ -123,9 +122,9 @@ public class RecexpGrammar {
     }
 
     /**
-     * Returns groups for the candidate and input, or <code>null</code> if it doesn't match.
+     * Returns a group for the candidate and input, or <code>null</code> if it doesn't match.
      */
-    List<RecexpGroup> getGroups(ExpressionTree tree, String input, Set<String> alreadySeen) {
+    RecexpGroup asGroup(ExpressionTree tree, String input, Set<String> alreadySeen) {
         String sentence = tree.getSentence();
 
         if (alreadySeen.contains(sentence)) {
@@ -145,9 +144,9 @@ public class RecexpGrammar {
         }
 
         for (ExpressionTree candidate : generateCandidates(tree)) {
-            List<RecexpGroup> groups = getGroups(candidate, input, alreadySeen);
-            if (groups != null) {
-                return groups;
+            RecexpGroup group = asGroup(candidate, input, alreadySeen);
+            if (group != null) {
+                return group;
             }
         }
         return null;
@@ -304,11 +303,10 @@ public class RecexpGrammar {
     }
 
     /**
-     * Reduces the tree to groups.
+     * Reduces the tree to a group.
      */
-    List<RecexpGroup> reduceTree(ExpressionTree tree, String input) {
-        RecexpGroup reducedNode = nodeToGroup(tree.getRoot(), input);
-        return Arrays.asList(reducedNode.groups());
+    RecexpGroup reduceTree(ExpressionTree tree, String input) {
+        return nodeToGroup(tree.getRoot(), input);
     }
 
     private RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
@@ -333,7 +331,7 @@ public class RecexpGrammar {
         for (int i = 0; i < subGroups.size(); i++) {
             groups[i] = subGroups.get(i);
         }
-        return new RecexpGroup(node.getExpression().toWord(), input, groups);
+        return new RecexpGroup(node.getExpression().toWord(false), input, groups);
     }
 
     private String getInputPartForNodeByLeftReduction(String input, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {

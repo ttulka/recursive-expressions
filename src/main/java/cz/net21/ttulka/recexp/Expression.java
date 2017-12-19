@@ -41,19 +41,30 @@ class Expression {
     }
 
     public String toWord() {
+        return toWord(true);
+    }
+
+    String toWord(boolean inBrackets) {
         if (isEpsilon()) {
             return "";
         }
-        StringBuilder sb = new StringBuilder()
-                .append("(");
+        StringBuilder sb = new StringBuilder();
+
+        if (inBrackets || isQuantified()) {
+            sb.append("(");
+        }
 
         if (isReference()) {
             sb.append(REFERENCE_PREFIX);
         }
-        sb.append(getText())
-                .append(")");
 
-        if (getQuantifier() != null) {
+        sb.append(getText());
+
+        if (inBrackets || isQuantified()) {
+            sb.append(")");
+        }
+
+        if (isQuantified()) {
             sb.append(getQuantifier());
         }
         return sb.toString();
