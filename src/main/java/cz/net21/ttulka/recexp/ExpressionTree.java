@@ -2,6 +2,7 @@ package cz.net21.ttulka.recexp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Tree representation of an candidate.
@@ -141,25 +142,41 @@ class ExpressionTree {
         }
 
         public String getSentence() {
-            return getSentence(this, new StringBuilder()).toString();
+            return getSentence(this, new StringBuilder(), false).toString();
         }
 
-        private StringBuilder getSentence(Node node, StringBuilder sb) {
+        private StringBuilder getSentence(Node node, StringBuilder sb, boolean inBrackets) {
             if (node.getNodes().isEmpty()) {
+                if (inBrackets) {
+                    sb.append("(");
+                }
                 sb.append(node.toWord());
 
+                if (inBrackets) {
+                    sb.append(")");
+                }
+
             } else {
-                if (node.getExpression().isQuantified() || node.isClosedInBrackets()) {
+                if (inBrackets || node.getExpression().isQuantified()) {
                     sb.append("(");
                 }
 
-                for (Node l : node.getNodes()) {
-                    sb = getSentence(l, sb);
+                int nodeIndex = 0;
+                for (Node subNode : node.getNodes()) {
+                    nodeIndex++;
+                    Node nextNode = nodeIndex < node.getNodes().size() ? node.getNodes().get(nodeIndex) : null;
+
+                    boolean closeNodeIntoBrackets = nextNode != null && !nextNode.toWord().isEmpty() &&
+                            subNode.getExpression().isReference() && !subNode.getExpression().isQuantified() &&
+                            Pattern.matches("\\w", String.valueOf(nextNode.toWord().charAt(0)));
+
+                    sb = getSentence(subNode, sb, closeNodeIntoBrackets);
                 }
 
-                if (node.getExpression().isQuantified() || node.isClosedInBrackets()) {
+                if (inBrackets || node.getExpression().isQuantified()) {
                     sb.append(")");
                 }
+
                 if (node.getExpression().isQuantified()) {
                     sb.append(node.getExpression().getQuantifier());
                 }

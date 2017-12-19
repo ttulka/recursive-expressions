@@ -106,10 +106,19 @@ public class RecexpGrammar {
 
             RecexpGroup group = asGroup(rule.getExpression(), input, new HashSet<String>());
             if (group != null) {
-                return new RecexpMatcher(group.name(), group.value(), group.groups());
+                return matcher(group.name(), group.value(), group.groups());
             }
         }
         return emptyMatcher(input);
+    }
+
+    private RecexpMatcher matcher(String name, String input, RecexpGroup[] groups) {
+        return new RecexpMatcher(name, input, groups) {
+            @Override
+            public boolean matches() {
+                return true;
+            }
+        };
     }
 
     private RecexpMatcher emptyMatcher(String input) {
@@ -331,7 +340,7 @@ public class RecexpGrammar {
         for (int i = 0; i < subGroups.size(); i++) {
             groups[i] = subGroups.get(i);
         }
-        return new RecexpGroup(node.getExpression().toWord(false), input, groups);
+        return new RecexpGroup(node.getExpression().toWord(), input, groups);
     }
 
     private String getInputPartForNodeByLeftReduction(String input, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {

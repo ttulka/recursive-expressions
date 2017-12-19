@@ -243,7 +243,6 @@ public class RecexpTest {
 
         assertThat(grammar.accepts("xx"), is(false));
         assertThat(grammar.accepts("xxx"), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
         assertThat(grammar.accepts("aabc"), is(false));
         assertThat(grammar.accepts("axxb"), is(false));
         assertThat(grammar.accepts("xabx"), is(false));
@@ -257,8 +256,6 @@ public class RecexpTest {
 
         assertThat(grammar.accepts("c"), is(true));
         assertThat(grammar.accepts("acb"), is(true));
-        assertThat(grammar.accepts("aacbb"), is(true));
-        assertThat(grammar.accepts("aaacbbb"), is(true));
 
         assertThat(grammar.accepts(""), is(false));
         assertThat(grammar.accepts("ab"), is(false));
@@ -266,6 +263,8 @@ public class RecexpTest {
         assertThat(grammar.accepts("abc"), is(false));
         assertThat(grammar.accepts("cc"), is(false));
         assertThat(grammar.accepts("accb"), is(false));
+        assertThat(grammar.accepts("aacbb"), is(false));
+        assertThat(grammar.accepts("aaacbbb"), is(false));
     }
 
     @Test
@@ -467,14 +466,20 @@ public class RecexpTest {
         RecexpGrammar grammar = new RecexpGrammar("a@this?b");
         RecexpMatcher matcher = grammar.matcher("aabb");
 
-        assertThat(matcher.groupCount(), is(1));
+        assertThat(matcher.groupCount(), is(3));
         assertThat(matcher.group(1).groupCount(), is(0));
+        assertThat(matcher.group(2).groupCount(), is(1));
+        assertThat(matcher.group(3).groupCount(), is(0));
 
         assertThat(matcher.value(), is("aabb"));
-        assertThat(matcher.group(1).value(), is("ab"));
+        assertThat(matcher.group(1).value(), is("a"));
+        assertThat(matcher.group(2).value(), is("ab"));
+        assertThat(matcher.group(3).value(), is("b"));
 
         assertThat(matcher.name(), is("a@this?b"));
-        assertThat(matcher.group(1).name(), is("a@this?b"));
+        assertThat(matcher.group(1).name(), is("a"));
+        assertThat(matcher.group(2).name(), is("@this?"));
+        assertThat(matcher.group(3).name(), is("b"));
     }
 
     @Test
