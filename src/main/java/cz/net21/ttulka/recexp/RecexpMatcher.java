@@ -5,6 +5,24 @@ package cz.net21.ttulka.recexp;
  */
 abstract public class RecexpMatcher extends RecexpGroup {
 
+    static RecexpMatcher matcher(String name, String input, RecexpGroup[] groups) {
+        return new RecexpMatcher(name, input, groups) {
+            @Override
+            public boolean matches() {
+                return true;
+            }
+        };
+    }
+
+    static RecexpMatcher emptyMatcher(String input) {
+        return new RecexpMatcher(null, input, new RecexpGroup[0]) {
+            @Override
+            public boolean matches() {
+                return false;
+            }
+        };
+    }
+
     protected RecexpMatcher(String name, String value, RecexpGroup[] groups) {
         super(name, value, groups);
     }

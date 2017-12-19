@@ -106,28 +106,10 @@ public class RecexpGrammar {
 
             RecexpGroup group = asGroup(rule.getExpression(), input, new HashSet<String>());
             if (group != null) {
-                return matcher(group.name(), group.value(), group.groups());
+                return RecexpMatcher.matcher(group.name(), group.value(), group.groups());
             }
         }
-        return emptyMatcher(input);
-    }
-
-    private RecexpMatcher matcher(String name, String input, RecexpGroup[] groups) {
-        return new RecexpMatcher(name, input, groups) {
-            @Override
-            public boolean matches() {
-                return true;
-            }
-        };
-    }
-
-    private RecexpMatcher emptyMatcher(String input) {
-        return new RecexpMatcher(null, input, new RecexpGroup[0]) {
-            @Override
-            public boolean matches() {
-                return false;
-            }
-        };
+        return RecexpMatcher.emptyMatcher(input);
     }
 
     /**
