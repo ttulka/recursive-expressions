@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -35,79 +36,79 @@ public class RecexpGrammarTest {
     @Test
     public void rulesConstructorTest() {
         RecexpGrammar grammar1 = new RecexpGrammar("");
-        assertThat(grammar1.buildingRules.size(), is(1));
+        assertThat(grammar1.rules.size(), is(1));
 
         RecexpGrammar grammar2 = new RecexpGrammar("a", "b");
-        assertThat(grammar2.buildingRules.size(), is(2));
+        assertThat(grammar2.rules.size(), is(2));
 
         RecexpGrammar grammar3 = new RecexpGrammar("a", "b", "a");
-        assertThat(grammar3.buildingRules.size(), is(2));
+        assertThat(grammar3.rules.size(), is(2));
     }
 
     @Test
     public void stringsConstructorTest() {
         RecexpGrammar grammar1 = new RecexpGrammar("");
-        assertThat(grammar1.buildingRules.size(), is(1));
+        assertThat(grammar1.rules.size(), is(1));
 
         RecexpGrammar grammar2 = new RecexpGrammar("a", "b");
-        assertThat(grammar2.buildingRules.size(), is(2));
+        assertThat(grammar2.rules.size(), is(2));
 
         RecexpGrammar grammar3 = new RecexpGrammar("a", "b", "a");
-        assertThat(grammar3.buildingRules.size(), is(2));
+        assertThat(grammar3.rules.size(), is(2));
     }
 
     @Test
     public void addRuleTest() {
         RecexpGrammar grammar1 = new RecexpGrammar()
                 .addRule("");
-        assertThat(grammar1.buildingRules.size(), is(1));
+        assertThat(grammar1.rules.size(), is(1));
 
         RecexpGrammar grammar2 = new RecexpGrammar()
                 .addRule("a")
                 .addRule("b");
-        assertThat(grammar2.buildingRules.size(), is(2));
+        assertThat(grammar2.rules.size(), is(2));
 
         RecexpGrammar grammar3 = new RecexpGrammar()
                 .addRule("a")
                 .addRule("b")
                 .addRule("a");
-        assertThat(grammar3.buildingRules.size(), is(2));
+        assertThat(grammar3.rules.size(), is(2));
     }
 
     @Test
     public void addStringRuleTest() {
         RecexpGrammar grammar1 = new RecexpGrammar()
                 .addRule("");
-        assertThat(grammar1.buildingRules.size(), is(1));
+        assertThat(grammar1.rules.size(), is(1));
 
         RecexpGrammar grammar2 = new RecexpGrammar()
                 .addRule("a")
                 .addRule("b");
-        assertThat(grammar2.buildingRules.size(), is(2));
+        assertThat(grammar2.rules.size(), is(2));
 
         RecexpGrammar grammar3 = new RecexpGrammar()
                 .addRule("a")
                 .addRule("b")
                 .addRule("a");
-        assertThat(grammar3.buildingRules.size(), is(2));
+        assertThat(grammar3.rules.size(), is(2));
     }
 
     @Test
     public void addStringNamedRuleTest() {
         RecexpGrammar grammar1 = new RecexpGrammar()
                 .addRule("E", "");
-        assertThat(grammar1.buildingRules.size(), is(1));
+        assertThat(grammar1.rules.size(), is(1));
 
         RecexpGrammar grammar2 = new RecexpGrammar()
                 .addRule("A", "a")
                 .addRule("B", "b");
-        assertThat(grammar2.buildingRules.size(), is(2));
+        assertThat(grammar2.rules.size(), is(2));
 
         RecexpGrammar grammar3 = new RecexpGrammar()
                 .addRule("A", "a")
                 .addRule("B", "b")
                 .addRule("A", "a");
-        assertThat(grammar3.buildingRules.size(), is(2));
+        assertThat(grammar3.rules.size(), is(2));
     }
 
     @Test
@@ -299,8 +300,6 @@ public class RecexpGrammarTest {
 
                 .addRule("C", "c");
 
-        grammar.buildRules();
-
         ExpressionTree.Node node;
 
         node = new ExpressionTree.Node(new Expression("A", null, false));
@@ -321,7 +320,7 @@ public class RecexpGrammarTest {
 
         node = new ExpressionTree.Node(new Expression("C", "?", true));
         assertThat(combinationsToString(grammar.generateCombinations(node, node)),
-                   containsInAnyOrder("c?", ""));
+                   containsInAnyOrder("(c)?", ""));
 
         node = new ExpressionTree.Node(new Expression("this", null, true));
         assertThat(combinationsToString(grammar.generateCombinations(node, node)),
@@ -466,7 +465,7 @@ public class RecexpGrammarTest {
                 tree.getLeaves().get(1), ExpressionTree.Node.parseNode("b")
         );
 
-        ExpressionTree extended = grammar.extendTree(tree, new HashSet<RecexpGrammar.LeafCandidate>(
+        ExpressionTree extended = grammar.extendTree(tree.getRoot(), new HashSet<RecexpGrammar.LeafCandidate>(
                 Arrays.asList(candidate1, candidate2)
         ));
 
@@ -532,44 +531,44 @@ public class RecexpGrammarTest {
 
     @Test
     public void checkCyclicRulesFailTest() {
-//        try {
-//            new RecexpGrammar()
-//                    .addRule("CYCLIC_RULE", "@CYCLIC_RULE")
-//                    .accepts("");
-//            fail("Should throw a RecexpCyclicRuleException.");
-//        } catch (RecexpCyclicRuleException expected) {
-//        }
-//        try {
-//            new RecexpGrammar()
-//                    .addRule("CYCLIC_RULE", "a@CYCLIC_RULE")
-//                    .accepts("");
-//            fail("Should throw a RecexpCyclicRuleException.");
-//        } catch (RecexpCyclicRuleException expected) {
-//        }
-//        try {
-//            new RecexpGrammar()
-//                    .addRule("CYCLIC_RULE", "(a)@CYCLIC_RULE(b)")
-//                    .accepts("");
-//            fail("Should throw a RecexpCyclicRuleException.");
-//        } catch (RecexpCyclicRuleException expected) {
-//        }
-//        try {
-//            new RecexpGrammar()
-//                    .addRule("RULE1", "@RULE2")
-//                    .addRule("RULE2", "@RULE1")
-//                    .accepts("");
-//            fail("Should throw a RecexpCyclicRuleException.");
-//        } catch (RecexpCyclicRuleException expected) {
-//        }
-//        try {
-//            new RecexpGrammar()
-//                    .addRule("RULE1", "@RULE2")
-//                    .addRule("RULE2", "@RULE3")
-//                    .addRule("RULE3", "@RULE1")
-//                    .accepts("");
-//            fail("Should throw a RecexpCyclicRuleException.");
-//        } catch (RecexpCyclicRuleException expected) {
-//        }
+        try {
+            new RecexpGrammar()
+                    .addRule("CYCLIC_RULE", "@CYCLIC_RULE")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
+        try {
+            new RecexpGrammar()
+                    .addRule("CYCLIC_RULE", "a@CYCLIC_RULE")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
+        try {
+            new RecexpGrammar()
+                    .addRule("CYCLIC_RULE", "(a)@CYCLIC_RULE(b)")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
+        try {
+            new RecexpGrammar()
+                    .addRule("RULE1", "@RULE2")
+                    .addRule("RULE2", "@RULE1")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
+        try {
+            new RecexpGrammar()
+                    .addRule("RULE1", "@RULE2")
+                    .addRule("RULE2", "@RULE3")
+                    .addRule("RULE3", "@RULE1")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
         try {
             new RecexpGrammar()
                     .addRule("RULE1", "a@RULE2")
@@ -609,12 +608,118 @@ public class RecexpGrammarTest {
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
+        try {
+            new RecexpGrammar()
+                    .addRule("A", "a")
+                    .addRule("B", "b")
+                    .addRule("@A@this@B")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
     }
 
     @Test
     public void checkCyclicRulesPassTest() {
         new RecexpGrammar()
+                .addRule("RULE", "a")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE", "@RULE?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE", "a@RULE?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE", "a@RULE?b")
+                .accepts("");
+
+        new RecexpGrammar()
                 .addRule("RULE", "@this?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE", "a@this?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE", "a@this?b")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2?")
+                .addRule("RULE2", "@RULE1")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2")
+                .addRule("RULE2", "@RULE1?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2?")
+                .addRule("RULE2", "@RULE1?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "a@RULE2?")
+                .addRule("RULE2", "b@RULE1?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "a@RULE2?c")
+                .addRule("RULE2", "b@RULE1?d")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2")
+                .addRule("RULE2", "@RULE3")
+                .addRule("RULE3", "@RULE1?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2")
+                .addRule("RULE2", "@RULE3?")
+                .addRule("RULE3", "@RULE1")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2?")
+                .addRule("RULE2", "@RULE3")
+                .addRule("RULE3", "@RULE1")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "@RULE2?")
+                .addRule("RULE2", "@RULE3?")
+                .addRule("RULE3", "@RULE1?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "a@RULE2")
+                .addRule("RULE2", "b@RULE3")
+                .addRule("RULE3", "c@RULE1?")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "a@RULE2")
+                .addRule("RULE2", "b@RULE3")
+                .addRule("RULE3", "c@RULE1?d")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("RULE1", "a@RULE2?1")
+                .addRule("RULE2", "b@RULE3?2")
+                .addRule("RULE3", "c@RULE1?3")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("A", "a")
+                .addRule("B", "b")
+                .addRule("@A@this?@B")
                 .accepts("");
     }
 }

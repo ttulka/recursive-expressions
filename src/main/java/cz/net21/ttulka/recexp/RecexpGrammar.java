@@ -8,8 +8,7 @@ import java.util.regex.Pattern;
  */
 public class RecexpGrammar {
 
-    final Map<String, Set<String>> buildingRules = new HashMap<String, Set<String>>();
-    final Set<RecexpRule> rules = new HashSet<RecexpRule>();
+    protected final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
     /**
      * Empty constructor.
@@ -25,13 +24,7 @@ public class RecexpGrammar {
     public RecexpGrammar(String... rules) {
         if (rules != null && rules.length > 0) {
             for (String rule : rules) {
-                Set<String> values = buildingRules.get(rule);
-                if (values == null) {
-                    values = new HashSet<String>();
-                }
-                values.add(rule);
-
-                buildingRules.put(rule, values);
+                this.rules.add(new RecexpRule(rule));
             }
         }
     }
@@ -44,12 +37,7 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String name, String expression) {
-        Set<String> values = buildingRules.get(name);
-        if (values == null) {
-            values = new HashSet<String>();
-        }
-        values.add(expression);
-        buildingRules.put(name, values);
+        this.rules.add(new RecexpRule(name, expression));
         return this;
     }
 
@@ -60,12 +48,7 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String expression) {
-        Set<String> values = buildingRules.get(expression);
-        if (values == null) {
-            values = new HashSet<String>();
-        }
-        values.add(expression);
-        this.buildingRules.put(expression, values);
+        this.rules.add(new RecexpRule(expression, expression));
         return this;
     }
 
@@ -88,7 +71,8 @@ public class RecexpGrammar {
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     public RecexpMatcher matcher(String input) {
-        buildRules();
+        checkEmptyRules();
+        checkCyclicRules();
 
         for (RecexpRule rule : this.rules) {
 
@@ -102,16 +86,10 @@ public class RecexpGrammar {
 
     /**
      * @throws RecexpEmptyRulesException when there are no rules
-     * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
-    void buildRules() {
-        if (buildingRules.isEmpty()) {
+    void checkEmptyRules() {
+        if (rules.isEmpty()) {
             throw new RecexpEmptyRulesException();
-        }
-        for (Map.Entry<String, Set<String>> ruleEntry : buildingRules.entrySet()) {
-            for (String rule : ruleEntry.getValue()) {
-                rules.add(new RecexpRule(ruleEntry.getKey(), rule));
-            }
         }
     }
 
@@ -131,29 +109,29 @@ public class RecexpGrammar {
      * @return true if the rule has no self-reference, otherwise false.
      */
     private boolean checkCyclicRules(RecexpRule rule, ExpressionTree tree) {
-        for (ExpressionTree candidate : generateCandidates(tree)) {
+        Set<ExpressionTree.Node> unresolvedReferences = new HashSet<ExpressionTree.Node>();
 
-            for (ExpressionTree.Node leaf : candidate.getLeaves()) {
-                Expression expression = leaf.getExpression();
+        for (ExpressionTree.Node leaf : tree.getLeaves()) {
+            Expression expression = leaf.getExpression();
 
-                if (Pattern.matches("", leaf.toWord())) {
-                    continue;
-                }
+            if (ExpressionUtils.containsEpsilon(leaf.toWord())) {
+                continue;
+            }
 
-                if (rule.getExpression().getRoot().getExpression().equals(leaf.getExpression())) {
+            if (expression.isReference()) {
+                if (Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
                     return false;
                 }
-
-                if (expression.isReference()) {
-                    if (Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
-                        return false;
-                    }
-                    if (rule.getName().equals(leaf.getExpression().getText())) {
-                        return false;
-                    }
+                if (rule.getName().equals(leaf.getExpression().getText())) {
+                    return false;
                 }
+                unresolvedReferences.add(leaf);
+            }
+        }
 
-                if (!checkCyclicRules(rule, candidate)) {
+        for (ExpressionTree.Node node : unresolvedReferences) {
+            for (ExpressionTree candidate : generateCandidates(node)) {
+                if (!checkCyclicRules(rule, ExpressionTree.parseTree(candidate.getSentence()))) {
                     return false;
                 }
             }
@@ -183,7 +161,7 @@ public class RecexpGrammar {
             return reduceTree(tree, input);
         }
 
-        for (ExpressionTree candidate : generateCandidates(tree)) {
+        for (ExpressionTree candidate : generateCandidates(tree.getRoot())) {
             RecexpGroup group = asGroup(candidate, input, alreadySeen);
             if (group != null) {
                 return group;
@@ -192,17 +170,17 @@ public class RecexpGrammar {
         return null;
     }
 
-    private Set<ExpressionTree> generateCandidates(ExpressionTree tree) {
+    private Set<ExpressionTree> generateCandidates(ExpressionTree.Node node) {
         Set<ExpressionTree> candidates = new HashSet<ExpressionTree>();
 
-        for (Set<LeafCandidate> leafCandidates : getCartesianProduct(tree)) {
-            candidates.add(extendTree(tree, leafCandidates));
+        for (Set<LeafCandidate> leafCandidates : getCartesianProduct(node)) {
+            candidates.add(extendTree(node, leafCandidates));
         }
         return candidates;
     }
 
-    private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree tree) {
-        Set<LeafCombination> combinations = generateCombinations(tree);
+    private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree.Node node) {
+        Set<LeafCombination> combinations = generateCombinations(node);
         return getCartesianProduct(combinations);
     }
 
@@ -242,12 +220,12 @@ public class RecexpGrammar {
         return cartesianProduct;
     }
 
-    private Set<LeafCombination> generateCombinations(ExpressionTree tree) {
+    private Set<LeafCombination> generateCombinations(ExpressionTree.Node node) {
         Set<LeafCombination> combinations = new HashSet<LeafCombination>();
 
-        for (ExpressionTree.Node leaf : tree.getLeaves()) {
+        for (ExpressionTree.Node leaf : node.getLeaves()) {
             if (leaf.getExpression().isReference()) {
-                combinations.add(new LeafCombination(leaf, generateCombinations(leaf, tree.getRoot())));
+                combinations.add(new LeafCombination(leaf, generateCombinations(leaf, node)));
             }
         }
         return combinations;
@@ -264,7 +242,8 @@ public class RecexpGrammar {
             && Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
 
             if (leaf.getExpression().isQuantified()) {
-                combinations.add(ExpressionTree.Node.parseNode("(" + root.toWord() + ")" + leaf.getExpression().getQuantifier()));
+                combinations.add(ExpressionTree.Node.parseNode(
+                        "(" + root.getExpression().toWord() + ")" + leaf.getExpression().getQuantifier()));
 
             } else {
                 combinations.add(root);
@@ -299,7 +278,7 @@ public class RecexpGrammar {
         if (!expression.isEpsilon()
             && (leaf.isClosedInBrackets() || leaf.getExpression().isQuantified())) {
             combination = ExpressionTree.Node.parseNode(
-                    expression.toWord() + (leaf.getExpression().isQuantified() ? leaf.getExpression().getQuantifier() : ""));
+                    "(" + expression.toWord() + ")" + (leaf.getExpression().isQuantified() ? leaf.getExpression().getQuantifier() : ""));
         } else {
             combination = new ExpressionTree.Node(
                     new Expression(expression.getText(), expression.getQuantifier(), expression.isReference()));
@@ -310,8 +289,8 @@ public class RecexpGrammar {
     /**
      * Expands the tree's end leaves by the node candidates.
      */
-    ExpressionTree extendTree(ExpressionTree tree, Set<LeafCandidate> leafCandidates) {
-        ExpressionTree.Node expandedRoot = copyNode(tree.getRoot(), leafCandidates);
+    ExpressionTree extendTree(ExpressionTree.Node root, Set<LeafCandidate> leafCandidates) {
+        ExpressionTree.Node expandedRoot = copyNode(root, leafCandidates);
         return new ExpressionTree(expandedRoot);
     }
 
