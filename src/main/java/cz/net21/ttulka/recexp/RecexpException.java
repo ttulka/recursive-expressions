@@ -5,6 +5,10 @@ package cz.net21.ttulka.recexp;
  */
 public class RecexpException extends RuntimeException {
 
+    protected RecexpException() {
+        super();
+    }
+
     protected RecexpException(String message) {
         super(message);
     }

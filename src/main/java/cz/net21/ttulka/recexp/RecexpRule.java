@@ -3,7 +3,7 @@ package cz.net21.ttulka.recexp;
 /**
  * @author ttulka
  */
-public class RecexpRule {
+class RecexpRule {
 
     private final String name;
     private final ExpressionTree expression;

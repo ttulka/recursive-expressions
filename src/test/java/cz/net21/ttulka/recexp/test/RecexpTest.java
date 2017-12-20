@@ -6,7 +6,6 @@ import org.junit.Test;
 import cz.net21.ttulka.recexp.RecexpCyclicRuleException;
 import cz.net21.ttulka.recexp.RecexpGrammar;
 import cz.net21.ttulka.recexp.RecexpMatcher;
-import cz.net21.ttulka.recexp.RecexpRule;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -81,8 +80,8 @@ public class RecexpTest {
     @Ignore
     @Test
     public void doubleRecursiveRuleTest() {
-        RecexpGrammar grammar = new RecexpGrammar(
-                new RecexpRule("RULE", "a@RULE?b@RULE?c"));
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("RULE", "a@RULE?b@RULE?c");
 
         assertThat(grammar.accepts("abc"), is(true));
         assertThat(grammar.accepts("abc"), is(true));
@@ -131,7 +130,7 @@ public class RecexpTest {
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicSimpleRuleTest() {
-        new RecexpGrammar(new RecexpRule("RULE_CYCLIC", "a(@RULE_CYCLIC)b"))
+        new RecexpGrammar().addRule("RULE_CYCLIC", "a(@RULE_CYCLIC)b")
                 .accepts("ab");
         fail("Cyclic rule should throw an exception.");
     }
@@ -149,7 +148,8 @@ public class RecexpTest {
     public void cyclicTwoThisTest() {
         new RecexpGrammar()
                 .addRule("a(@this)b")
-                .addRule("c(@this)d");
+                .addRule("c(@this)d")
+                .accepts("ab");
         fail("Cyclic rule should throw an exception.");
     }
 

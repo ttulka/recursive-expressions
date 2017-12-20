@@ -5,7 +5,7 @@ package cz.net21.ttulka.recexp;
  */
 public class RecexpEmptyRulesException extends RecexpException {
 
-    protected RecexpEmptyRulesException(String expression) {
-        super(expression);
+    protected RecexpEmptyRulesException() {
+        super();
     }
 }

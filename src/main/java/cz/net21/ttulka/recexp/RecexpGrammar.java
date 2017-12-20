@@ -1,11 +1,6 @@
 package cz.net21.ttulka.recexp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -13,7 +8,8 @@ import java.util.regex.Pattern;
  */
 public class RecexpGrammar {
 
-    protected final Set<RecexpRule> rules = new HashSet<RecexpRule>();
+    final Map<String, Set<String>> buildingRules = new HashMap<String, Set<String>>();
+    final Set<RecexpRule> rules = new HashSet<RecexpRule>();
 
     /**
      * Empty constructor.
@@ -26,34 +22,18 @@ public class RecexpGrammar {
      *
      * @param rules the rules
      */
-    public RecexpGrammar(RecexpRule... rules) {
-        if (rules != null && rules.length > 0) {
-            this.rules.addAll(Arrays.asList(rules));
-        }
-    }
-
-    /**
-     * Rules constructor.
-     *
-     * @param rules the rules
-     */
     public RecexpGrammar(String... rules) {
         if (rules != null && rules.length > 0) {
             for (String rule : rules) {
-                this.rules.add(new RecexpRule(rule));
+                Set<String> values = buildingRules.get(rule);
+                if (values == null) {
+                    values = new HashSet<String>();
+                }
+                values.add(rule);
+
+                buildingRules.put(rule, values);
             }
         }
-    }
-
-    /**
-     * Adds a rule.
-     *
-     * @param rule the rule
-     * @return this grammar
-     */
-    public RecexpGrammar addRule(RecexpRule rule) {
-        this.rules.add(rule);
-        return this;
     }
 
     /**
@@ -64,7 +44,12 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String name, String expression) {
-        this.rules.add(new RecexpRule(name, expression));
+        Set<String> values = buildingRules.get(name);
+        if (values == null) {
+            values = new HashSet<String>();
+        }
+        values.add(expression);
+        buildingRules.put(name, values);
         return this;
     }
 
@@ -75,7 +60,12 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String expression) {
-        this.rules.add(new RecexpRule(expression));
+        Set<String> values = buildingRules.get(expression);
+        if (values == null) {
+            values = new HashSet<String>();
+        }
+        values.add(expression);
+        this.buildingRules.put(expression, values);
         return this;
     }
 
@@ -94,13 +84,11 @@ public class RecexpGrammar {
      *
      * @param input the input string
      * @return the matcher
-     * @throws RecexpEmptyRulesException when this grammar has no rules
+     * @throws RecexpEmptyRulesException when there are no rules
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     public RecexpMatcher matcher(String input) {
-        if (this.rules.isEmpty()) {
-            throw new RecexpEmptyRulesException("Input: '" + input + "'.");
-        }
+        buildRules();
 
         for (RecexpRule rule : this.rules) {
 
@@ -110,6 +98,67 @@ public class RecexpGrammar {
             }
         }
         return RecexpMatcher.emptyMatcher(input);
+    }
+
+    /**
+     * @throws RecexpEmptyRulesException when there are no rules
+     * @throws RecexpCyclicRuleException when there is a cyclic rule
+     */
+    void buildRules() {
+        if (buildingRules.isEmpty()) {
+            throw new RecexpEmptyRulesException();
+        }
+        for (Map.Entry<String, Set<String>> ruleEntry : buildingRules.entrySet()) {
+            for (String rule : ruleEntry.getValue()) {
+                rules.add(new RecexpRule(ruleEntry.getKey(), rule));
+            }
+        }
+    }
+
+    /**
+     * @throws RecexpCyclicRuleException when there is a cyclic rule
+     */
+    void checkCyclicRules() {
+        for (RecexpRule rule : this.rules) {
+
+            if (!checkCyclicRules(rule, rule.getExpression())) {
+                throw new RecexpCyclicRuleException(rule.getName());
+            }
+        }
+    }
+
+    /**
+     * @return true if the rule has no self-reference, otherwise false.
+     */
+    private boolean checkCyclicRules(RecexpRule rule, ExpressionTree tree) {
+        for (ExpressionTree candidate : generateCandidates(tree)) {
+
+            for (ExpressionTree.Node leaf : candidate.getLeaves()) {
+                Expression expression = leaf.getExpression();
+
+                if (Pattern.matches("", leaf.toWord())) {
+                    continue;
+                }
+
+                if (rule.getExpression().getRoot().getExpression().equals(leaf.getExpression())) {
+                    return false;
+                }
+
+                if (expression.isReference()) {
+                    if (Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
+                        return false;
+                    }
+                    if (rule.getName().equals(leaf.getExpression().getText())) {
+                        return false;
+                    }
+                }
+
+                if (!checkCyclicRules(rule, candidate)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
