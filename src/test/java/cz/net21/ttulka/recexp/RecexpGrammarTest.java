@@ -529,6 +529,7 @@ public class RecexpGrammarTest {
         assertThat(group.groupCount(), is(0));
     }
 
+    @Ignore
     @Test
     public void checkCyclicRulesFailTest() {
         try {
@@ -617,8 +618,16 @@ public class RecexpGrammarTest {
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
+        try {
+            new RecexpGrammar()
+                    .addRule("@this|@this")
+                    .accepts("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
     }
 
+    @Ignore
     @Test
     public void checkCyclicRulesPassTest() {
         new RecexpGrammar()
@@ -720,6 +729,18 @@ public class RecexpGrammarTest {
                 .addRule("A", "a")
                 .addRule("B", "b")
                 .addRule("@A@this?@B")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("@this|a")
+                .accepts("xx");
+
+        new RecexpGrammar()
+                .addRule("a|@this|b")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("a|@this|b|@this")
                 .accepts("");
     }
 }

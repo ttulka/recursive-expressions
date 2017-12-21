@@ -99,7 +99,32 @@ public class RecexpGrammar {
     void checkCyclicRules() {
         for (RecexpRule rule : this.rules) {
 
-            if (!checkCyclicRules(rule, rule.getExpression())) {
+            boolean hasORs = false;
+            for (ExpressionTree.Node leaf : rule.getExpression().getLeaves()) {
+                if (leaf.getExpression().isOr()) {
+                    hasORs = true;
+                    break;
+                }
+            }
+
+            List<ExpressionTree.Node> nodesToCheck = new ArrayList<ExpressionTree.Node>();
+
+            if (!hasORs) {
+                nodesToCheck.add(rule.getExpression().getRoot());
+            }
+            else {
+                nodesToCheck.addAll(rule.getExpression().getRoot().getNodes());
+            }
+
+            boolean finiteOrNodeFound = false;
+
+            for (ExpressionTree.Node node : nodesToCheck) {
+                if (checkCyclicRules(rule, node)) {
+                    finiteOrNodeFound = true;
+                }
+            }
+
+            if (!finiteOrNodeFound) {
                 throw new RecexpCyclicRuleException(rule.getName());
             }
         }
@@ -108,7 +133,7 @@ public class RecexpGrammar {
     /**
      * @return true if the rule has no self-reference, otherwise false.
      */
-    private boolean checkCyclicRules(RecexpRule rule, ExpressionTree tree) {
+    private boolean checkCyclicRules(RecexpRule rule, ExpressionTree.Node tree) {
         Set<ExpressionTree.Node> unresolvedReferences = new HashSet<ExpressionTree.Node>();
 
         for (ExpressionTree.Node leaf : tree.getLeaves()) {
@@ -123,7 +148,9 @@ public class RecexpGrammar {
                     return false;
                 }
                 if (rule.getName().equals(leaf.getExpression().getText())) {
-                    return false;
+                    if (numberOfRulesWithSameName(rule.getName()) == 1) {
+                        return false;
+                    }
                 }
                 unresolvedReferences.add(leaf);
             }
@@ -131,12 +158,22 @@ public class RecexpGrammar {
 
         for (ExpressionTree.Node node : unresolvedReferences) {
             for (ExpressionTree candidate : generateCandidates(node)) {
-                if (!checkCyclicRules(rule, ExpressionTree.parseTree(candidate.getSentence()))) {
+                if (!checkCyclicRules(rule, ExpressionTree.Node.parseNode(candidate.getSentence()))) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    private int numberOfRulesWithSameName(String ruleName) {
+        int count = 0;
+        for (RecexpRule rule : rules) {
+            if (rule.getName().equals(ruleName)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -156,12 +193,18 @@ public class RecexpGrammar {
             return null;
         }
 
+        // TODO check if minimal count of terminals if bigger then the input
+        // then return null;
+
         // no more references
         if (hydratedSentence.equals(sentence)) {
             return reduceTree(tree, input);
         }
 
         for (ExpressionTree candidate : generateCandidates(tree.getRoot())) {
+            // TODO do not direct recursion, but use a level-base recursion
+            // to reduce infinite loops in OR parts
+
             RecexpGroup group = asGroup(candidate, input, alreadySeen);
             if (group != null) {
                 return group;
@@ -339,6 +382,11 @@ public class RecexpGrammar {
 
         for (int i = 0; i < node.getNodes().size(); i++) {
             ExpressionTree.Node subNode = node.getNodes().get(i);
+
+            if (restInput.isEmpty() && subNode.getExpression().isOr()) {
+                subGroups.clear();
+                break;
+            }
 
             String value = getInputPartForNodeByLeftReduction(restInput, subNode, node.getNodes().subList(i + 1, node.getNodes().size()));
             subGroups.add(nodeToGroup(subNode, value));

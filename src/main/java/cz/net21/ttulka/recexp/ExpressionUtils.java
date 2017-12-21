@@ -27,7 +27,7 @@ class ExpressionUtils {
         return hydrateExpression(expression, "(.*)");
     }
 
-    private static String hydrateExpression(String expression, String replacement) {
+    public static String hydrateExpression(String expression, String replacement) {
         return resetEscapedReference(
                 replaceEscapedReference(expression).replaceAll(REGEXP_REFERENCE, replacement)
         );
@@ -44,10 +44,65 @@ class ExpressionUtils {
     public static List<String> split(String expression) {
         List<String> parts = new ArrayList<String>();
 
-        for (String bracketGroup : ExpressionUtils.getExpressionPartsCutByBrackets(expression)) {
-            for (String referenceGroup : ExpressionUtils.getExpressionPartsCutByReferences(bracketGroup)) {
+        // ORs
+        List<String> orParts = getExpressionPartsCutByORs(expression);
+        if (orParts.size() > 1) {
+            return orParts;
+        }
+
+        // ANDs => bracket groups + references
+        for (String bracketGroup : getExpressionPartsCutByBrackets(expression)) {
+            for (String referenceGroup : getExpressionPartsCutByReferences(bracketGroup)) {
                 parts.add(referenceGroup);
             }
+        }
+        return parts;
+    }
+
+    private static List<String> getExpressionPartsCutByORs(String expression) {
+        if (expression.length() < 3) {  // must be at least x|y
+            return Collections.singletonList(expression);
+        }
+
+        List<String> parts = new ArrayList<String>();
+
+        StringBuilder sb = new StringBuilder(expression.length());
+        char previous = '\0';
+        int bracketsLevel = 0;
+        int lastOpeningBracketIndex = -1;
+
+        int index = 0;
+        while (index < expression.length()) {
+            char ch = expression.charAt(index);
+            sb.append(ch);
+
+            if (ch == '|' && bracketsLevel == 0) {
+                parts.add(sb.toString().substring(0, sb.length() - 1));
+                parts.add("|");
+                sb = new StringBuilder(expression.length() - index);
+            }
+            else if (ch == '(' && previous != '\\') {
+                bracketsLevel++;
+                lastOpeningBracketIndex = index;
+
+            } else if (ch == ')' && previous != '\\') {
+                if (bracketsLevel > 0) {
+                    bracketsLevel--;
+                } else {
+                    throw new RecexpSyntaxException("Unmatched closing ')' near index " + index + "\n" + expression);
+                }
+            }
+
+            previous = ch;
+            index++;
+        }
+
+        if (bracketsLevel > 0) {
+            throw new RecexpSyntaxException("Unmatched opening '(' near index " + lastOpeningBracketIndex + "\n" + expression);
+        }
+
+        if (sb.length() > 0 || index == 0) {
+            parts.add(sb.toString());
         }
         return parts;
     }

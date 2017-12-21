@@ -171,6 +171,17 @@ public class ExpressionUtilsTest {
         assertThat(split("a@this{}++").toString(), is("[a, @this, {}++]"));
         assertThat(split("a@this{,1}++").toString(), is("[a, @this, {,1}++]"));
 
+        assertThat(split("a|b").toString(), is("[a, |, b]"));
+        assertThat(split("(a|b)").toString(), is("[(a|b)]"));
+        assertThat(split("a|b|c").toString(), is("[a, |, b, |, c]"));
+        assertThat(split("abc|123").toString(), is("[abc, |, 123]"));
+        assertThat(split("a(b)c|123").toString(), is("[a(b)c, |, 123]"));
+        assertThat(split("a(b)(c|1)23").toString(), is("[a, (b), (c|1), 23]"));
+        assertThat(split("a(b)(c|1)23@this").toString(), is("[a, (b), (c|1), 23, @this]"));
+        assertThat(split("a|@this").toString(), is("[a, |, @this]"));
+        assertThat(split("a|b@this").toString(), is("[a, |, b@this]"));
+        assertThat(split("a|b(@this)").toString(), is("[a, |, b(@this)]"));
+
         try {
             split("@A(@this)?)");
             fail("RecexpSyntaxException expected");

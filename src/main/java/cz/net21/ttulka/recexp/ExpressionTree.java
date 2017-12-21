@@ -60,7 +60,6 @@ class ExpressionTree {
         public static ExpressionTree.Node parseNode(String expression) {
             String quantifier = null;
 
-            // TODO get the quantifier even if it is in the brackets
             boolean isClosedInBrackets = ExpressionUtils.isClosedInBrackets(expression, true);
             if (isClosedInBrackets) {
                 quantifier = ExpressionUtils.getQuantifier(expression);

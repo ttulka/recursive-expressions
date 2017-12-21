@@ -9,6 +9,7 @@ class Expression {
     public static final String THIS_REFERENCE_NAME = "this";
 
     public static final Expression EPSILON = new Expression("", null, false);
+    public static final Expression OR = new Expression("|", null, false);
 
     private final String text;
     private final String quantifier;
@@ -38,6 +39,10 @@ class Expression {
 
     public boolean isEpsilon() {
         return EPSILON.getText().equals(this.getText());
+    }
+
+    public boolean isOr() {
+        return OR.getText().equals(this.getText());
     }
 
     public String toWord() {
