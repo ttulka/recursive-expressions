@@ -44,17 +44,11 @@ class ExpressionTree {
     static class Node {
 
         private final Expression expression;
-        private final boolean closedInBrackets;
 
         private final List<Node> nodes = new ArrayList<Node>();
 
-        public Node(Expression expression, boolean closedInBrackets) {
-            this.expression = expression;
-            this.closedInBrackets = closedInBrackets;
-        }
-
         public Node(Expression expression) {
-            this(expression, false);
+            this.expression = expression;
         }
 
         public static ExpressionTree.Node parseNode(String expression) {
@@ -82,7 +76,7 @@ class ExpressionTree {
             }
 
             ExpressionTree.Node node = new ExpressionTree.Node(
-                    new Expression(expression, quantifier, isReference), isClosedInBrackets);
+                    new Expression(expression, quantifier, isReference));
 
             List<String> expressionParts = ExpressionUtils.split(expression);
 
@@ -102,10 +96,6 @@ class ExpressionTree {
 
         public Expression getExpression() {
             return expression;
-        }
-
-        public boolean isClosedInBrackets() {
-            return closedInBrackets;
         }
 
         public List<Node> getNodes() {

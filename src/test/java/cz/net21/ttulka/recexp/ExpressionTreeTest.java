@@ -156,7 +156,7 @@ public class ExpressionTreeTest {
 
         ExpressionTree.Node node;
 
-        node = new ExpressionTree.Node(new Expression("@A@B", null, false), true);
+        node = new ExpressionTree.Node(new Expression("@A@B", null, false));
         node.getNodes().add(new ExpressionTree.Node(new Expression("A", null, true)));
         node.getNodes().add(new ExpressionTree.Node(new Expression("B", null, true)));
         assertThat(new ExpressionTree(node).getSentence(), is("@A@B"));
@@ -167,7 +167,7 @@ public class ExpressionTreeTest {
         assertThat(new ExpressionTree(node).getSentence(), is("(@A@B)?"));
 
         node = new ExpressionTree.Node(new Expression("((a))", null, false));
-        node.getNodes().add(new ExpressionTree.Node(new Expression("(a)", null, false), true));
+        node.getNodes().add(new ExpressionTree.Node(new Expression("(a)", null, false)));
         assertThat(new ExpressionTree(node).getSentence(), is("(a)"));
     }
 

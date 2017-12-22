@@ -338,7 +338,7 @@ public class RecexpGrammar {
         ExpressionTree.Node combination;
 
         if (!expression.isEpsilon()
-            && (leaf.isClosedInBrackets() || leaf.getExpression().isQuantified())) {
+            && leaf.getExpression().isQuantified()) {
             combination = ExpressionTree.Node.parseNode(
                     "(" + expression.toWord() + ")" + (leaf.getExpression().isQuantified() ? leaf.getExpression().getQuantifier() : ""));
         } else {
@@ -357,9 +357,7 @@ public class RecexpGrammar {
     }
 
     private ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<LeafCandidate> leafCandidates) {
-        ExpressionTree.Node copy = new ExpressionTree.Node(
-                node.getExpression(), node.isClosedInBrackets()
-        );
+        ExpressionTree.Node copy = new ExpressionTree.Node(node.getExpression());
 
         ExpressionTree.Node candidate = findCandidate(node, leafCandidates);
 
