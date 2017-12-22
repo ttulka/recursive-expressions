@@ -290,6 +290,17 @@ public class RecexpGrammarTest {
     }
 
     @Test
+    public void generateCombinationsORTest() {
+        RecexpGrammar grammar = new RecexpGrammar("a|b");
+
+        ExpressionTree.Node node;
+
+        node = ExpressionTree.Node.parseNode("a|b");
+        assertThat(combinationsToString(grammar.generateCombinations(node, node)),
+                containsInAnyOrder("a", "b"));
+    }
+
+    @Test
     public void generateCombinationsTest() {
         RecexpGrammar grammar = new RecexpGrammar()
                 .addRule("A", "a@this")
@@ -741,6 +752,10 @@ public class RecexpGrammarTest {
 
         new RecexpGrammar()
                 .addRule("a|@this|b|@this")
+                .accepts("");
+
+        new RecexpGrammar()
+                .addRule("(a|@this|b)|(@this|c)")
                 .accepts("");
     }
 }

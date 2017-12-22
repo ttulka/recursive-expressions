@@ -132,6 +132,22 @@ public class ExpressionTreeTest {
             leaves.add(node.getExpression().getText());
         }
         assertThat(leaves, contains("D", "G", "F"));
+
+        // simple OR
+        tree = ExpressionTree.parseTree("a|b");
+        leaves.clear();
+        for (ExpressionTree.Node node : tree.getLeaves()) {
+            leaves.add(node.getExpression().getText());
+        }
+        assertThat(leaves, contains("a", "|", "b"));
+
+        // complex OR
+        tree = ExpressionTree.parseTree("a(b)|c");
+        leaves.clear();
+        for (ExpressionTree.Node node : tree.getLeaves()) {
+            leaves.add(node.getExpression().getText());
+        }
+        assertThat(leaves, contains("a", "b", "|", "c"));
     }
 
     @Test

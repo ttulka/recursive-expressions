@@ -98,18 +98,9 @@ public class RecexpGrammar {
      */
     void checkCyclicRules() {
         for (RecexpRule rule : this.rules) {
-
-            boolean hasORs = false;
-            for (ExpressionTree.Node leaf : rule.getExpression().getLeaves()) {
-                if (leaf.getExpression().isOr()) {
-                    hasORs = true;
-                    break;
-                }
-            }
-
             List<ExpressionTree.Node> nodesToCheck = new ArrayList<ExpressionTree.Node>();
 
-            if (!hasORs) {
+            if (!hasORs(rule.getExpression().getLeaves())) {
                 nodesToCheck.add(rule.getExpression().getRoot());
             }
             else {
@@ -164,6 +155,15 @@ public class RecexpGrammar {
             }
         }
         return true;
+    }
+
+    private boolean hasORs(List<ExpressionTree.Node> nodes) {
+        for (ExpressionTree.Node leaf : nodes) {
+            if (leaf.getExpression().isOr()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int numberOfRulesWithSameName(String ruleName) {
@@ -224,7 +224,19 @@ public class RecexpGrammar {
     }
 
     private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree.Node node) {
-        Set<LeafCombination> combinations = generateCombinations(node);
+        Set<LeafCombination> combinations = new HashSet<LeafCombination>();
+
+        if (hasORs(node.getNodes())) {
+            Set<ExpressionTree.Node> orCombinations = new HashSet<ExpressionTree.Node>();
+            for (ExpressionTree.Node subNode : node.getNodes()) {
+                if (!subNode.getExpression().isOr()) {
+                    orCombinations.add(subNode);
+                }
+            }
+            combinations.add(new LeafCombination(node, orCombinations));
+        } else {
+            combinations.addAll(generateCombinations(node));
+        }
         return getCartesianProduct(combinations);
     }
 
@@ -292,11 +304,17 @@ public class RecexpGrammar {
             } else {
                 combinations.add(root);
             }
-
         } else {
             if (!leaf.getExpression().isReference()) {
-                combinations.add(leaf);
-
+                if (hasORs(leaf.getNodes())) {
+                    for (ExpressionTree.Node node : leaf.getNodes()) {
+                        if (!node.getExpression().isOr()) {
+                            combinations.add(node);
+                        }
+                    }
+                } else {
+                    combinations.add(leaf);
+                }
             } else {
                 for (RecexpRule rule : rules) {
                     if (rule.getName().equals(leaf.getExpression().getText())) {

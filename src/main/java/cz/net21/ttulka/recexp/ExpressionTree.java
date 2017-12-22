@@ -39,7 +39,7 @@ class ExpressionTree {
     }
 
     /**
-     * Node in the candidate tree.
+     * Node in the expression tree.
      */
     static class Node {
 
