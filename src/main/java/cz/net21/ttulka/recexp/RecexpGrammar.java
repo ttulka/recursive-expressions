@@ -180,34 +180,35 @@ public class RecexpGrammar {
      * Returns a group for the candidate and input, or <code>null</code> if it doesn't match.
      */
     RecexpGroup asGroup(ExpressionTree tree, String input, Set<String> alreadySeen) {
-        String sentence = tree.getSentence();
+        Queue<ExpressionTree> candidatesQueue = new LinkedList<ExpressionTree>();
+        candidatesQueue.add(tree);
 
-        if (alreadySeen.contains(sentence)) {
-            return null;
-        }
-        alreadySeen.add(sentence);
+        while (!candidatesQueue.isEmpty()) {
+            ExpressionTree candidate = candidatesQueue.remove();
+            String sentence = candidate.getSentence();
 
-        String hydratedSentence = ExpressionUtils.hydrateExpression(sentence);
+            if (alreadySeen.contains(sentence)) {
+                continue;
+            }
+            alreadySeen.add(sentence);
 
-        if (!Pattern.matches(hydratedSentence, input)) {
-            return null;
-        }
+            String hydratedSentence = ExpressionUtils.hydrateExpression(sentence);
 
-        // TODO check if minimal count of terminals if bigger then the input
-        // then return null;
+            if (!Pattern.matches(hydratedSentence, input)) {
+                continue;
+            }
 
-        // no more references
-        if (hydratedSentence.equals(sentence)) {
-            return reduceTree(tree, input);
-        }
+            // TODO check if minimal count of terminals if bigger then the input
+            // then return null;
 
-        for (ExpressionTree candidate : generateCandidates(tree.getRoot())) {
-            // TODO do not direct recursion, but use a level-base recursion
-            // to reduce infinite loops in OR parts
+            // no more references
+            if (hydratedSentence.equals(sentence)) {
+                return reduceTree(candidate, input);
+            }
 
-            RecexpGroup group = asGroup(candidate, input, alreadySeen);
-            if (group != null) {
-                return group;
+            // generate new candidates from this candidate tree and add them to the queue
+            for (ExpressionTree c : generateCandidates(candidate.getRoot())) {
+                candidatesQueue.add(c);
             }
         }
         return null;
