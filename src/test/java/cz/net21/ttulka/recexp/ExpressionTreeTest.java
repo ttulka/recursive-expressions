@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.fail;
 
 /**
  * @author ttulka
@@ -25,94 +26,115 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is(""));
         assertThat(tree.getSentence(), is(""));
         assertThat(tree.getLeaves().size(), is(0));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("a");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("ab");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("ab"));
         assertThat(tree.getSentence(), is("ab"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@A");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A"));
         assertThat(tree.getSentence(), is("@A"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@AB");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@AB"));
         assertThat(tree.getSentence(), is("@AB"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@A?");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A?"));
         assertThat(tree.getSentence(), is("@A?"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@AB?");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@AB?"));
         assertThat(tree.getSentence(), is("@AB?"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("(a)"); // explicit brackets are ignored
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("((a))");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(a)"));
         assertThat(tree.getSentence(), is("a"));
         assertThat(tree.getLeaves().size(), is(1));
-        assertThat(tree.getRoot().getNodes().size(), is(1));
-        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("a"));
+        assertThat(tree.getRoot().getSubNodes().size(), is(1));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
 
         tree = ExpressionTree.parseTree("@A?@B?");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A?@B?"));
         assertThat(tree.getSentence(), is("@A?@B?"));
         assertThat(tree.getLeaves().size(), is(2));
-        assertThat(tree.getRoot().getNodes().size(), is(2));
-        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("@A?"));
-        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("@B?"));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A?"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B?"));
 
         tree = ExpressionTree.parseTree("(@A?@B?)?");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(@A?@B?)?"));
         assertThat(tree.getSentence(), is("(@A?@B?)?"));
         assertThat(tree.getLeaves().size(), is(2));
-        assertThat(tree.getRoot().getNodes().size(), is(2));
-        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("@A?"));
-        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("@B?"));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A?"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B?"));
 
         tree = ExpressionTree.parseTree("a(@this)?b");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a(@this)?b"));
         assertThat(tree.getSentence(), is("a@this?b"));
         assertThat(tree.getLeaves().size(), is(3));
-        assertThat(tree.getRoot().getNodes().size(), is(3));
-        assertThat(tree.getRoot().getNodes().get(0).toWord(), is("a"));
-        assertThat(tree.getRoot().getNodes().get(1).toWord(), is("@this?"));
-        assertThat(tree.getRoot().getNodes().get(2).toWord(), is("b"));
+        assertThat(tree.getRoot().getSubNodes().size(), is(3));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@this?"));
+        assertThat(tree.getRoot().getSubNodes().get(2).toWord(), is("b"));
 
         // TODO more tests
+
+        try {
+            ExpressionTree.parseTree("a@this{,}++");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            ExpressionTree.parseTree("a@this{}++");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
+
+        try {
+            ExpressionTree.parseTree("a@this{,1}++");
+            fail("RecexpSyntaxException expected");
+
+        } catch (RecexpSyntaxException expected) {
+        }
     }
 
     @Test
@@ -139,7 +161,7 @@ public class ExpressionTreeTest {
         for (ExpressionTree.Node node : tree.getLeaves()) {
             leaves.add(node.getExpression().getText());
         }
-        assertThat(leaves, contains("a", "|", "b"));
+        assertThat(leaves, contains("a", "b"));
 
         // complex OR
         tree = ExpressionTree.parseTree("a(b)|c");
@@ -147,7 +169,7 @@ public class ExpressionTreeTest {
         for (ExpressionTree.Node node : tree.getLeaves()) {
             leaves.add(node.getExpression().getText());
         }
-        assertThat(leaves, contains("a", "b", "|", "c"));
+        assertThat(leaves, contains("a", "b", "c"));
     }
 
     @Test
@@ -157,17 +179,17 @@ public class ExpressionTreeTest {
         ExpressionTree.Node node;
 
         node = new ExpressionTree.Node(new Expression("@A@B", null, false));
-        node.getNodes().add(new ExpressionTree.Node(new Expression("A", null, true)));
-        node.getNodes().add(new ExpressionTree.Node(new Expression("B", null, true)));
+        node.getSubNodes().add(new ExpressionTree.Node(new Expression("A", null, true)));
+        node.getSubNodes().add(new ExpressionTree.Node(new Expression("B", null, true)));
         assertThat(new ExpressionTree(node).getSentence(), is("@A@B"));
 
         node = new ExpressionTree.Node(new Expression("@A@B", "?", false));
-        node.getNodes().add(new ExpressionTree.Node(new Expression("A", null, true)));
-        node.getNodes().add(new ExpressionTree.Node(new Expression("B", null, true)));
+        node.getSubNodes().add(new ExpressionTree.Node(new Expression("A", null, true)));
+        node.getSubNodes().add(new ExpressionTree.Node(new Expression("B", null, true)));
         assertThat(new ExpressionTree(node).getSentence(), is("(@A@B)?"));
 
         node = new ExpressionTree.Node(new Expression("((a))", null, false));
-        node.getNodes().add(new ExpressionTree.Node(new Expression("(a)", null, false)));
+        node.getSubNodes().add(new ExpressionTree.Node(new Expression("(a)", null, false)));
         assertThat(new ExpressionTree(node).getSentence(), is("(a)"));
     }
 
@@ -216,16 +238,16 @@ public class ExpressionTreeTest {
         ExpressionTree.Node G = createSimpleLeaf("G");
         ExpressionTree.Node eps = createSimpleLeaf("");
 
-        A.getNodes().add(B);
-        A.getNodes().add(C);
+        A.getSubNodes().add(B);
+        A.getSubNodes().add(C);
 
-        B.getNodes().add(D);
-        B.getNodes().add(E);
+        B.getSubNodes().add(D);
+        B.getSubNodes().add(E);
 
-        E.getNodes().add(G);
+        E.getSubNodes().add(G);
 
-        C.getNodes().add(F);
-        C.getNodes().add(eps);
+        C.getSubNodes().add(F);
+        C.getSubNodes().add(eps);
 
         return new ExpressionTree(A);
     }

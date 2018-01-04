@@ -3,6 +3,7 @@ package cz.net21.ttulka.recexp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Tree representation of an candidate.
@@ -44,14 +45,31 @@ class ExpressionTree {
     static class Node {
 
         private final Expression expression;
-
-        private final List<Node> nodes = new ArrayList<Node>();
+        private final SubNodesConnectionType subNodesConnectionType;
+        private final List<Node> subNodes;
 
         public Node(Expression expression) {
+            this(expression, SubNodesConnectionType.SINGLE);
+        }
+
+        public Node(Expression expression, SubNodesConnectionType subNodesConnectionType) {
+            this(expression, subNodesConnectionType, new ArrayList<Node>());
+        }
+
+        public Node(Expression expression, SubNodesConnectionType subNodesConnectionType, List<Node> subNodes) {
             this.expression = expression;
+            this.subNodesConnectionType = subNodesConnectionType;
+            this.subNodes = new ArrayList<Node>(subNodes);
         }
 
         public static ExpressionTree.Node parseNode(String expression) {
+            try {
+                Pattern.compile(expression);
+
+            } catch (PatternSyntaxException rethrow) {
+                throw new RecexpSyntaxException(rethrow.getMessage());
+            }
+
             String quantifier = null;
 
             boolean isClosedInBrackets = ExpressionUtils.isClosedInBrackets(expression, true);
@@ -75,31 +93,60 @@ class ExpressionTree {
                 }
             }
 
-            ExpressionTree.Node node = new ExpressionTree.Node(
-                    new Expression(expression, quantifier, isReference));
+            List<String> orParts = ExpressionUtils.splitORs(expression);
 
-            List<String> expressionParts = ExpressionUtils.split(expression);
-
-            if (expressionParts.size() > 1 || !expressionParts.get(0).equals(expression)) {
-                for (String part : expressionParts) {
-                    node.getNodes().add(parseNode(part));
+            if (orParts.size() > 1) {
+                List<Node> subNodes = new ArrayList<Node>();
+                for (String part : orParts) {
+                    subNodes.add(parseNode(part));
                 }
 
-            } else {
-                if (ExpressionUtils.isClosedInBrackets(expression, true)) {
-                    node.getNodes().add(parseNode(expression));
-                }
+                return new ExpressionTree.Node(
+                        new Expression(expression, quantifier, isReference),
+                        SubNodesConnectionType.OR,
+                        subNodes);
             }
 
-            return node;
+            List<String> andParts = ExpressionUtils.splitANDs(expression);
+
+            if (andParts.size() > 1) {
+                List<Node> subNodes = new ArrayList<Node>();
+                for (String part : andParts) {
+                    subNodes.add(parseNode(part));
+                }
+
+                return new ExpressionTree.Node(
+                        new Expression(expression, quantifier, isReference),
+                        SubNodesConnectionType.AND,
+                        subNodes);
+
+            }
+
+            if (ExpressionUtils.isClosedInBrackets(expression, true)) {
+                List<Node> subNodes = new ArrayList<Node>();
+                subNodes.add(parseNode(expression));
+
+                return new ExpressionTree.Node(
+                        new Expression(expression, quantifier, isReference),
+                        SubNodesConnectionType.OR,
+                        subNodes);
+            }
+
+            return new ExpressionTree.Node(
+                    new Expression(expression, quantifier, isReference),
+                    SubNodesConnectionType.SINGLE);
         }
 
         public Expression getExpression() {
             return expression;
         }
 
-        public List<Node> getNodes() {
-            return nodes;
+        public SubNodesConnectionType getSubNodesConnectionType() {
+            return subNodesConnectionType;
+        }
+
+        public List<Node> getSubNodes() {
+            return subNodes;
         }
 
         public String toWord() {
@@ -117,13 +164,13 @@ class ExpressionTree {
         private List<Node> getLeaves(Node node) {
             List<Node> leaves = new ArrayList<Node>();
 
-            if (node.getNodes().isEmpty()) {
+            if (node.getSubNodes().isEmpty()) {
                 if (!node.isEmpty()) {
                     leaves.add(node);
                 }
 
             } else {
-                for (Node l : node.getNodes()) {
+                for (Node l : node.getSubNodes()) {
                     leaves.addAll(getLeaves(l));
                 }
             }
@@ -131,11 +178,13 @@ class ExpressionTree {
         }
 
         public String getSentence() {
-            return getSentence(this, new StringBuilder(), false).toString();
+            return getSentence(this, false).toString();
         }
 
-        private StringBuilder getSentence(Node node, StringBuilder sb, boolean inBrackets) {
-            if (node.getNodes().isEmpty()) {
+        private StringBuilder getSentence(Node node, boolean inBrackets) {
+            StringBuilder sb = new StringBuilder();
+
+            if (node.getSubNodes().isEmpty()) {
                 if (inBrackets) {
                     sb.append("(");
                 }
@@ -144,31 +193,35 @@ class ExpressionTree {
                 if (inBrackets) {
                     sb.append(")");
                 }
+                return sb;
+            }
 
-            } else {
-                if (inBrackets || node.getExpression().isQuantified()) {
-                    sb.append("(");
+            if (inBrackets || node.getExpression().isQuantified()) {
+                sb.append("(");
+            }
+
+            int nodeIndex = 0;
+            for (Node subNode : node.getSubNodes()) {
+                nodeIndex++;
+                Node nextNode = nodeIndex < node.getSubNodes().size() ? node.getSubNodes().get(nodeIndex) : null;
+
+                boolean closeNodeIntoBrackets = nextNode != null && !nextNode.toWord().isEmpty() &&
+                                                subNode.getExpression().isReference() && !subNode.getExpression().isQuantified() &&
+                                                Pattern.matches("\\w", String.valueOf(nextNode.toWord().charAt(0)));
+
+                if (SubNodesConnectionType.OR == node.subNodesConnectionType && nodeIndex > 1) {
+                    sb.append("|");
                 }
 
-                int nodeIndex = 0;
-                for (Node subNode : node.getNodes()) {
-                    nodeIndex++;
-                    Node nextNode = nodeIndex < node.getNodes().size() ? node.getNodes().get(nodeIndex) : null;
+                sb.append(getSentence(subNode, closeNodeIntoBrackets));
+            }
 
-                    boolean closeNodeIntoBrackets = nextNode != null && !nextNode.toWord().isEmpty() &&
-                            subNode.getExpression().isReference() && !subNode.getExpression().isQuantified() &&
-                            Pattern.matches("\\w", String.valueOf(nextNode.toWord().charAt(0)));
+            if (inBrackets || node.getExpression().isQuantified()) {
+                sb.append(")");
+            }
 
-                    sb = getSentence(subNode, sb, closeNodeIntoBrackets);
-                }
-
-                if (inBrackets || node.getExpression().isQuantified()) {
-                    sb.append(")");
-                }
-
-                if (node.getExpression().isQuantified()) {
-                    sb.append(node.getExpression().getQuantifier());
-                }
+            if (node.getExpression().isQuantified()) {
+                sb.append(node.getExpression().getQuantifier());
             }
             return sb;
         }
@@ -176,6 +229,10 @@ class ExpressionTree {
         @Override
         public String toString() {
             return expression.toString();
+        }
+
+        enum SubNodesConnectionType {
+            SINGLE, AND, OR
         }
     }
 }

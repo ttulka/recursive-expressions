@@ -10,7 +10,8 @@ import static cz.net21.ttulka.recexp.ExpressionUtils.isQuantified;
 import static cz.net21.ttulka.recexp.ExpressionUtils.isReference;
 import static cz.net21.ttulka.recexp.ExpressionUtils.removeClosingBrackets;
 import static cz.net21.ttulka.recexp.ExpressionUtils.removeReferencePrefix;
-import static cz.net21.ttulka.recexp.ExpressionUtils.split;
+import static cz.net21.ttulka.recexp.ExpressionUtils.splitANDs;
+import static cz.net21.ttulka.recexp.ExpressionUtils.splitORs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
@@ -109,120 +110,120 @@ public class ExpressionUtilsTest {
     }
 
     @Test
-    public void splitTest() {
-        assertThat(split("").size(), is(1));
-        assertThat(split("a").toString(), is("[a]"));
-        assertThat(split("ab").toString(), is("[ab]"));
-        assertThat(split("a(b)").toString(), is("[a, (b)]"));
-        assertThat(split("a(b)@this").toString(), is("[a, (b), @this]"));
-        assertThat(split("a(b)(@this)").toString(), is("[a, (b), (@this)]"));
-        assertThat(split("a(b)(\\@this)").toString(), is("[a, (b), (\\@this)]"));
-        assertThat(split("a(b)(\\@this)@this").toString(), is("[a, (b), (\\@this), @this]"));
-        assertThat(split("a(b)(@this)@this").toString(), is("[a, (b), (@this), @this]"));
-        assertThat(split("a(b)(@AB)@CD").toString(), is("[a, (b), (@AB), @CD]"));
+    public void splitANDsTest() {
+        assertThat(splitANDs("").size(), is(1));
+        assertThat(splitANDs("a").toString(), is("[a]"));
+        assertThat(splitANDs("ab").toString(), is("[ab]"));
+        assertThat(splitANDs("a(b)").toString(), is("[a, (b)]"));
+        assertThat(splitANDs("a(b)@this").toString(), is("[a, (b), @this]"));
+        assertThat(splitANDs("a(b)(@this)").toString(), is("[a, (b), (@this)]"));
+        assertThat(splitANDs("a(b)(\\@this)").toString(), is("[a, (b), (\\@this)]"));
+        assertThat(splitANDs("a(b)(\\@this)@this").toString(), is("[a, (b), (\\@this), @this]"));
+        assertThat(splitANDs("a(b)(@this)@this").toString(), is("[a, (b), (@this), @this]"));
+        assertThat(splitANDs("a(b)(@AB)@CD").toString(), is("[a, (b), (@AB), @CD]"));
 
-        assertThat(split("(a)(@A)?").toString(), is("[(a), (@A)?]"));
+        assertThat(splitANDs("(a)(@A)?").toString(), is("[(a), (@A)?]"));
 
-        assertThat(split("@A@this").toString(), is("[@A, @this]"));
-        assertThat(split("@A@this?").toString(), is("[@A, @this?]"));
-        assertThat(split("@A(@this)?").toString(), is("[@A, (@this)?]"));
-        assertThat(split("(@A(@this)?)").toString(), is("[(@A(@this)?)]"));
+        assertThat(splitANDs("@A@this").toString(), is("[@A, @this]"));
+        assertThat(splitANDs("@A@this?").toString(), is("[@A, @this?]"));
+        assertThat(splitANDs("@A(@this)?").toString(), is("[@A, (@this)?]"));
+        assertThat(splitANDs("(@A(@this)?)").toString(), is("[(@A(@this)?)]"));
 
-        assertThat(split("()").toString(), is("[()]"));
-        assertThat(split("(())").toString(), is("[(())]"));
-        assertThat(split("()()").toString(), is("[(), ()]"));
-        assertThat(split("(()())").toString(), is("[(()())]"));
+        assertThat(splitANDs("()").toString(), is("[()]"));
+        assertThat(splitANDs("(())").toString(), is("[(())]"));
+        assertThat(splitANDs("()()").toString(), is("[(), ()]"));
+        assertThat(splitANDs("(()())").toString(), is("[(()())]"));
 
-        assertThat(split("a@this?b").toString(), is("[a, @this?, b]"));
-        assertThat(split("a(@this?)b").toString(), is("[a, (@this?), b]"));
-        assertThat(split("a(@this?)b").toString(), is("[a, (@this?), b]"));
-        assertThat(split("(a)(@this?)(b)").toString(), is("[(a), (@this?), (b)]"));
-        assertThat(split("((a))((@this?))((b))").toString(), is("[((a)), ((@this?)), ((b))]"));
-        assertThat(split("a(@this?)b\\)\\)").toString(), is("[a, (@this?), b\\)\\)]"));
+        assertThat(splitANDs("a@this?b").toString(), is("[a, @this?, b]"));
+        assertThat(splitANDs("a(@this?)b").toString(), is("[a, (@this?), b]"));
+        assertThat(splitANDs("a(@this?)b").toString(), is("[a, (@this?), b]"));
+        assertThat(splitANDs("(a)(@this?)(b)").toString(), is("[(a), (@this?), (b)]"));
+        assertThat(splitANDs("((a))((@this?))((b))").toString(), is("[((a)), ((@this?)), ((b))]"));
+        assertThat(splitANDs("a(@this?)b\\)\\)").toString(), is("[a, (@this?), b\\)\\)]"));
 
-        assertThat(split("a@this?").toString(), is("[a, @this?]"));
-        assertThat(split("a@this*").toString(), is("[a, @this*]"));
-        assertThat(split("a@this+").toString(), is("[a, @this+]"));
-        assertThat(split("a@this{1}").toString(), is("[a, @this{1}]"));
-        assertThat(split("a@this{123}").toString(), is("[a, @this{123}]"));
-        assertThat(split("a@this{1,}").toString(), is("[a, @this{1,}]"));
-        assertThat(split("a@this{123,}").toString(), is("[a, @this{123,}]"));
-        assertThat(split("a@this{1,2}").toString(), is("[a, @this{1,2}]"));
-        assertThat(split("a@this{1,23}").toString(), is("[a, @this{1,23}]"));
-        assertThat(split("a@this??").toString(), is("[a, @this??]"));
-        assertThat(split("a@this*?").toString(), is("[a, @this*?]"));
-        assertThat(split("a@this+?").toString(), is("[a, @this+?]"));
-        assertThat(split("a@this{1}?").toString(), is("[a, @this{1}?]"));
-        assertThat(split("a@this{123}?").toString(), is("[a, @this{123}?]"));
-        assertThat(split("a@this{1,}?").toString(), is("[a, @this{1,}?]"));
-        assertThat(split("a@this{123,}?").toString(), is("[a, @this{123,}?]"));
-        assertThat(split("a@this{1,2}?").toString(), is("[a, @this{1,2}?]"));
-        assertThat(split("a@this{1,23}?").toString(), is("[a, @this{1,23}?]"));
-        assertThat(split("a@this?+").toString(), is("[a, @this?+]"));
-        assertThat(split("a@this*+").toString(), is("[a, @this*+]"));
-        assertThat(split("a@this++").toString(), is("[a, @this++]"));
-        assertThat(split("a@this{1}+").toString(), is("[a, @this{1}+]"));
-        assertThat(split("a@this{123}+").toString(), is("[a, @this{123}+]"));
-        assertThat(split("a@this{1,}+").toString(), is("[a, @this{1,}+]"));
-        assertThat(split("a@this{123,}+").toString(), is("[a, @this{123,}+]"));
-        assertThat(split("a@this{1,2}+").toString(), is("[a, @this{1,2}+]"));
-        assertThat(split("a@this{1,23}+").toString(), is("[a, @this{1,23}+]"));
-        assertThat(split("a@this{,}++").toString(), is("[a, @this, {,}++]"));
-        assertThat(split("a@this{}++").toString(), is("[a, @this, {}++]"));
-        assertThat(split("a@this{,1}++").toString(), is("[a, @this, {,1}++]"));
-
-        assertThat(split("a|b").toString(), is("[a, |, b]"));
-        assertThat(split("(a|b)").toString(), is("[(a|b)]"));
-        assertThat(split("a|b|c").toString(), is("[a, |, b, |, c]"));
-        assertThat(split("abc|123").toString(), is("[abc, |, 123]"));
-        assertThat(split("a(b)c|123").toString(), is("[a(b)c, |, 123]"));
-        assertThat(split("a(b)(c|1)23").toString(), is("[a, (b), (c|1), 23]"));
-        assertThat(split("a(b)(c|1)23@this").toString(), is("[a, (b), (c|1), 23, @this]"));
-        assertThat(split("a|@this").toString(), is("[a, |, @this]"));
-        assertThat(split("a|b@this").toString(), is("[a, |, b@this]"));
-        assertThat(split("a|b(@this)").toString(), is("[a, |, b(@this)]"));
+        assertThat(splitANDs("a@this?").toString(), is("[a, @this?]"));
+        assertThat(splitANDs("a@this*").toString(), is("[a, @this*]"));
+        assertThat(splitANDs("a@this+").toString(), is("[a, @this+]"));
+        assertThat(splitANDs("a@this{1}").toString(), is("[a, @this{1}]"));
+        assertThat(splitANDs("a@this{123}").toString(), is("[a, @this{123}]"));
+        assertThat(splitANDs("a@this{1,}").toString(), is("[a, @this{1,}]"));
+        assertThat(splitANDs("a@this{123,}").toString(), is("[a, @this{123,}]"));
+        assertThat(splitANDs("a@this{1,2}").toString(), is("[a, @this{1,2}]"));
+        assertThat(splitANDs("a@this{1,23}").toString(), is("[a, @this{1,23}]"));
+        assertThat(splitANDs("a@this??").toString(), is("[a, @this??]"));
+        assertThat(splitANDs("a@this*?").toString(), is("[a, @this*?]"));
+        assertThat(splitANDs("a@this+?").toString(), is("[a, @this+?]"));
+        assertThat(splitANDs("a@this{1}?").toString(), is("[a, @this{1}?]"));
+        assertThat(splitANDs("a@this{123}?").toString(), is("[a, @this{123}?]"));
+        assertThat(splitANDs("a@this{1,}?").toString(), is("[a, @this{1,}?]"));
+        assertThat(splitANDs("a@this{123,}?").toString(), is("[a, @this{123,}?]"));
+        assertThat(splitANDs("a@this{1,2}?").toString(), is("[a, @this{1,2}?]"));
+        assertThat(splitANDs("a@this{1,23}?").toString(), is("[a, @this{1,23}?]"));
+        assertThat(splitANDs("a@this?+").toString(), is("[a, @this?+]"));
+        assertThat(splitANDs("a@this*+").toString(), is("[a, @this*+]"));
+        assertThat(splitANDs("a@this++").toString(), is("[a, @this++]"));
+        assertThat(splitANDs("a@this{1}+").toString(), is("[a, @this{1}+]"));
+        assertThat(splitANDs("a@this{123}+").toString(), is("[a, @this{123}+]"));
+        assertThat(splitANDs("a@this{1,}+").toString(), is("[a, @this{1,}+]"));
+        assertThat(splitANDs("a@this{123,}+").toString(), is("[a, @this{123,}+]"));
+        assertThat(splitANDs("a@this{1,2}+").toString(), is("[a, @this{1,2}+]"));
+        assertThat(splitANDs("a@this{1,23}+").toString(), is("[a, @this{1,23}+]"));
 
         try {
-            split("@A(@this)?)");
+            splitANDs("@A(@this)?)");
             fail("RecexpSyntaxException expected");
 
         } catch (RecexpSyntaxException expected) {
         }
 
         try {
-            split("(@A(@this)?");
+            splitANDs("(@A(@this)?");
             fail("RecexpSyntaxException expected");
 
         } catch (RecexpSyntaxException expected) {
         }
 
         try {
-            split("(");
+            splitANDs("(");
             fail("RecexpSyntaxException expected");
 
         } catch (RecexpSyntaxException expected) {
         }
 
         try {
-            split(")");
+            splitANDs(")");
             fail("RecexpSyntaxException expected");
 
         } catch (RecexpSyntaxException expected) {
         }
 
         try {
-            split("())");
+            splitANDs("())");
             fail("RecexpSyntaxException expected");
 
         } catch (RecexpSyntaxException expected) {
         }
 
         try {
-            split("(()");
+            splitANDs("(()");
             fail("RecexpSyntaxException expected");
 
         } catch (RecexpSyntaxException expected) {
         }
+    }
+
+    @Test
+    public void splitORsTest() {
+        assertThat(splitORs("a|b").toString(), is("[a, b]"));
+        assertThat(splitORs("(a|b)").toString(), is("[(a|b)]"));
+        assertThat(splitORs("a|b|c").toString(), is("[a, b, c]"));
+        assertThat(splitORs("abc|123").toString(), is("[abc, 123]"));
+        assertThat(splitORs("a(b)c|123").toString(), is("[a(b)c, 123]"));
+        assertThat(splitORs("a(b)(c|1)23").toString(), is("[a(b)(c|1)23]"));
+        assertThat(splitORs("a(b)(c|1)23@this").toString(), is("[a(b)(c|1)23@this]"));
+        assertThat(splitORs("a|@this").toString(), is("[a, @this]"));
+        assertThat(splitORs("a|b@this").toString(), is("[a, b@this]"));
+        assertThat(splitORs("a|b(@this)").toString(), is("[a, b(@this)]"));
     }
 
     @Test

@@ -43,7 +43,7 @@ public class RecexpGroup {
      * @return the number of capturing groups in the input for this matcher's grammar
      */
     public int groupCount() {
-        return this.groups.length;
+        return groups != null ? groups.length : 0;
     }
 
     /**
@@ -52,7 +52,7 @@ public class RecexpGroup {
      * @return the capturing groups in the input for this matcher's grammar
      */
     public RecexpGroup[] groups() {
-        return this.groups;
+        return groups;
     }
 
     /**
@@ -64,13 +64,13 @@ public class RecexpGroup {
      * @return The (possibly empty) subgroup captured by the group, or null if the group failed to match part of the input
      */
     public RecexpGroup group(int group) {
-        if (group < 0 || group > this.groups.length) {
+        if (groups == null || group < 0 || group > groups.length) {
             return null;
         }
         if (group == 0) {
             return this;
         }
-        return this.groups[group - 1];
+        return groups[group - 1];
     }
 
     /**
@@ -85,7 +85,7 @@ public class RecexpGroup {
         if (groupName.equals(name)) {
             return this;
         }
-        for (RecexpGroup group : this.groups) {
+        for (RecexpGroup group : groups) {
 
             if (group.name().equals(groupName)) {
                 return group;

@@ -1,13 +1,10 @@
 package cz.net21.ttulka.recexp.test;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.net21.ttulka.recexp.RecexpCyclicRuleException;
 import cz.net21.ttulka.recexp.RecexpGrammar;
 import cz.net21.ttulka.recexp.RecexpMatcher;
-
-import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,32 +50,30 @@ public class RecexpTest {
         assertThat(grammar.accepts("abb"), is(false));
     }
 
-    @Ignore
     @Test
     public void doubleRecursiveThisTest() {
         RecexpGrammar grammar = new RecexpGrammar("a@this?b@this?c");
 
-//        assertThat(grammar.accepts("abc"), is(true));
-//        assertThat(grammar.accepts("ababcc"), is(true));
-//        assertThat(grammar.accepts("aabcbc"), is(true));
-//        assertThat(grammar.accepts("aabcbabcc"), is(true));
+        assertThat(grammar.accepts("abc"), is(true));
+        assertThat(grammar.accepts("ababcc"), is(true));
+        assertThat(grammar.accepts("aabcbc"), is(true));
+        assertThat(grammar.accepts("aabcbabcc"), is(true));
         assertThat(grammar.accepts("aaabcbabccbaabcbabccc"), is(true));
-//
-//        assertThat(grammar.accepts(""), is(false));
-//        assertThat(grammar.accepts("a"), is(false));
-//        assertThat(grammar.accepts("ab"), is(false));
-//        assertThat(grammar.accepts("ac"), is(false));
-//        assertThat(grammar.accepts("bc"), is(false));
-//        assertThat(grammar.accepts("cba"), is(false));
-//        assertThat(grammar.accepts("aabc"), is(false));
-//        assertThat(grammar.accepts("aabcc"), is(false));
-//        assertThat(grammar.accepts("aabbcc"), is(false));
-//        assertThat(grammar.accepts("aabbc"), is(false));
-//        assertThat(grammar.accepts("aacbc"), is(false));
-//        assertThat(grammar.accepts("ababc"), is(true));
+
+        assertThat(grammar.accepts(""), is(false));
+        assertThat(grammar.accepts("a"), is(false));
+        assertThat(grammar.accepts("ab"), is(false));
+        assertThat(grammar.accepts("ac"), is(false));
+        assertThat(grammar.accepts("bc"), is(false));
+        assertThat(grammar.accepts("cba"), is(false));
+        assertThat(grammar.accepts("aabc"), is(false));
+        assertThat(grammar.accepts("aabcc"), is(false));
+        assertThat(grammar.accepts("aabbcc"), is(false));
+        assertThat(grammar.accepts("aabbc"), is(false));
+        assertThat(grammar.accepts("aacbc"), is(false));
+        assertThat(grammar.accepts("ababc"), is(true));
     }
 
-    @Ignore
     @Test
     public void doubleRecursiveRuleTest() {
         RecexpGrammar grammar = new RecexpGrammar()
@@ -168,7 +163,7 @@ public class RecexpTest {
     public void orThisTest() {
         RecexpGrammar grammar = new RecexpGrammar("a(@this)b|c");
 
-//        assertThat(grammar.accepts("c"), is(true));
+        assertThat(grammar.accepts("c"), is(true));
         assertThat(grammar.accepts("acb"), is(true));
         assertThat(grammar.accepts("aacbb"), is(true));
         assertThat(grammar.accepts("aaacbbb"), is(true));
@@ -271,8 +266,8 @@ public class RecexpTest {
     @Test
     public void orThreeRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("RULE_AB", "a(@RULE_C)b|@RULE_X")
-                .addRule("RULE_CD", "c(@RULE_A)d")
+                .addRule("RULE_AB", "a(@RULE_CD)b|@RULE_X")
+                .addRule("RULE_CD", "c(@RULE_AB)d")
                 .addRule("RULE_X", "x");
 
         assertThat(grammar.accepts("x"), is(true));

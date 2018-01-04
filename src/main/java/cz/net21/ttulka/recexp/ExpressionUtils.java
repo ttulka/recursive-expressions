@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static cz.net21.ttulka.recexp.Expression.REFERENCE_PREFIX;
 
@@ -41,25 +42,7 @@ class ExpressionUtils {
         return expression.replaceAll("\\\\__RecexpRefPrefix__", "\\\\" + REFERENCE_PREFIX);
     }
 
-    public static List<String> split(String expression) {
-        List<String> parts = new ArrayList<String>();
-
-        // ORs
-        List<String> orParts = getExpressionPartsCutByORs(expression);
-        if (orParts.size() > 1) {
-            return orParts;
-        }
-
-        // ANDs => bracket groups + references
-        for (String bracketGroup : getExpressionPartsCutByBrackets(expression)) {
-            for (String referenceGroup : getExpressionPartsCutByReferences(bracketGroup)) {
-                parts.add(referenceGroup);
-            }
-        }
-        return parts;
-    }
-
-    private static List<String> getExpressionPartsCutByORs(String expression) {
+    public static List<String> splitORs(String expression) {
         if (expression.length() < 3) {  // must be at least x|y
             return Collections.singletonList(expression);
         }
@@ -78,7 +61,6 @@ class ExpressionUtils {
 
             if (ch == '|' && bracketsLevel == 0) {
                 parts.add(sb.toString().substring(0, sb.length() - 1));
-                parts.add("|");
                 sb = new StringBuilder(expression.length() - index);
             }
             else if (ch == '(' && previous != '\\') {
@@ -103,6 +85,18 @@ class ExpressionUtils {
 
         if (sb.length() > 0 || index == 0) {
             parts.add(sb.toString());
+        }
+        return parts;
+    }
+
+    public static List<String> splitANDs(String expression) {
+        List<String> parts = new ArrayList<String>();
+
+        // ANDs => bracket groups + references
+        for (String bracketGroup : getExpressionPartsCutByBrackets(expression)) {
+            for (String referenceGroup : getExpressionPartsCutByReferences(bracketGroup)) {
+                parts.add(referenceGroup);
+            }
         }
         return parts;
     }
