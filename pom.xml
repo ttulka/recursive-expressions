@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.net21.ttulka.recexp</groupId>
     <artifactId>recursive-expressions</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.0.1-beta</version>
 
     <name>Recursive Expressions</name>
     <description>Java Library for Recursive Expressions.</description>
