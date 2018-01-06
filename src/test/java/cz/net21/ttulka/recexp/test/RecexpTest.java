@@ -264,13 +264,6 @@ public class RecexpTest {
     }
 
     @Test
-    public void test() {
-        new RecexpGrammar()
-                .addRule("(a|@this|b)|(@this|c)")
-                .accepts("");
-    }
-
-    @Test
     public void orThreeRulesTest() {
         RecexpGrammar grammar = new RecexpGrammar()
                 .addRule("RULE_AB", "a(@RULE_CD)b|@RULE_X")
