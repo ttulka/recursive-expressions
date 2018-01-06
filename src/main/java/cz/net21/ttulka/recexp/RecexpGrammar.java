@@ -416,6 +416,9 @@ public class RecexpGrammar {
             }
 
             String value = getInputPartForNodeByLeftReduction(restInput, subNode, node.getSubNodes().subList(i + 1, node.getSubNodes().size()));
+            if (value == null) {
+                throw new IllegalStateException("Cannot reduce: input '" + input + "' doesn't match the expression: " + node.toWord());
+            }
             subGroups.add(nodeToGroup(subNode, value));
 
             restInput = restInput.substring(value.length());
@@ -448,8 +451,7 @@ public class RecexpGrammar {
                 sb.append(input.charAt(index));
             }
         }
-        // TODO move the exception throw a level up
-        throw new IllegalStateException("Cannot reduce: input '" + input + "' doesn't match the expression: " + node.toWord() + rightNodesSentence);
+        return null;
     }
 
     private String getNodesSentence(List<ExpressionTree.Node> nodes) {

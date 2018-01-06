@@ -488,6 +488,28 @@ public class RecexpGrammarTest {
         assertThat(group.groupCount(), is(0));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void nodeToGroupExceptionTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+        ExpressionTree tree;
+        RecexpGroup group;
+
+        tree = ExpressionTree.parseTree("(a)?(b)?");
+        group = grammar.nodeToGroup(tree.getRoot(), "x");
+        System.out.println(group);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void nodeToGroupOrExceptionTest() {
+        RecexpGrammar grammar = new RecexpGrammar();
+        ExpressionTree tree;
+        RecexpGroup group;
+
+        tree = ExpressionTree.parseTree("(a)?(a)?|(b)?(b)?");
+        group = grammar.nodeToGroup(tree.getRoot(), "x");
+        System.out.println(group);
+    }
+
     @Test
     public void derivateTreeTest() {
         ExpressionTree.Node derivate;
