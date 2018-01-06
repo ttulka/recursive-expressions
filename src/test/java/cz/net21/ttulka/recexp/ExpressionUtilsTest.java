@@ -2,12 +2,12 @@ package cz.net21.ttulka.recexp;
 
 import org.junit.Test;
 
-import static cz.net21.ttulka.recexp.ExpressionUtils.matchesEpsilon;
 import static cz.net21.ttulka.recexp.ExpressionUtils.getQuantifier;
 import static cz.net21.ttulka.recexp.ExpressionUtils.hydrateExpression;
 import static cz.net21.ttulka.recexp.ExpressionUtils.isClosedInBrackets;
 import static cz.net21.ttulka.recexp.ExpressionUtils.isQuantified;
 import static cz.net21.ttulka.recexp.ExpressionUtils.isReference;
+import static cz.net21.ttulka.recexp.ExpressionUtils.matchesEpsilon;
 import static cz.net21.ttulka.recexp.ExpressionUtils.removeClosingBrackets;
 import static cz.net21.ttulka.recexp.ExpressionUtils.removeReferencePrefix;
 import static cz.net21.ttulka.recexp.ExpressionUtils.splitANDs;

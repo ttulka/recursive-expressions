@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import static cz.net21.ttulka.recexp.Expression.REFERENCE_PREFIX;
 
@@ -62,8 +61,7 @@ class ExpressionUtils {
             if (ch == '|' && bracketsLevel == 0) {
                 parts.add(sb.toString().substring(0, sb.length() - 1));
                 sb = new StringBuilder(expression.length() - index);
-            }
-            else if (ch == '(' && previous != '\\') {
+            } else if (ch == '(' && previous != '\\') {
                 bracketsLevel++;
                 lastOpeningBracketIndex = index;
 

@@ -9,7 +9,7 @@ class Expression {
     public static final String THIS_REFERENCE_NAME = "this";
 
     public static final Expression EPSILON = new Expression("", null, false);
-    
+
     private final String text;
     private final String quantifier;
     private final boolean reference;
