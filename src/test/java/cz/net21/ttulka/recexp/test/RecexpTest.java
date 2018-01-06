@@ -514,8 +514,7 @@ public class RecexpTest {
 
     @Test
     public void test() {
-        RecexpGrammar grammar = new RecexpGrammar()
-                .addRule("RULE1", "@A@B");
+        RecexpGrammar grammar = new RecexpGrammar("a@this|b");
 
         RecexpMatcher matcher = grammar.matcher("ab");
         matcher.groupCount();

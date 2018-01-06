@@ -94,4 +94,9 @@ public class RecexpGroup {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "RecexpGroup{" + name + "}";
+    }
 }
