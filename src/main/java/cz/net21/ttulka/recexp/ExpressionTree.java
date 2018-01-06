@@ -129,7 +129,7 @@ class ExpressionTree {
 
                 return new ExpressionTree.Node(
                         new Expression(expression, quantifier, isReference),
-                        SubNodesConnectionType.OR,
+                        SubNodesConnectionType.SINGLE,
                         subNodes);
             }
 

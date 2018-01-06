@@ -26,6 +26,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is(""));
         assertThat(tree.getSentence(), is(""));
         assertThat(tree.getLeaves().size(), is(0));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("a");
@@ -33,6 +34,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("ab");
@@ -40,6 +42,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("ab"));
         assertThat(tree.getSentence(), is("ab"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@A");
@@ -47,6 +50,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("@A"));
         assertThat(tree.getSentence(), is("@A"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@AB");
@@ -54,6 +58,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("@AB"));
         assertThat(tree.getSentence(), is("@AB"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@A?");
@@ -61,6 +66,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("@A?"));
         assertThat(tree.getSentence(), is("@A?"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@AB?");
@@ -68,6 +74,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("@AB?"));
         assertThat(tree.getSentence(), is("@AB?"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("(a)"); // explicit brackets are ignored
@@ -75,6 +82,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("((a))");
@@ -82,6 +90,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("(a)"));
         assertThat(tree.getSentence(), is("a"));
         assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(1));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
 
@@ -90,6 +99,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("@A?@B?"));
         assertThat(tree.getSentence(), is("@A?@B?"));
         assertThat(tree.getLeaves().size(), is(2));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A?"));
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B?"));
@@ -99,6 +109,7 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("(@A?@B?)?"));
         assertThat(tree.getSentence(), is("(@A?@B?)?"));
         assertThat(tree.getLeaves().size(), is(2));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A?"));
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B?"));
@@ -108,10 +119,24 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().toWord(), is("a(@this)?b"));
         assertThat(tree.getSentence(), is("a@this?b"));
         assertThat(tree.getLeaves().size(), is(3));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@this?"));
         assertThat(tree.getRoot().getSubNodes().get(2).toWord(), is("b"));
+
+        tree = ExpressionTree.parseTree("a((b))");
+        assertThat(tree, not(nullValue()));
+        assertThat(tree.getRoot().toWord(), is("a((b))"));
+        assertThat(tree.getSentence(), is("ab"));
+        assertThat(tree.getLeaves().size(), is(2));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("(b)"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().size(), is(1));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(0).toWord(), is("b"));
 
         // TODO more tests
     }

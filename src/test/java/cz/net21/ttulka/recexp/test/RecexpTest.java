@@ -432,15 +432,18 @@ public class RecexpTest {
 
         assertThat(matcher.groupCount(), is(2));
         assertThat(matcher.group(1).groupCount(), is(0));
-        assertThat(matcher.group(2).groupCount(), is(0));
+        assertThat(matcher.group(2).groupCount(), is(1));
+        assertThat(matcher.group(2).group(1).groupCount(), is(0));
 
         assertThat(matcher.value(), is("ab"));
         assertThat(matcher.group(1).value(), is("a"));
         assertThat(matcher.group(2).value(), is("b"));
+        assertThat(matcher.group(2).group(1).value(), is("b"));
 
         assertThat(matcher.name(), is("a((b))"));
         assertThat(matcher.group(1).name(), is("a"));
-        assertThat(matcher.group(2).name(), is("b"));
+        assertThat(matcher.group(2).name(), is("(b)"));
+        assertThat(matcher.group(2).group(1).name(), is("b"));
     }
 
     @Test
