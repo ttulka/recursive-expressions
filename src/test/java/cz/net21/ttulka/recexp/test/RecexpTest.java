@@ -511,12 +511,4 @@ public class RecexpTest {
         assertThat(grammar.matcher("aab").matches(), is(false));
         assertThat(grammar.matcher("abb").matches(), is(false));
     }
-
-    @Test
-    public void test() {
-        RecexpGrammar grammar = new RecexpGrammar("a@this|b");
-
-        RecexpMatcher matcher = grammar.matcher("ab");
-        matcher.groupCount();
-    }
 }
