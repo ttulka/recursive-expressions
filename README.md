@@ -27,17 +27,15 @@ Copy the Maven dependency into your Maven project:
 ### Recursive Expressions as a Regular Expressions Extension
 
 Regular expression standard Java library doesn't use hierarchical grouping of a parsing result:
-
 ```
-Matcher matcher = Pattern.compile("(a)((b))").matcher("ab");
+Matcher matcher = Pattern.compile("(a)((b))").matcher("ab");    // this is standard Java
 matcher.groupCount();   // 3
 matcher.group(1)        // a
 matcher.group(2)        // b
 matcher.group(3)        // b
 ```
 
-With Recursive Expressions groups are created hierarchically:
-
+With Recursive Expressions are groups created hierarchically:
 ```
 RecexpMatcher matcher = RecexpGrammar.compile("(a)((b))").matcher("ab");
 
@@ -54,6 +52,15 @@ matcher.group(2).group(1).name();   // b
 matcher.group(2).group(1).value();  // b
 ```
 
+Hierarchical expression tree from the example above:
+```
+    (a)((b))
+    /     \
+   a      (b)
+            \
+             b
+```
+
 ### Recursive References
 
 Rule expression can reference another rule and/or itself. 
@@ -62,18 +69,18 @@ References have syntax `@RefName` where `RefName` can contain only word characte
 
 ```
 RecexpGrammar grammar = RecexpGrammar.builder()
-    .rule("RULE", "@A@RULE?@B")
+    .rule("MyRef", "@A@MyRef?@B")
     .rule("A", "a")
     .rule("B", "b")
     .build();
     
 RecexpMatcher matcher = grammar.matcher("aabb");
     
-matcher.matches();      // true
-matcher.groupCount();   // 3    
+matcher.matches();              // true
+matcher.groupCount();           // 3    
 
-matcher.group(1).name();    // @A
-matcher.group(1).value();   // a   
+matcher.group(1).name();        // @A
+matcher.group(1).value();       // a   
 
 matcher.group(1).name();        // @RULE?
 matcher.group(1).value();       // ab
@@ -92,6 +99,10 @@ grammar.matcher("aaab").matches();  // true
 
 grammar.matcher("a").matches();     // false
 ```
+
+## Examples
+
+See [unit tests](http://github.com/ttulka/recursive-expressions/blob/master/src/test/java/cz/net21/ttulka/recexp/test/RecexpTest.java) for more examples.
 
 ## Release Changes
 
