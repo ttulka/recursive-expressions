@@ -125,6 +125,17 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@this?"));
         assertThat(tree.getRoot().getSubNodes().get(2).toWord(), is("b"));
 
+        tree = ExpressionTree.parseTree("(a)(b)");
+        assertThat(tree, not(nullValue()));
+        assertThat(tree.getRoot().toWord(), is("(a)(b)"));
+        assertThat(tree.getSentence(), is("ab"));
+        assertThat(tree.getLeaves().size(), is(2));
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("b"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().size(), is(0));
+
         tree = ExpressionTree.parseTree("a((b))");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a((b))"));
