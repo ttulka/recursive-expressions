@@ -492,4 +492,32 @@ public class RecexpTest {
         assertThat(matcher.group(2).name(), is("@this?"));
         assertThat(matcher.group(3).name(), is("b"));
     }
+
+    @Test
+    public void recursiveReferenceWithSelfNameTest() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("RULE1", "@A@RULE1?@B")
+                .addRule("A", "a")
+                .addRule("B", "b");
+
+        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("b").matches(), is(true));
+        assertThat(grammar.matcher("ab").matches(), is(true));
+        assertThat(grammar.matcher("aabb").matches(), is(true));
+        assertThat(grammar.matcher("aaabbb").matches(), is(true));
+
+        assertThat(grammar.matcher("").matches(), is(false));
+        assertThat(grammar.matcher("ba").matches(), is(false));
+        assertThat(grammar.matcher("aab").matches(), is(false));
+        assertThat(grammar.matcher("abb").matches(), is(false));
+    }
+
+    @Test
+    public void test() {
+        RecexpGrammar grammar = new RecexpGrammar()
+                .addRule("RULE1", "@A@B");
+
+        RecexpMatcher matcher = grammar.matcher("ab");
+        matcher.groupCount();
+    }
 }

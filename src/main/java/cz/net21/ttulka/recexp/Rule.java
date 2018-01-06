@@ -63,3 +63,20 @@ class Rule {
         return getName();
     }
 }
+
+/**
+ * Explicitly named rule.
+ *
+ * @author ttulka
+ */
+class NamedRule extends Rule {
+
+    public NamedRule(String name, String expression) {
+        super(name, expression);
+    }
+
+    @Override
+    public String toString() {
+        return Expression.REFERENCE_PREFIX + super.getName();
+    }
+}

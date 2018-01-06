@@ -53,7 +53,7 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String name, String expression) {
-        rules.add(new Rule(name, expression));
+        rules.add(new NamedRule(name, expression));
         return this;
     }
 
@@ -95,7 +95,7 @@ public class RecexpGrammar {
             ExpressionTree.Node derivate = derivateTree(rule.getExpression().getRoot(), input, new HashSet<String>());
             if (derivate != null) {
                 RecexpGroup group = nodeToGroup(derivate, input);
-                return RecexpMatcher.matcher(group.name(), group.value(), group.groups());
+                return RecexpMatcher.matcher(rule.toString(), input, group.groups());
             }
         }
         return RecexpMatcher.emptyMatcher(input);
