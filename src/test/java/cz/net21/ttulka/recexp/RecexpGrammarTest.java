@@ -196,6 +196,32 @@ public class RecexpGrammarTest {
         assertThat(matcher.group(3).group(1).value(), is("b"));
         assertThat(matcher.group(3).group(1).groupCount(), is(0));
 
+        grammar = RecexpGrammar.builder()
+                .rule("AB", "a(@CD)b|x")
+                .rule("CD", "c(@AB)d")
+                .build();
+        matcher = grammar.matcher("cxd");
+
+        assertThat(matcher.matches(), is(true));
+        assertThat(matcher.name(), is("@CD"));
+        assertThat(matcher.value(), is("cxd"));
+        assertThat(matcher.groupCount(), is(3));
+
+        assertThat(matcher.group(1).name(), is("c"));
+        assertThat(matcher.group(1).value(), is("c"));
+        assertThat(matcher.group(1).groupCount(), is(0));
+
+        assertThat(matcher.group(2).name(), is("@AB"));
+        assertThat(matcher.group(2).value(), is("x"));
+        assertThat(matcher.group(2).groupCount(), is(1));
+        assertThat(matcher.group(2).group(1).name(), is("x"));
+        assertThat(matcher.group(2).group(1).value(), is("x"));
+        assertThat(matcher.group(2).group(1).groupCount(), is(0));
+
+        assertThat(matcher.group(3).name(), is("d"));
+        assertThat(matcher.group(3).value(), is("d"));
+        assertThat(matcher.group(3).groupCount(), is(0));
+
         // TODO more tests
     }
 
