@@ -105,39 +105,38 @@ public class RecexpGrammar {
      */
     void checkCyclicRules() {
         for (RecexpRule rule : rules) {
-            if (ExpressionTree.Node.SubNodesConnectionType.OR == rule.getExpression().getRoot().getSubNodesConnectionType()) {
-                for (ExpressionTree.Node node : rule.getExpression().getRoot().getSubNodes()) {
-                    if (checkCyclicRules(rule, node)) {
-                        return;
-                    }
-                }
-            } else {
-                if (checkCyclicRules(rule, rule.getExpression().getRoot())) {
-                    return;
-                }
+            if (!checkCyclicRules(rule, rule.getExpression().getRoot())) {
+                throw new RecexpCyclicRuleException(rule.getName());
             }
-
-            throw new RecexpCyclicRuleException(rule.getName());
         }
     }
 
     /**
      * @return true if the rule has no self-reference, otherwise false.
      */
-    private boolean checkCyclicRules(RecexpRule rule, ExpressionTree.Node tree) {
+    private boolean checkCyclicRules(RecexpRule rule, ExpressionTree.Node node) {
+        if (node.isOrNode()) {
+            for (ExpressionTree.Node n : node.getSubNodes()) {
+                if (checkCyclicRules(rule, n)) {
+                    return true;
+                }
+            }
+        }
+
         Set<ExpressionTree.Node> unresolvedReferences = new HashSet<ExpressionTree.Node>();
 
-        for (ExpressionTree.Node leaf : tree.getLeaves()) {
+        for (ExpressionTree.Node leaf : node.getLeaves()) {
             Expression expression = leaf.getExpression();
 
-            if (ExpressionUtils.containsEpsilon(leaf.toWord())) {
+            if (ExpressionUtils.matchesEpsilon(leaf.toWord())) {
                 continue;
             }
 
+            if (leaf.isThisReference()) {
+                return false;
+            }
+
             if (expression.isReference()) {
-                if (Expression.THIS_REFERENCE_NAME.equals(leaf.getExpression().getText())) {
-                    return false;
-                }
                 if (rule.getName().equals(leaf.getExpression().getText())) {
                     if (numberOfRulesWithSameName(rule.getName()) == 1) {
                         return false;
@@ -147,12 +146,13 @@ public class RecexpGrammar {
             }
         }
 
-        for (ExpressionTree.Node node : unresolvedReferences) {
-            for (ExpressionTree.Node candidate : generateCandidates(node, tree)) {
-                if (!checkCyclicRules(rule, candidate)) {
-                    return false;
+        for (ExpressionTree.Node n : unresolvedReferences) {
+            for (ExpressionTree.Node candidate : generateCandidates(n, node)) {
+                if (checkCyclicRules(rule, candidate)) {
+                    return true;
                 }
             }
+            return false;
         }
         return true;
     }
@@ -173,7 +173,7 @@ public class RecexpGrammar {
     RecexpGroup asGroup(ExpressionTree.Node root, String input, Set<String> alreadySeen) {
         Queue<ExpressionTree.Node> candidatesQueue = new LinkedList<ExpressionTree.Node>();
 
-        if (ExpressionTree.Node.SubNodesConnectionType.OR == root.getSubNodesConnectionType()) {
+        if (root.isOrNode()) {
             candidatesQueue.addAll(root.getSubNodes());
         } else {
             candidatesQueue.add(root);
@@ -188,13 +188,11 @@ public class RecexpGrammar {
             }
             alreadySeen.add(sentence);
 
-            String hydratedSentence = ExpressionUtils.hydrateExpression(sentence);
-
-            if (!Pattern.matches(hydratedSentence, input)) {
+            if (!matchesIgnoreReferences(sentence, input)) {
                 continue;
             }
 
-            if (!hasReferenceToResolve(sentence, input)) {
+            if (matches(sentence, input)) {
                 return reduceTree(candidate, input);
             }
 
@@ -206,8 +204,8 @@ public class RecexpGrammar {
         return null;
     }
 
-    boolean hasReferenceToResolve(String expression, String input) {
-        return !matches(expression, input);
+    private boolean matchesIgnoreReferences(String expression, String input) {
+        return Pattern.matches(ExpressionUtils.hydrateExpression(expression), input);
     }
 
     private boolean matches(String expression, String input) {
@@ -231,7 +229,7 @@ public class RecexpGrammar {
     private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree.Node node, ExpressionTree.Node root) {
         Set<LeafCombination> combinations = new HashSet<LeafCombination>();
 
-        if (ExpressionTree.Node.SubNodesConnectionType.OR == node.getSubNodesConnectionType()) {
+        if (node.isOrNode()) {
             combinations.add(new LeafCombination(node, new HashSet<ExpressionTree.Node>(node.getSubNodes())));
         } else {
             combinations.addAll(generateCombinationsFromLeaves(node, root));
@@ -292,39 +290,42 @@ public class RecexpGrammar {
     Set<ExpressionTree.Node> generateCombinations(ExpressionTree.Node node, ExpressionTree.Node root) {
         Set<ExpressionTree.Node> combinations = new HashSet<ExpressionTree.Node>();
 
-        // this
-        if (node.getExpression().isReference()
-            && Expression.THIS_REFERENCE_NAME.equals(node.getExpression().getText())) {
-
+        if (node.isThisReference()) {
             if (node.getExpression().isQuantified()) {
                 combinations.add(ExpressionTree.Node.parseNode(
                         "(" + root.getExpression().toWord() + ")" + node.getExpression().getQuantifier()));
 
             } else {
-                if (ExpressionTree.Node.SubNodesConnectionType.OR == root.getSubNodesConnectionType()) {
+                if (root.isOrNode()) {
                     combinations.addAll(new HashSet<ExpressionTree.Node>(root.getSubNodes()));
                 } else {
                     combinations.add(root);
                 }
             }
         } else {
-            if (!node.getExpression().isReference()) {
-                if (ExpressionTree.Node.SubNodesConnectionType.OR == node.getSubNodesConnectionType()) {
+            if (node.getExpression().isReference()) {
+                for (RecexpRule rule : rules) {
+                    if (rule.getName().equals(node.getExpression().getText())) {
+                        if (rule.getExpression().getRoot().isOrNode()) {
+                            for (ExpressionTree.Node n : rule.getExpression().getRoot().getSubNodes()) {
+                                combinations.add(toCombination(node, n.getExpression()));
+                            }
+                        } else {
+                            combinations.add(toCombination(node, rule.getExpression().getRoot().getExpression()));
+                        }
+                    }
+                }
+            } else {
+                if (node.isOrNode()) {
                     combinations.addAll(node.getSubNodes());
                 } else {
                     combinations.add(node);
-                }
-            } else {
-                for (RecexpRule rule : rules) {
-                    if (rule.getName().equals(node.getExpression().getText())) {
-                        combinations.add(toCombination(node, rule.getExpression().getRoot().getExpression()));
-                    }
                 }
             }
         }
 
         for (ExpressionTree.Node expression : combinations) {
-            if (ExpressionUtils.containsEpsilon(expression.getExpression().toWord())) {
+            if (ExpressionUtils.matchesEpsilon(expression.getExpression().toWord())) {
                 combinations.add(new ExpressionTree.Node(Expression.EPSILON));
                 break;
             }
@@ -386,7 +387,7 @@ public class RecexpGrammar {
             return new RecexpGroup(node.getExpression().toWord(), input, new RecexpGroup[0]);
         }
 
-        if (ExpressionTree.Node.SubNodesConnectionType.OR == node.getSubNodesConnectionType()) {
+        if (node.isOrNode()) {
             for (ExpressionTree.Node subNode : node.getSubNodes()) {
                 try {
                     return nodeToGroup(subNode, input);

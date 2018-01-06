@@ -2,7 +2,7 @@ package cz.net21.ttulka.recexp;
 
 import org.junit.Test;
 
-import static cz.net21.ttulka.recexp.ExpressionUtils.containsEpsilon;
+import static cz.net21.ttulka.recexp.ExpressionUtils.matchesEpsilon;
 import static cz.net21.ttulka.recexp.ExpressionUtils.getQuantifier;
 import static cz.net21.ttulka.recexp.ExpressionUtils.hydrateExpression;
 import static cz.net21.ttulka.recexp.ExpressionUtils.isClosedInBrackets;
@@ -335,25 +335,25 @@ public class ExpressionUtilsTest {
 
     @Test
     public void containsEpsilonTest() {
-        assertThat(containsEpsilon(""), is(true));
-        assertThat(containsEpsilon("a"), is(false));
-        assertThat(containsEpsilon("ab"), is(false));
-        assertThat(containsEpsilon("@A"), is(false));
-        assertThat(containsEpsilon("@AB"), is(false));
-        assertThat(containsEpsilon("@this"), is(false));
-        assertThat(containsEpsilon("a@A"), is(false));
-        assertThat(containsEpsilon("a?"), is(true));
-        assertThat(containsEpsilon("(a)?"), is(true));
-        assertThat(containsEpsilon("(a?)"), is(true));
-        assertThat(containsEpsilon("@A?"), is(true));
-        assertThat(containsEpsilon("@AB?"), is(true));
-        assertThat(containsEpsilon("(a)*"), is(true));
-        assertThat(containsEpsilon("(a*)"), is(true));
-        assertThat(containsEpsilon("@A*"), is(true));
-        assertThat(containsEpsilon("@AB*"), is(true));
-        assertThat(containsEpsilon("(a)+"), is(false));
-        assertThat(containsEpsilon("(a+)"), is(false));
-        assertThat(containsEpsilon("@A+"), is(false));
-        assertThat(containsEpsilon("@AB+"), is(false));
+        assertThat(matchesEpsilon(""), is(true));
+        assertThat(matchesEpsilon("a"), is(false));
+        assertThat(matchesEpsilon("ab"), is(false));
+        assertThat(matchesEpsilon("@A"), is(false));
+        assertThat(matchesEpsilon("@AB"), is(false));
+        assertThat(matchesEpsilon("@this"), is(false));
+        assertThat(matchesEpsilon("a@A"), is(false));
+        assertThat(matchesEpsilon("a?"), is(true));
+        assertThat(matchesEpsilon("(a)?"), is(true));
+        assertThat(matchesEpsilon("(a?)"), is(true));
+        assertThat(matchesEpsilon("@A?"), is(true));
+        assertThat(matchesEpsilon("@AB?"), is(true));
+        assertThat(matchesEpsilon("(a)*"), is(true));
+        assertThat(matchesEpsilon("(a*)"), is(true));
+        assertThat(matchesEpsilon("@A*"), is(true));
+        assertThat(matchesEpsilon("@AB*"), is(true));
+        assertThat(matchesEpsilon("(a)+"), is(false));
+        assertThat(matchesEpsilon("(a+)"), is(false));
+        assertThat(matchesEpsilon("@A+"), is(false));
+        assertThat(matchesEpsilon("@AB+"), is(false));
     }
 }

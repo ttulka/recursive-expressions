@@ -252,7 +252,7 @@ class ExpressionUtils {
         return null;
     }
 
-    public static boolean containsEpsilon(String expression) {
+    public static boolean matchesEpsilon(String expression) {
         return Pattern.matches(hydrateExpression(expression, "X"), "");
     }
 }

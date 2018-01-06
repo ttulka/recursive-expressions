@@ -71,7 +71,7 @@ public class RecexpTest {
         assertThat(grammar.accepts("aabbcc"), is(false));
         assertThat(grammar.accepts("aabbc"), is(false));
         assertThat(grammar.accepts("aacbc"), is(false));
-        assertThat(grammar.accepts("ababc"), is(true));
+        assertThat(grammar.accepts("ababcc"), is(true));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class RecexpTest {
         assertThat(grammar.accepts("aabbcc"), is(false));
         assertThat(grammar.accepts("aabbc"), is(false));
         assertThat(grammar.accepts("aacbc"), is(false));
-        assertThat(grammar.accepts("ababc"), is(true));
+        assertThat(grammar.accepts("ababcc"), is(true));
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
@@ -261,6 +261,13 @@ public class RecexpTest {
         assertThat(grammar.accepts("accb"), is(false));
         assertThat(grammar.accepts("aacbb"), is(false));
         assertThat(grammar.accepts("aaacbbb"), is(false));
+    }
+
+    @Test
+    public void test() {
+        new RecexpGrammar()
+                .addRule("(a|@this|b)|(@this|c)")
+                .accepts("");
     }
 
     @Test
@@ -432,18 +439,15 @@ public class RecexpTest {
 
         assertThat(matcher.groupCount(), is(2));
         assertThat(matcher.group(1).groupCount(), is(0));
-        assertThat(matcher.group(2).groupCount(), is(1));
-        assertThat(matcher.group(2).group(1).groupCount(), is(0));
+        assertThat(matcher.group(2).groupCount(), is(0));
 
         assertThat(matcher.value(), is("ab"));
         assertThat(matcher.group(1).value(), is("a"));
         assertThat(matcher.group(2).value(), is("b"));
-        assertThat(matcher.group(2).group(1).value(), is("b"));
 
         assertThat(matcher.name(), is("a((b))"));
         assertThat(matcher.group(1).name(), is("a"));
-        assertThat(matcher.group(2).name(), is("(b)"));
-        assertThat(matcher.group(2).group(1).name(), is("b"));
+        assertThat(matcher.group(2).name(), is("b"));
     }
 
     @Test

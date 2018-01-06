@@ -44,6 +44,10 @@ class ExpressionTree {
      */
     static class Node {
 
+        enum SubNodesConnectionType {
+            SINGLE, AND, OR
+        }
+
         private final Expression expression;
         private final SubNodesConnectionType subNodesConnectionType;
         private final List<Node> subNodes;
@@ -226,13 +230,17 @@ class ExpressionTree {
             return sb;
         }
 
+        boolean isOrNode() {
+            return ExpressionTree.Node.SubNodesConnectionType.OR == subNodesConnectionType;
+        }
+
+        boolean isThisReference() {
+            return expression.isReference() && Expression.THIS_REFERENCE_NAME.equals(expression.getText());
+        }
+
         @Override
         public String toString() {
             return expression.toString();
-        }
-
-        enum SubNodesConnectionType {
-            SINGLE, AND, OR
         }
     }
 }
