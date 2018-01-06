@@ -496,16 +496,22 @@ public class RecexpGrammarTest {
                 .derivateTree(ExpressionTree.parseTree("a").getRoot(), "a", new HashSet<String>());
 
         assertThat(derivate, not(nullValue()));
+        assertThat(derivate.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(derivate.getSubNodes().size(), is(0));
 
         derivate = new RecexpGrammar()
                 .derivateTree(ExpressionTree.parseTree("a?").getRoot(), "a", new HashSet<String>());
 
         assertThat(derivate, not(nullValue()));
+        assertThat(derivate.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(derivate.getSubNodes().size(), is(0));
 
         derivate = new RecexpGrammar()
                 .derivateTree(ExpressionTree.parseTree("a|b").getRoot(), "a", new HashSet<String>());
 
         assertThat(derivate, not(nullValue()));
+        assertThat(derivate.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(derivate.getSubNodes().size(), is(0));
     }
 
     @Test

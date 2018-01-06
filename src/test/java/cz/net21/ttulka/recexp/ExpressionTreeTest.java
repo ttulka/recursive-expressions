@@ -114,7 +114,87 @@ public class ExpressionTreeTest {
         assertThat(tree.getRoot().getSubNodes().get(2).toWord(), is("b"));
 
         // TODO more tests
+    }
 
+    @Test
+    public void parseTreeSubNodesConnectionTypeTest() {
+        ExpressionTree tree;
+
+        tree = ExpressionTree.parseTree("@AB");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
+
+        tree = ExpressionTree.parseTree("@A@B");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B"));
+
+        tree = ExpressionTree.parseTree("@A|@B");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B"));
+
+        tree = ExpressionTree.parseTree("@A|(@B@C)");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A"));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B@C"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(0).toWord(), is("@B"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).toWord(), is("@C"));
+
+        tree = ExpressionTree.parseTree("@A|(@B|@C)");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A"));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B|@C"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(0).toWord(), is("@B"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).toWord(), is("@C"));
+
+        tree = ExpressionTree.parseTree("@A@B|(@X|@Y)");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A@B"));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().get(0).toWord(), is("@A"));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().get(1).toWord(), is("@B"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@X|@Y"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(0).toWord(), is("@X"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).toWord(), is("@Y"));
+
+        tree = ExpressionTree.parseTree("(@A|@B)|(@X|(@Y|@Z))");
+        assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A|@B"));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().get(0).toWord(), is("@A"));
+        assertThat(tree.getRoot().getSubNodes().get(0).getSubNodes().get(1).toWord(), is("@B"));
+        assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@X|(@Y|@Z)"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(0).toWord(), is("@X"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).toWord(), is("@Y|@Z"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).getSubNodes().get(0).toWord(), is("@Y"));
+        assertThat(tree.getRoot().getSubNodes().get(1).getSubNodes().get(1).getSubNodes().get(1).toWord(), is("@Z"));
+    }
+
+    @Test
+    public void parseTreeSyntaxExceptionsTest() {
         try {
             ExpressionTree.parseTree("a@this{,}++");
             fail("RecexpSyntaxException expected");
