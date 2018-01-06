@@ -39,7 +39,7 @@ matcher.group(3)        // b
 With Recursive Expressions groups are created hierarchically:
 
 ```
-RecexpMatcher matcher = new RecexpGrammar("(a)((b))").matcher("ab");
+RecexpMatcher matcher = RecexpGrammar.compile("(a)((b))").matcher("ab");
 
 matcher.groupCount();       // 2
 
@@ -61,10 +61,11 @@ Rule expression can reference another rule and/or itself.
 References have syntax `@RefName` where `RefName` can contain only word characters (letters, digits and underscore `_`).
 
 ```
-RecexpGrammar grammar = new RecexpGrammar()
-    .addRule("RULE", "@A@RULE?@B")
-    .addRule("A", "a")
-    .addRule("B", "b");
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("RULE", "@A@RULE?@B")
+    .rule("A", "a")
+    .rule("B", "b")
+    .build();
     
 RecexpMatcher matcher = grammar.matcher("aabb");
     
@@ -82,7 +83,7 @@ matcher.group(1).groupCount();  // 1
 Self-reference has syntax `@this`:
 
 ```
-RecexpGrammar grammar = new RecexpGrammar("a@this|b");
+RecexpGrammar grammar = RecexpGrammar.compile("a@this|b");
 
 grammar.matcher("b").matches();     // true
 grammar.matcher("ab").matches();    // true

@@ -24,48 +24,35 @@ import java.util.regex.Pattern;
  */
 public class RecexpGrammar {
 
-    protected final Set<Rule> rules = new HashSet<Rule>();
+    protected final Set<Rule> rules;
 
-    /**
-     * Empty constructor.
-     */
-    public RecexpGrammar() {
+    private RecexpGrammar(Collection<Rule> rules) {
+        this.rules = Collections.unmodifiableSet(new HashSet<Rule>(rules));
     }
 
     /**
-     * Rules constructor.
+     * Constructs a grammar object from the rules.
      *
-     * @param rules the rules
+     * @param rule  the first rule
+     * @param rules the next rules
+     * @return the constructed grammar object
      */
-    public RecexpGrammar(String... rules) {
-        if (rules != null && rules.length > 0) {
-            for (String rule : rules) {
-                this.rules.add(new Rule(rule));
-            }
+    public static RecexpGrammar compile(String rule, String... rules) {
+        Set<Rule> ruleSet = new HashSet<Rule>(rules.length);
+        ruleSet.add(new Rule(rule, rule));
+        for (String r : rules) {
+            ruleSet.add(new Rule(r, r));
         }
+        return new RecexpGrammar(ruleSet);
     }
 
     /**
-     * Adds a rule.
+     * Creates a grammar builder.
      *
-     * @param name       the rule name
-     * @param expression the rule candidate
-     * @return this grammar
+     * @return the builder
      */
-    public RecexpGrammar addRule(String name, String expression) {
-        rules.add(new NamedRule(name, expression));
-        return this;
-    }
-
-    /**
-     * Adds a rule.
-     *
-     * @param expression the rule candidate
-     * @return this grammar
-     */
-    public RecexpGrammar addRule(String expression) {
-        rules.add(new Rule(expression, expression));
-        return this;
+    public static RecexpGrammarBuilder builder() {
+        return new RecexpGrammarBuilder();
     }
 
     /**
@@ -91,7 +78,6 @@ public class RecexpGrammar {
         checkCyclicRules();
 
         for (Rule rule : rules) {
-
             ExpressionTree.Node derivate = derivateTree(rule.getExpression().getRoot(), input, new HashSet<String>());
             if (derivate != null) {
                 RecexpGroup group = nodeToGroup(derivate, input);
@@ -169,12 +155,23 @@ public class RecexpGrammar {
 
     private int numberOfRulesWithSameName(String ruleName) {
         int count = 0;
-        for (Rule rule : rules) {
+        for (Rule rule : getNamedRules()) {
             if (rule.getName().equals(ruleName)) {
                 count++;
             }
         }
         return count;
+    }
+
+    private Set<Rule> getNamedRules() {
+        Set<Rule> namedRules = new HashSet<Rule>();
+
+        for (Rule rule : rules) {
+            if (rule instanceof NamedRule) {
+                namedRules.add(rule);
+            }
+        }
+        return Collections.unmodifiableSet(namedRules);
     }
 
     /**
@@ -215,11 +212,11 @@ public class RecexpGrammar {
         return null;
     }
 
-    private boolean matchesIgnoreReferences(String expression, String input) {
+    private static boolean matchesIgnoreReferences(String expression, String input) {
         return Pattern.matches(ExpressionUtils.hydrateExpression(expression), input);
     }
 
-    private boolean matches(String expression, String input) {
+    private static boolean matches(String expression, String input) {
         if (expression.equals(input)) {
             return true;
         }
@@ -315,7 +312,7 @@ public class RecexpGrammar {
             }
         } else {
             if (node.getExpression().isReference()) {
-                for (Rule rule : rules) {
+                for (Rule rule : getNamedRules()) {
                     if (rule.getName().equals(node.getExpression().getText())) {
                         if (rule.getExpression().getRoot().isOrNode()) {
                             for (ExpressionTree.Node n : rule.getExpression().getRoot().getSubNodes()) {
@@ -386,7 +383,7 @@ public class RecexpGrammar {
         return null;
     }
 
-    RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
+    static RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
         if (input.isEmpty()) {
             return new RecexpGroup(node.getExpression().toWord(), input, new RecexpGroup[0]);
         }
@@ -431,7 +428,7 @@ public class RecexpGrammar {
         return new RecexpGroup(node.getExpression().toWord(), input, groups);
     }
 
-    private String getInputPartForNodeByLeftReduction(String input, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {
+    private static String getInputPartForNodeByLeftReduction(String input, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {
         String nodeSentence = node.getSentence();
         String rightNodesSentence = getNodesSentence(rightNodes);
 
@@ -454,7 +451,7 @@ public class RecexpGrammar {
         return null;
     }
 
-    private String getNodesSentence(List<ExpressionTree.Node> nodes) {
+    private static String getNodesSentence(List<ExpressionTree.Node> nodes) {
         StringBuilder sb = new StringBuilder();
 
         for (ExpressionTree.Node node : nodes) {
@@ -466,6 +463,54 @@ public class RecexpGrammar {
     @Override
     public String toString() {
         return this.rules.toString();
+    }
+
+    /**
+     * Builder for the {@link RecexpGrammar Recursive Grammar class}.
+     */
+    public static class RecexpGrammarBuilder {
+
+        private Set<Rule> ruleSet = new HashSet<Rule>();
+
+        private RecexpGrammarBuilder() {
+        }
+
+        /**
+         * Add a named rule.
+         *
+         * @param name       the name
+         * @param expression the expression
+         * @return the builder
+         */
+        public RecexpGrammarBuilder rule(String name, String expression) {
+            ruleSet.add(new NamedRule(name, expression));
+            return this;
+        }
+
+        /**
+         * Add a pure expression rule.
+         *
+         * @param expression the expression
+         * @return the builder
+         */
+        public RecexpGrammarBuilder rule(String expression) {
+            ruleSet.add(new Rule(expression, expression));
+            return this;
+        }
+
+        /**
+         * Builds a grammar object.
+         *
+         * @return the grammar
+         */
+        public RecexpGrammar build() {
+            if (ruleSet.isEmpty()) {
+                throw new IllegalStateException("Rule set cannot be empty.");
+            }
+            RecexpGrammar grammar = new RecexpGrammar(ruleSet);
+            ruleSet.clear();
+            return grammar;
+        }
     }
 
     /**
