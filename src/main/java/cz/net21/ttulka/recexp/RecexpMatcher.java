@@ -1,9 +1,16 @@
 package cz.net21.ttulka.recexp;
 
 /**
+ * Derivation result representation as a matcher.
+ *
  * @author ttulka
+ * @see RecexpGrammar
  */
 abstract public class RecexpMatcher extends RecexpGroup {
+
+    protected RecexpMatcher(String name, String value, RecexpGroup[] groups) {
+        super(name, value, groups);
+    }
 
     static RecexpMatcher matcher(String name, String input, RecexpGroup[] groups) {
         return new RecexpMatcher(name, input, groups) {
@@ -21,10 +28,6 @@ abstract public class RecexpMatcher extends RecexpGroup {
                 return false;
             }
         };
-    }
-
-    protected RecexpMatcher(String name, String value, RecexpGroup[] groups) {
-        super(name, value, groups);
     }
 
     /**

@@ -1,19 +1,29 @@
 package cz.net21.ttulka.recexp;
 
 /**
+ * Recursive rule.
+ * <p>
+ * A rule is defined as a entry of name and {@link ExpressionTree expression}. The name can contain only word characters (<code>a-z</code>, <code>A-Z</code>,
+ * <code>0-9</code>, <code>_</code>).
+ * <p>
+ * A rule can contain a reference to itself declared as <code>@this</code> and/or a reference to another rule via name. A reference to another rule starts with
+ * <code>@</code> and continues with the name of the rule (case-sensitive).
+ *
  * @author ttulka
+ * @see RecexpGrammar
+ * @see ExpressionTree
  */
-class RecexpRule {
+class Rule {
 
     private final String name;
     private final ExpressionTree expression;
 
-    public RecexpRule(String expression) {
+    public Rule(String expression) {
         this.name = expression;
         this.expression = ExpressionTree.parseTree(expression);
     }
 
-    public RecexpRule(String name, String expression) {
+    public Rule(String name, String expression) {
         this.name = name;
         this.expression = ExpressionTree.parseTree(expression);
     }
@@ -35,7 +45,7 @@ class RecexpRule {
             return false;
         }
 
-        RecexpRule that = (RecexpRule) o;
+        Rule that = (Rule) o;
 
         if (!name.equals(that.name)) {
             return false;

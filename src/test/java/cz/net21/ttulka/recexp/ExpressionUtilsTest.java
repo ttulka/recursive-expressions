@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 
 /**
- * @ttulka
+ * @author ttulka
  */
 public class ExpressionUtilsTest {
 

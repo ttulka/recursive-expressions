@@ -11,11 +11,20 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * Recursive Grammar.
+ * <p>
+ * Defined as a set of recursive rules.
+ * <p>
+ * From a grammar a derivate tree can be generated based on an input string. The result is represented as a {@link RecexpMatcher matcher} and the derivate as a
+ * tree of {@link RecexpGroup groups}.
+ *
  * @author ttulka
+ * @see RecexpMatcher
+ * @see RecexpGroup
  */
 public class RecexpGrammar {
 
-    protected final Set<RecexpRule> rules = new HashSet<RecexpRule>();
+    protected final Set<Rule> rules = new HashSet<Rule>();
 
     /**
      * Empty constructor.
@@ -31,7 +40,7 @@ public class RecexpGrammar {
     public RecexpGrammar(String... rules) {
         if (rules != null && rules.length > 0) {
             for (String rule : rules) {
-                this.rules.add(new RecexpRule(rule));
+                this.rules.add(new Rule(rule));
             }
         }
     }
@@ -44,7 +53,7 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String name, String expression) {
-        rules.add(new RecexpRule(name, expression));
+        rules.add(new Rule(name, expression));
         return this;
     }
 
@@ -55,7 +64,7 @@ public class RecexpGrammar {
      * @return this grammar
      */
     public RecexpGrammar addRule(String expression) {
-        rules.add(new RecexpRule(expression, expression));
+        rules.add(new Rule(expression, expression));
         return this;
     }
 
@@ -81,10 +90,11 @@ public class RecexpGrammar {
         checkEmptyRules();
         checkCyclicRules();
 
-        for (RecexpRule rule : rules) {
+        for (Rule rule : rules) {
 
-            RecexpGroup group = asGroup(rule.getExpression().getRoot(), input, new HashSet<String>());
-            if (group != null) {
+            ExpressionTree.Node derivate = derivateTree(rule.getExpression().getRoot(), input, new HashSet<String>());
+            if (derivate != null) {
+                RecexpGroup group = nodeToGroup(derivate, input);
                 return RecexpMatcher.matcher(group.name(), group.value(), group.groups());
             }
         }
@@ -104,7 +114,7 @@ public class RecexpGrammar {
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     void checkCyclicRules() {
-        for (RecexpRule rule : rules) {
+        for (Rule rule : rules) {
             if (!checkCyclicRules(rule, rule.getExpression().getRoot())) {
                 throw new RecexpCyclicRuleException(rule.getName());
             }
@@ -114,7 +124,7 @@ public class RecexpGrammar {
     /**
      * @return true if the rule has no self-reference, otherwise false.
      */
-    private boolean checkCyclicRules(RecexpRule rule, ExpressionTree.Node node) {
+    private boolean checkCyclicRules(Rule rule, ExpressionTree.Node node) {
         if (node.isOrNode()) {
             for (ExpressionTree.Node n : node.getSubNodes()) {
                 if (checkCyclicRules(rule, n)) {
@@ -159,7 +169,7 @@ public class RecexpGrammar {
 
     private int numberOfRulesWithSameName(String ruleName) {
         int count = 0;
-        for (RecexpRule rule : rules) {
+        for (Rule rule : rules) {
             if (rule.getName().equals(ruleName)) {
                 count++;
             }
@@ -168,9 +178,9 @@ public class RecexpGrammar {
     }
 
     /**
-     * Returns a group for the candidate and input, or <code>null</code> if it doesn't match.
+     * Returns a derivated tree for the candidate and input, or <code>null</code> if there is no such a derivation.
      */
-    RecexpGroup asGroup(ExpressionTree.Node root, String input, Set<String> alreadySeen) {
+    ExpressionTree.Node derivateTree(ExpressionTree.Node root, String input, Set<String> alreadySeen) {
         Queue<ExpressionTree.Node> candidatesQueue = new LinkedList<ExpressionTree.Node>();
 
         if (root.isOrNode()) {
@@ -193,10 +203,11 @@ public class RecexpGrammar {
             }
 
             if (matches(sentence, input)) {
-                return reduceTree(candidate, input);
+                return candidate;
             }
 
             // generate new candidates from this candidate tree and add them to the queue
+            // this is a level-based derivation (in contrast to depth-base derivation)
             for (ExpressionTree.Node node : generateCandidates(candidate, root)) {
                 candidatesQueue.add(node);
             }
@@ -304,7 +315,7 @@ public class RecexpGrammar {
             }
         } else {
             if (node.getExpression().isReference()) {
-                for (RecexpRule rule : rules) {
+                for (Rule rule : rules) {
                     if (rule.getName().equals(node.getExpression().getText())) {
                         if (rule.getExpression().getRoot().isOrNode()) {
                             for (ExpressionTree.Node n : rule.getExpression().getRoot().getSubNodes()) {
@@ -375,14 +386,7 @@ public class RecexpGrammar {
         return null;
     }
 
-    /**
-     * Reduces the tree to a group.
-     */
-    RecexpGroup reduceTree(ExpressionTree.Node root, String input) {
-        return nodeToGroup(root, input);
-    }
-
-    private RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
+    RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
         if (input.isEmpty()) {
             return new RecexpGroup(node.getExpression().toWord(), input, new RecexpGroup[0]);
         }

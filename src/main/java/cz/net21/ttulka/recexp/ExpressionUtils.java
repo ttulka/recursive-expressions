@@ -9,7 +9,9 @@ import java.util.regex.Pattern;
 import static cz.net21.ttulka.recexp.Expression.REFERENCE_PREFIX;
 
 /**
- * @ttulka
+ * Utilities for working with expressions.
+ *
+ * @author ttulka
  */
 class ExpressionUtils {
 

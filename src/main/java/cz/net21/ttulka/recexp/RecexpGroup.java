@@ -1,9 +1,10 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Class representing an candidate group.
+ * Derivate tree node as a candidate group.
  *
  * @author ttulka
+ * @see RecexpMatcher
  */
 public class RecexpGroup {
 

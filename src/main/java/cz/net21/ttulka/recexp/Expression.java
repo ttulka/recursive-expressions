@@ -1,7 +1,10 @@
 package cz.net21.ttulka.recexp;
 
 /**
+ * Object representation of a recursive expression.
+ *
  * @author ttulka
+ * @see ExpressionTree
  */
 class Expression {
 

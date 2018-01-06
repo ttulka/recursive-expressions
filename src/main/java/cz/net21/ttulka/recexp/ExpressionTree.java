@@ -6,9 +6,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Tree representation of an candidate.
+ * Tree representation of a parsed recursive expression.
  *
  * @author ttulka
+ * @see Rule
+ * @see Expression
  */
 class ExpressionTree {
 
@@ -44,14 +46,9 @@ class ExpressionTree {
      */
     static class Node {
 
-        enum SubNodesConnectionType {
-            SINGLE, AND, OR
-        }
-
         private final Expression expression;
         private final SubNodesConnectionType subNodesConnectionType;
         private final List<Node> subNodes;
-
         public Node(Expression expression) {
             this(expression, SubNodesConnectionType.SINGLE);
         }
@@ -241,6 +238,10 @@ class ExpressionTree {
         @Override
         public String toString() {
             return expression.toString();
+        }
+
+        enum SubNodesConnectionType {
+            SINGLE, AND, OR
         }
     }
 }

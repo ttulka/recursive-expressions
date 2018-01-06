@@ -464,13 +464,13 @@ public class RecexpGrammarTest {
     }
 
     @Test
-    public void reduceTreeTest() {
+    public void nodeToGroupTest() {
         RecexpGrammar grammar = new RecexpGrammar();
         ExpressionTree tree;
         RecexpGroup group;
 
         tree = ExpressionTree.parseTree("(a?)(b?)");
-        group = grammar.reduceTree(tree.getRoot(), "ab");
+        group = grammar.nodeToGroup(tree.getRoot(), "ab");
 
         assertThat(group, not(nullValue()));
         assertThat(group.groupCount(), is(2));
@@ -482,30 +482,30 @@ public class RecexpGrammarTest {
         assertThat(group.group(2).groupCount(), is(0));
 
         tree = ExpressionTree.parseTree("a?b?");
-        group = grammar.reduceTree(tree.getRoot(), "ab");
+        group = grammar.nodeToGroup(tree.getRoot(), "ab");
 
         assertThat(group, not(nullValue()));
         assertThat(group.groupCount(), is(0));
     }
 
     @Test
-    public void asGroupTest() {
-        RecexpGroup group;
+    public void derivateTreeTest() {
+        ExpressionTree.Node derivate;
 
-        group = new RecexpGrammar()
-                .asGroup(ExpressionTree.parseTree("a").getRoot(), "a", new HashSet<String>());
+        derivate = new RecexpGrammar()
+                .derivateTree(ExpressionTree.parseTree("a").getRoot(), "a", new HashSet<String>());
 
-        assertThat(group.groupCount(), is(0));
+        assertThat(derivate, not(nullValue()));
 
-        group = new RecexpGrammar()
-                .asGroup(ExpressionTree.parseTree("a?").getRoot(), "a", new HashSet<String>());
+        derivate = new RecexpGrammar()
+                .derivateTree(ExpressionTree.parseTree("a?").getRoot(), "a", new HashSet<String>());
 
-        assertThat(group.groupCount(), is(0));
+        assertThat(derivate, not(nullValue()));
 
-        group = new RecexpGrammar()
-                .asGroup(ExpressionTree.parseTree("a|b").getRoot(), "a", new HashSet<String>());
+        derivate = new RecexpGrammar()
+                .derivateTree(ExpressionTree.parseTree("a|b").getRoot(), "a", new HashSet<String>());
 
-        assertThat(group.groupCount(), is(0));
+        assertThat(derivate, not(nullValue()));
     }
 
     @Test
