@@ -72,6 +72,19 @@ public class RecexpGrammar {
     }
 
     /**
+     * Creates a matcher from this grammar for an input string with a starting rule.
+     *
+     * @param startingRuleName the name of the starting rule
+     * @param input            the input string
+     * @return the matcher
+     * @throws RecexpEmptyRulesException when there are no rules
+     * @throws RecexpCyclicRuleException when there is a cyclic rule
+     */
+    public RecexpMatcher matcher(String startingRuleName, String input) {
+        return matcher(getNamedRules(startingRuleName), input);
+    }
+
+    /**
      * Creates a matcher from this grammar for an input string.
      *
      * @param input the input string
@@ -80,7 +93,10 @@ public class RecexpGrammar {
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     public RecexpMatcher matcher(String input) {
-        Set<Rule> rules = getExplicitRules();
+        return matcher(getAllExplicitRules(), input);
+    }
+
+    private RecexpMatcher matcher(Set<Rule> rules, String input) {
         checkEmptyRules(rules);
         checkCyclicRules(rules);
 
@@ -162,7 +178,7 @@ public class RecexpGrammar {
 
     private int numberOfRulesWithSameName(String ruleName) {
         int count = 0;
-        for (Rule rule : getExplicitRules()) {
+        for (Rule rule : getAllExplicitRules()) {
             if (rule.getName().equals(ruleName)) {
                 count++;
             }
@@ -170,7 +186,7 @@ public class RecexpGrammar {
         return count;
     }
 
-    private Set<Rule> getExplicitRules() {
+    private Set<Rule> getAllExplicitRules() {
         Set<Rule> explicitRules = new HashSet<Rule>();
 
         for (Rule rule : rules) {
@@ -181,15 +197,18 @@ public class RecexpGrammar {
         return Collections.unmodifiableSet(explicitRules);
     }
 
-    private Set<Rule> getNamedRules() {
+    private Set<Rule> getNamedRules(String name) {
         Set<Rule> namedRules = new HashSet<Rule>();
 
         for (Rule rule : rules) {
-            if (rule instanceof NamedRule) {
+            if (rule instanceof NamedRule && rule.getName().equals(name)) {
                 namedRules.add(rule);
             }
         }
-        return Collections.unmodifiableSet(namedRules);
+        if (namedRules.isEmpty()) {
+            throw new IllegalArgumentException("No rule with the name '" + name + "' found.");
+        }
+        return namedRules;
     }
 
     /**
@@ -330,15 +349,13 @@ public class RecexpGrammar {
             }
         } else {
             if (node.getExpression().isReference()) {
-                for (Rule rule : getNamedRules()) {
-                    if (rule.getName().equals(node.getExpression().getText())) {
-                        if (rule.getExpression().getRoot().isOrNode()) {
-                            for (ExpressionTree.Node n : rule.getExpression().getRoot().getSubNodes()) {
-                                combinations.add(toCombination(node, n.getExpression()));
-                            }
-                        } else {
-                            combinations.add(toCombination(node, rule.getExpression().getRoot().getExpression()));
+                for (Rule rule : getNamedRules(node.getExpression().getText())) {
+                    if (rule.getExpression().getRoot().isOrNode()) {
+                        for (ExpressionTree.Node n : rule.getExpression().getRoot().getSubNodes()) {
+                            combinations.add(toCombination(node, n.getExpression()));
                         }
+                    } else {
+                        combinations.add(toCombination(node, rule.getExpression().getRoot().getExpression()));
                     }
                 }
             } else {

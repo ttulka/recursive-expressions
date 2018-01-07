@@ -226,6 +226,24 @@ public class RecexpGrammarTest {
     }
 
     @Test
+    public void matcherStartingRuleTest() {
+        RecexpGrammar grammar = RecexpGrammar.builder()
+                .rule("A", "a")
+                .rule("B", "b")
+                .build();
+
+        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("b").matches(), is(true));
+        assertThat(grammar.matcher("").matches(), is(false));
+
+        assertThat(grammar.matcher("A", "a").matches(), is(true));
+        assertThat(grammar.matcher("B", "b").matches(), is(true));
+        assertThat(grammar.matcher("B", "a").matches(), is(false));
+        assertThat(grammar.matcher("A", "b").matches(), is(false));
+        assertThat(grammar.matcher("").matches(), is(false));
+    }
+
+    @Test
     public void getCartesianProductTest() {
         Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(
                 createLeafCombination("A", "B"),
@@ -632,7 +650,7 @@ public class RecexpGrammarTest {
         RecexpGrammar.builder().rule("RULE", "a").build().matches("");
         RecexpGrammar.builder().rule("RULE", "@RULE?").build().matches("");
         RecexpGrammar.builder().rule("RULE", "a@RULE?").build().matches("");
-        RecexpGrammar.builder()    .rule("RULE", "a@RULE?b").build().matches("");
+        RecexpGrammar.builder().rule("RULE", "a@RULE?b").build().matches("");
         RecexpGrammar.builder().rule("RULE", "@this?").build().matches("");
         RecexpGrammar.builder().rule("RULE", "a@this?").build().matches("");
         RecexpGrammar.builder().rule("RULE", "a@this?b").build().matches("");
