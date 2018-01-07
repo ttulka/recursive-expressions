@@ -26,7 +26,13 @@ public class RecexpGrammar {
 
     protected final Set<Rule> rules;
 
+    /**
+     * The only one constructor.
+     *
+     * @param rules the rules
+     */
     private RecexpGrammar(Collection<Rule> rules) {
+        rules.add(ImplicitRule.EPSILON_RULE);
         this.rules = Collections.unmodifiableSet(new HashSet<Rule>(rules));
     }
 
@@ -74,8 +80,9 @@ public class RecexpGrammar {
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     public RecexpMatcher matcher(String input) {
-        checkEmptyRules();
-        checkCyclicRules();
+        Set<Rule> rules = getExplicitRules();
+        checkEmptyRules(rules);
+        checkCyclicRules(rules);
 
         for (Rule rule : rules) {
             ExpressionTree.Node derivate = derivateTree(rule.getExpression().getRoot(), input, new HashSet<String>());
@@ -90,7 +97,7 @@ public class RecexpGrammar {
     /**
      * @throws RecexpEmptyRulesException when there are no rules
      */
-    void checkEmptyRules() {
+    void checkEmptyRules(Set<Rule> rules) {
         if (rules.isEmpty()) {
             throw new RecexpEmptyRulesException();
         }
@@ -99,7 +106,7 @@ public class RecexpGrammar {
     /**
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
-    void checkCyclicRules() {
+    void checkCyclicRules(Set<Rule> rules) {
         for (Rule rule : rules) {
             if (!checkCyclicRules(rule, rule.getExpression().getRoot())) {
                 throw new RecexpCyclicRuleException(rule.getName());
@@ -155,12 +162,23 @@ public class RecexpGrammar {
 
     private int numberOfRulesWithSameName(String ruleName) {
         int count = 0;
-        for (Rule rule : getNamedRules()) {
+        for (Rule rule : getExplicitRules()) {
             if (rule.getName().equals(ruleName)) {
                 count++;
             }
         }
         return count;
+    }
+
+    private Set<Rule> getExplicitRules() {
+        Set<Rule> explicitRules = new HashSet<Rule>();
+
+        for (Rule rule : rules) {
+            if (!(rule instanceof ImplicitRule)) {
+                explicitRules.add(rule);
+            }
+        }
+        return Collections.unmodifiableSet(explicitRules);
     }
 
     private Set<Rule> getNamedRules() {

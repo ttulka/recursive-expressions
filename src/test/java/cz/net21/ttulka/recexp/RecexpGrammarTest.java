@@ -41,7 +41,7 @@ public class RecexpGrammarTest {
 
         RecexpGrammar grammar = builder.build();
         assertThat(grammar, not(nullValue()));
-        assertThat(grammar.rules.size(), is(2));
+        assertThat(grammar.rules.size(), is(2 + 1));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class RecexpGrammarTest {
 
         RecexpGrammar grammar = builder.build();
         assertThat(grammar, not(nullValue()));
-        assertThat(grammar.rules.size(), is(2));
+        assertThat(grammar.rules.size(), is(2 + 1));
     }
 
     @Test
@@ -65,22 +65,22 @@ public class RecexpGrammarTest {
 
         RecexpGrammar grammar = builder.build();
         assertThat(grammar, not(nullValue()));
-        assertThat(grammar.rules.size(), is(2));
+        assertThat(grammar.rules.size(), is(2 + 1));
     }
 
     @Test
     public void rulesConstructorTest() {
         RecexpGrammar grammar1 = RecexpGrammar.compile("");
-        assertThat(grammar1.rules.size(), is(1));
+        assertThat(grammar1.rules.size(), is(1 + 1));
 
         RecexpGrammar grammar = RecexpGrammar.compile("a");
-        assertThat(grammar.rules.size(), is(1));
+        assertThat(grammar.rules.size(), is(1 + 1));
 
         RecexpGrammar grammar2 = RecexpGrammar.compile("a", "b");
-        assertThat(grammar2.rules.size(), is(2));
+        assertThat(grammar2.rules.size(), is(2 + 1));
 
         RecexpGrammar grammar3 = RecexpGrammar.compile("a", "b", "a");
-        assertThat(grammar3.rules.size(), is(2));
+        assertThat(grammar3.rules.size(), is(2 + 1));
     }
 
     @Test

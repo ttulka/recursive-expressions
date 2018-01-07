@@ -10,6 +10,7 @@ class Expression {
 
     public static final char REFERENCE_PREFIX = '@';
     public static final String THIS_REFERENCE_NAME = "this";
+    public static final String EPSILON_REFERENCE_NAME = "EPS";
 
     public static final Expression EPSILON = new Expression("", null, false);
 

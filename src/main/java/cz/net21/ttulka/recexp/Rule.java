@@ -1,5 +1,7 @@
 package cz.net21.ttulka.recexp;
 
+import java.util.regex.Pattern;
+
 /**
  * Recursive rule.
  * <p>
@@ -19,13 +21,16 @@ class Rule {
     private final ExpressionTree expression;
 
     public Rule(String expression) {
-        this.name = expression;
-        this.expression = ExpressionTree.parseTree(expression);
+        this(expression, ExpressionTree.parseTree(expression));
     }
 
     public Rule(String name, String expression) {
+        this(name, ExpressionTree.parseTree(expression));
+    }
+
+    protected Rule(String name, ExpressionTree expressionTree) {
         this.name = name;
-        this.expression = ExpressionTree.parseTree(expression);
+        this.expression = expressionTree;
     }
 
     public String getName() {
@@ -65,7 +70,7 @@ class Rule {
 }
 
 /**
- * Explicitly named rule.
+ * Named rule.
  *
  * @author ttulka
  */
@@ -73,10 +78,40 @@ class NamedRule extends Rule {
 
     public NamedRule(String name, String expression) {
         super(name, expression);
+
+        if (!Pattern.matches("((\\w)+)", name)) {
+            throw new IllegalArgumentException("Rule name can contain only word characters (letters, digits and underscore), but was: " + name);
+        }
+
+        if (name.equals(Expression.THIS_REFERENCE_NAME)) {
+            throw new IllegalArgumentException("'" + Expression.THIS_REFERENCE_NAME + "' is a reserved rule name for a self-reference.");
+        }
+
+        if (name.equals(Expression.EPSILON_REFERENCE_NAME)) {
+            throw new IllegalArgumentException("'" + Expression.EPSILON_REFERENCE_NAME + "' is a reserved rule name for the epsilon (empty rule).");
+        }
+    }
+
+    protected NamedRule(String name, Expression expression) {
+        super(name, new ExpressionTree(new ExpressionTree.Node(expression)));
     }
 
     @Override
     public String toString() {
         return Expression.REFERENCE_PREFIX + super.getName();
+    }
+}
+
+/**
+ * Implicit defined rule.
+ *
+ * @author ttulka
+ */
+class ImplicitRule extends NamedRule {
+
+    public static final ImplicitRule EPSILON_RULE = new ImplicitRule(Expression.EPSILON_REFERENCE_NAME, Expression.EPSILON);
+
+    private ImplicitRule(String name, Expression expression) {
+        super(name, expression);
     }
 }

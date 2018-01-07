@@ -232,7 +232,6 @@ public class RecexpTest {
                 .rule("R", "@X")
                 .rule("R", "@EPS")
                 .rule("X", "x")
-                .rule("EPS", "")
                 .build();
 
         assertThat(grammar.accepts(""), is(true));

@@ -49,6 +49,7 @@ class ExpressionTree {
         private final Expression expression;
         private final SubNodesConnectionType subNodesConnectionType;
         private final List<Node> subNodes;
+
         public Node(Expression expression) {
             this(expression, SubNodesConnectionType.SINGLE);
         }
