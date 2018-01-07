@@ -536,19 +536,19 @@ public class RecexpGrammarTest {
     public void checkCyclicRulesFailTest() {
         try {
             RecexpGrammar.builder().rule("CYCLIC_RULE", "@CYCLIC_RULE").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
         try {
             RecexpGrammar.builder().rule("CYCLIC_RULE", "a@CYCLIC_RULE").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
         try {
             RecexpGrammar.builder().rule("CYCLIC_RULE", "(a)@CYCLIC_RULE(b)").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
@@ -557,7 +557,7 @@ public class RecexpGrammarTest {
                     .rule("RULE1", "@RULE2")
                     .rule("RULE2", "@RULE1")
                     .build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
@@ -567,7 +567,7 @@ public class RecexpGrammarTest {
                     .rule("RULE2", "@RULE3")
                     .rule("RULE3", "@RULE1")
                     .build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
@@ -577,7 +577,7 @@ public class RecexpGrammarTest {
                     .rule("RULE2", "b@RULE3")
                     .rule("RULE3", "c@RULE1")
                     .build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
@@ -587,25 +587,25 @@ public class RecexpGrammarTest {
                     .rule("RULE2", "b@RULE3(2)")
                     .rule("RULE3", "c@RULE1(3)")
                     .build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
         try {
             RecexpGrammar.builder().rule("RULE", "@this").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
         try {
             RecexpGrammar.builder().rule("RULE", "a@this").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
         try {
             RecexpGrammar.builder().rule("RULE", "a@this(b)").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
@@ -615,13 +615,13 @@ public class RecexpGrammarTest {
                     .rule("B", "b")
                     .rule("@A@this@B")
                     .build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
         try {
             RecexpGrammar.builder().rule("@this|@this").build()
-                    .accepts("");
+                    .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {
         }
@@ -629,29 +629,29 @@ public class RecexpGrammarTest {
 
     @Test
     public void checkCyclicRulesPassTest() {
-        RecexpGrammar.builder().rule("RULE", "a").build().accepts("");
-        RecexpGrammar.builder().rule("RULE", "@RULE?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE", "a@RULE?").build().accepts("");
-        RecexpGrammar.builder()    .rule("RULE", "a@RULE?b").build().accepts("");
-        RecexpGrammar.builder().rule("RULE", "@this?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE", "a@this?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE", "a@this?b").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE1").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2").rule("RULE2", "@RULE1?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE1?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "a@RULE2?").rule("RULE2", "b@RULE1?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "a@RULE2?c").rule("RULE2", "b@RULE1?d").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2").rule("RULE2", "@RULE3").rule("RULE3", "@RULE1?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2").rule("RULE2", "@RULE3?").rule("RULE3", "@RULE1").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE3").rule("RULE3", "@RULE1").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE3?").rule("RULE3", "@RULE1?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "a@RULE2").rule("RULE2", "b@RULE3").rule("RULE3", "c@RULE1?").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "a@RULE2").rule("RULE2", "b@RULE3").rule("RULE3", "c@RULE1?d").build().accepts("");
-        RecexpGrammar.builder().rule("RULE1", "a@RULE2?1").rule("RULE2", "b@RULE3?2").rule("RULE3", "c@RULE1?3").build().accepts("");
-        RecexpGrammar.builder().rule("A", "a").rule("B", "b").rule("@A@this?@B").build().accepts("");
-        RecexpGrammar.builder().rule("@this|a").build().accepts("xx");
-        RecexpGrammar.builder().rule("a|@this|b").build().accepts("");
-        RecexpGrammar.builder().rule("a|@this|b|@this").build().accepts("");
-        RecexpGrammar.builder().rule("(a|@this|b)|(@this|c)").build().accepts("");
+        RecexpGrammar.builder().rule("RULE", "a").build().matches("");
+        RecexpGrammar.builder().rule("RULE", "@RULE?").build().matches("");
+        RecexpGrammar.builder().rule("RULE", "a@RULE?").build().matches("");
+        RecexpGrammar.builder()    .rule("RULE", "a@RULE?b").build().matches("");
+        RecexpGrammar.builder().rule("RULE", "@this?").build().matches("");
+        RecexpGrammar.builder().rule("RULE", "a@this?").build().matches("");
+        RecexpGrammar.builder().rule("RULE", "a@this?b").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE1").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2").rule("RULE2", "@RULE1?").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE1?").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "a@RULE2?").rule("RULE2", "b@RULE1?").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "a@RULE2?c").rule("RULE2", "b@RULE1?d").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2").rule("RULE2", "@RULE3").rule("RULE3", "@RULE1?").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2").rule("RULE2", "@RULE3?").rule("RULE3", "@RULE1").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE3").rule("RULE3", "@RULE1").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "@RULE2?").rule("RULE2", "@RULE3?").rule("RULE3", "@RULE1?").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "a@RULE2").rule("RULE2", "b@RULE3").rule("RULE3", "c@RULE1?").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "a@RULE2").rule("RULE2", "b@RULE3").rule("RULE3", "c@RULE1?d").build().matches("");
+        RecexpGrammar.builder().rule("RULE1", "a@RULE2?1").rule("RULE2", "b@RULE3?2").rule("RULE3", "c@RULE1?3").build().matches("");
+        RecexpGrammar.builder().rule("A", "a").rule("B", "b").rule("@A@this?@B").build().matches("");
+        RecexpGrammar.builder().rule("@this|a").build().matches("xx");
+        RecexpGrammar.builder().rule("a|@this|b").build().matches("");
+        RecexpGrammar.builder().rule("a|@this|b|@this").build().matches("");
+        RecexpGrammar.builder().rule("(a|@this|b)|(@this|c)").build().matches("");
     }
 }

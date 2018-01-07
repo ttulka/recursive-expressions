@@ -16,62 +16,62 @@ import static org.junit.Assert.fail;
 public class RecexpTest {
 
     @Test
-    public void epsilonTest() {
+    public void emptyTest() {
         RecexpGrammar grammar = RecexpGrammar.compile("");
 
-        assertThat(grammar.accepts(""), is(true));
+        assertThat(grammar.matches(""), is(true));
 
-        assertThat(grammar.accepts("a"), is(false));
+        assertThat(grammar.matches("a"), is(false));
     }
 
     @Test
     public void simpleTest() {
         RecexpGrammar grammar = RecexpGrammar.compile("a");
 
-        assertThat(grammar.accepts("a"), is(true));
+        assertThat(grammar.matches("a"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("aa"), is(false));
-        assertThat(grammar.accepts("aaa"), is(false));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("aa"), is(false));
+        assertThat(grammar.matches("aaa"), is(false));
     }
 
     @Test
     public void simpleRecursiveTest() {
         RecexpGrammar grammar = RecexpGrammar.compile("a@this?b");
 
-        assertThat(grammar.accepts("ab"), is(true));
-        assertThat(grammar.accepts("aabb"), is(true));
-        assertThat(grammar.accepts("aaabbb"), is(true));
+        assertThat(grammar.matches("ab"), is(true));
+        assertThat(grammar.matches("aabb"), is(true));
+        assertThat(grammar.matches("aaabbb"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("a"), is(false));
-        assertThat(grammar.accepts("b"), is(false));
-        assertThat(grammar.accepts("ba"), is(false));
-        assertThat(grammar.accepts("abb"), is(false));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("a"), is(false));
+        assertThat(grammar.matches("b"), is(false));
+        assertThat(grammar.matches("ba"), is(false));
+        assertThat(grammar.matches("abb"), is(false));
     }
 
     @Test
     public void doubleRecursiveThisTest() {
         RecexpGrammar grammar = RecexpGrammar.compile("a@this?b@this?c");
 
-        assertThat(grammar.accepts("abc"), is(true));
-        assertThat(grammar.accepts("ababcc"), is(true));
-        assertThat(grammar.accepts("aabcbc"), is(true));
-        assertThat(grammar.accepts("aabcbabcc"), is(true));
-        assertThat(grammar.accepts("aaabcbabccbaabcbabccc"), is(true));
+        assertThat(grammar.matches("abc"), is(true));
+        assertThat(grammar.matches("ababcc"), is(true));
+        assertThat(grammar.matches("aabcbc"), is(true));
+        assertThat(grammar.matches("aabcbabcc"), is(true));
+        assertThat(grammar.matches("aaabcbabccbaabcbabccc"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("a"), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
-        assertThat(grammar.accepts("ac"), is(false));
-        assertThat(grammar.accepts("bc"), is(false));
-        assertThat(grammar.accepts("cba"), is(false));
-        assertThat(grammar.accepts("aabc"), is(false));
-        assertThat(grammar.accepts("aabcc"), is(false));
-        assertThat(grammar.accepts("aabbcc"), is(false));
-        assertThat(grammar.accepts("aabbc"), is(false));
-        assertThat(grammar.accepts("aacbc"), is(false));
-        assertThat(grammar.accepts("ababcc"), is(true));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("a"), is(false));
+        assertThat(grammar.matches("ab"), is(false));
+        assertThat(grammar.matches("ac"), is(false));
+        assertThat(grammar.matches("bc"), is(false));
+        assertThat(grammar.matches("cba"), is(false));
+        assertThat(grammar.matches("aabc"), is(false));
+        assertThat(grammar.matches("aabcc"), is(false));
+        assertThat(grammar.matches("aabbcc"), is(false));
+        assertThat(grammar.matches("aabbc"), is(false));
+        assertThat(grammar.matches("aacbc"), is(false));
+        assertThat(grammar.matches("ababcc"), is(true));
     }
 
     @Test
@@ -80,55 +80,55 @@ public class RecexpTest {
                 .rule("RULE", "a@RULE?b@RULE?c")
                 .build();
 
-        assertThat(grammar.accepts("abc"), is(true));
-        assertThat(grammar.accepts("abc"), is(true));
-        assertThat(grammar.accepts("ababcc"), is(true));
-        assertThat(grammar.accepts("aabcbc"), is(true));
-        assertThat(grammar.accepts("aabcbabcc"), is(true));
-        assertThat(grammar.accepts("aaabcbabccbaabcbabccc"), is(true));
+        assertThat(grammar.matches("abc"), is(true));
+        assertThat(grammar.matches("abc"), is(true));
+        assertThat(grammar.matches("ababcc"), is(true));
+        assertThat(grammar.matches("aabcbc"), is(true));
+        assertThat(grammar.matches("aabcbabcc"), is(true));
+        assertThat(grammar.matches("aaabcbabccbaabcbabccc"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("a"), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
-        assertThat(grammar.accepts("ac"), is(false));
-        assertThat(grammar.accepts("bc"), is(false));
-        assertThat(grammar.accepts("cba"), is(false));
-        assertThat(grammar.accepts("aabc"), is(false));
-        assertThat(grammar.accepts("aabcc"), is(false));
-        assertThat(grammar.accepts("aabbcc"), is(false));
-        assertThat(grammar.accepts("aabbc"), is(false));
-        assertThat(grammar.accepts("aacbc"), is(false));
-        assertThat(grammar.accepts("ababcc"), is(true));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("a"), is(false));
+        assertThat(grammar.matches("ab"), is(false));
+        assertThat(grammar.matches("ac"), is(false));
+        assertThat(grammar.matches("bc"), is(false));
+        assertThat(grammar.matches("cba"), is(false));
+        assertThat(grammar.matches("aabc"), is(false));
+        assertThat(grammar.matches("aabcc"), is(false));
+        assertThat(grammar.matches("aabbcc"), is(false));
+        assertThat(grammar.matches("aabbc"), is(false));
+        assertThat(grammar.matches("aacbc"), is(false));
+        assertThat(grammar.matches("ababcc"), is(true));
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicOnlyThisTest() {
-        RecexpGrammar.compile("@this").accepts("a");
+        RecexpGrammar.compile("@this").matches("a");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicSimpleThisTest() {
-        RecexpGrammar.compile("a(@this)b").accepts("ab");
+        RecexpGrammar.compile("a(@this)b").matches("ab");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicDoubleThisTest() {
-        RecexpGrammar.compile("a(@this)b(@this)c").accepts("abc");
+        RecexpGrammar.compile("a(@this)b(@this)c").matches("abc");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicDoubleThis2Test() {
-        RecexpGrammar.compile("a(@this)b@this?c").accepts("abc");
+        RecexpGrammar.compile("a(@this)b@this?c").matches("abc");
         fail("Cyclic rule should throw an exception.");
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
     public void cyclicSimpleRuleTest() {
         RecexpGrammar.builder().rule("RULE_CYCLIC", "a(@RULE_CYCLIC)b").build()
-                .accepts("ab");
+                .matches("ab");
         fail("Cyclic rule should throw an exception.");
     }
 
@@ -138,7 +138,7 @@ public class RecexpTest {
                 .rule("RULE_1", "a(@RULE_2)b")
                 .rule("RULE_2", "c(@RULE_1)d")
                 .build()
-                .accepts("acdb");
+                .matches("acdb");
         fail("Cyclic rule should throw an exception.");
     }
 
@@ -148,7 +148,7 @@ public class RecexpTest {
                 .rule("a(@this)b")
                 .rule("c(@this)d")
                 .build()
-                .accepts("ab");
+                .matches("ab");
         fail("Cyclic rule should throw an exception.");
     }
 
@@ -159,7 +159,7 @@ public class RecexpTest {
                 .rule("RULE_2", "c(@RULE_1)d")
                 .rule("RULE_3", "x")
                 .build()
-                .accepts("acxdb");
+                .matches("acxdb");
         fail("Cyclic rule should throw an exception.");
     }
 
@@ -167,17 +167,17 @@ public class RecexpTest {
     public void orThisTest() {
         RecexpGrammar grammar = RecexpGrammar.compile("a(@this)b|c");
 
-        assertThat(grammar.accepts("c"), is(true));
-        assertThat(grammar.accepts("acb"), is(true));
-        assertThat(grammar.accepts("aacbb"), is(true));
-        assertThat(grammar.accepts("aaacbbb"), is(true));
+        assertThat(grammar.matches("c"), is(true));
+        assertThat(grammar.matches("acb"), is(true));
+        assertThat(grammar.matches("aacbb"), is(true));
+        assertThat(grammar.matches("aaacbbb"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
-        assertThat(grammar.accepts("aabb"), is(false));
-        assertThat(grammar.accepts("abc"), is(false));
-        assertThat(grammar.accepts("cc"), is(false));
-        assertThat(grammar.accepts("accb"), is(false));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("ab"), is(false));
+        assertThat(grammar.matches("aabb"), is(false));
+        assertThat(grammar.matches("abc"), is(false));
+        assertThat(grammar.matches("cc"), is(false));
+        assertThat(grammar.matches("accb"), is(false));
     }
 
     @Test
@@ -187,18 +187,18 @@ public class RecexpTest {
                 .rule("R", "x")
                 .build();
 
-        assertThat(grammar.accepts("x"), is(true));
-        assertThat(grammar.accepts("axb"), is(true));
-        assertThat(grammar.accepts("aaxbb"), is(true));
-        assertThat(grammar.accepts("aaaxbbb"), is(true));
+        assertThat(grammar.matches("x"), is(true));
+        assertThat(grammar.matches("axb"), is(true));
+        assertThat(grammar.matches("aaxbb"), is(true));
+        assertThat(grammar.matches("aaaxbbb"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("xx"), is(false));
-        assertThat(grammar.accepts("xxx"), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
-        assertThat(grammar.accepts("aabc"), is(false));
-        assertThat(grammar.accepts("axxb"), is(false));
-        assertThat(grammar.accepts("xabx"), is(false));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("xx"), is(false));
+        assertThat(grammar.matches("xxx"), is(false));
+        assertThat(grammar.matches("ab"), is(false));
+        assertThat(grammar.matches("aabc"), is(false));
+        assertThat(grammar.matches("axxb"), is(false));
+        assertThat(grammar.matches("xabx"), is(false));
     }
 
     @Test
@@ -209,20 +209,20 @@ public class RecexpTest {
                 .rule("R", "")
                 .build();
 
-        assertThat(grammar.accepts(""), is(true));
-        assertThat(grammar.accepts("x"), is(true));
-        assertThat(grammar.accepts("ab"), is(true));
-        assertThat(grammar.accepts("aabb"), is(true));
-        assertThat(grammar.accepts("aaabbb"), is(true));
-        assertThat(grammar.accepts("axb"), is(true));
-        assertThat(grammar.accepts("aaxbb"), is(true));
-        assertThat(grammar.accepts("aaaxbbb"), is(true));
+        assertThat(grammar.matches(""), is(true));
+        assertThat(grammar.matches("x"), is(true));
+        assertThat(grammar.matches("ab"), is(true));
+        assertThat(grammar.matches("aabb"), is(true));
+        assertThat(grammar.matches("aaabbb"), is(true));
+        assertThat(grammar.matches("axb"), is(true));
+        assertThat(grammar.matches("aaxbb"), is(true));
+        assertThat(grammar.matches("aaaxbbb"), is(true));
 
-        assertThat(grammar.accepts("xx"), is(false));
-        assertThat(grammar.accepts("xxx"), is(false));
-        assertThat(grammar.accepts("aabc"), is(false));
-        assertThat(grammar.accepts("axxb"), is(false));
-        assertThat(grammar.accepts("xabx"), is(false));
+        assertThat(grammar.matches("xx"), is(false));
+        assertThat(grammar.matches("xxx"), is(false));
+        assertThat(grammar.matches("aabc"), is(false));
+        assertThat(grammar.matches("axxb"), is(false));
+        assertThat(grammar.matches("xabx"), is(false));
     }
 
     @Test
@@ -234,20 +234,20 @@ public class RecexpTest {
                 .rule("X", "x")
                 .build();
 
-        assertThat(grammar.accepts(""), is(true));
-        assertThat(grammar.accepts("x"), is(true));
-        assertThat(grammar.accepts("ab"), is(true));
-        assertThat(grammar.accepts("aabb"), is(true));
-        assertThat(grammar.accepts("aaabbb"), is(true));
-        assertThat(grammar.accepts("axb"), is(true));
-        assertThat(grammar.accepts("aaxbb"), is(true));
-        assertThat(grammar.accepts("aaaxbbb"), is(true));
+        assertThat(grammar.matches(""), is(true));
+        assertThat(grammar.matches("x"), is(true));
+        assertThat(grammar.matches("ab"), is(true));
+        assertThat(grammar.matches("aabb"), is(true));
+        assertThat(grammar.matches("aaabbb"), is(true));
+        assertThat(grammar.matches("axb"), is(true));
+        assertThat(grammar.matches("aaxbb"), is(true));
+        assertThat(grammar.matches("aaaxbbb"), is(true));
 
-        assertThat(grammar.accepts("xx"), is(false));
-        assertThat(grammar.accepts("xxx"), is(false));
-        assertThat(grammar.accepts("aabc"), is(false));
-        assertThat(grammar.accepts("axxb"), is(false));
-        assertThat(grammar.accepts("xabx"), is(false));
+        assertThat(grammar.matches("xx"), is(false));
+        assertThat(grammar.matches("xxx"), is(false));
+        assertThat(grammar.matches("aabc"), is(false));
+        assertThat(grammar.matches("axxb"), is(false));
+        assertThat(grammar.matches("xabx"), is(false));
     }
 
     @Test
@@ -257,17 +257,17 @@ public class RecexpTest {
                 .rule("RULE_C", "c")
                 .build();
 
-        assertThat(grammar.accepts("c"), is(true));
-        assertThat(grammar.accepts("acb"), is(true));
+        assertThat(grammar.matches("c"), is(true));
+        assertThat(grammar.matches("acb"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
-        assertThat(grammar.accepts("aabb"), is(false));
-        assertThat(grammar.accepts("abc"), is(false));
-        assertThat(grammar.accepts("cc"), is(false));
-        assertThat(grammar.accepts("accb"), is(false));
-        assertThat(grammar.accepts("aacbb"), is(false));
-        assertThat(grammar.accepts("aaacbbb"), is(false));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("ab"), is(false));
+        assertThat(grammar.matches("aabb"), is(false));
+        assertThat(grammar.matches("abc"), is(false));
+        assertThat(grammar.matches("cc"), is(false));
+        assertThat(grammar.matches("accb"), is(false));
+        assertThat(grammar.matches("aacbb"), is(false));
+        assertThat(grammar.matches("aaacbbb"), is(false));
     }
 
     @Test
@@ -278,27 +278,27 @@ public class RecexpTest {
                 .rule("RULE_X", "x")
                 .build();
 
-        assertThat(grammar.accepts("x"), is(true));
-        assertThat(grammar.accepts("cxd"), is(true));
-        assertThat(grammar.accepts("cacxdbd"), is(true));
-        assertThat(grammar.accepts("cacacxdbdbd"), is(true));
-        assertThat(grammar.accepts("cacacacxdbdbdbd"), is(true));
-        assertThat(grammar.accepts("acxdb"), is(true));
-        assertThat(grammar.accepts("acacxdbdb"), is(true));
-        assertThat(grammar.accepts("acacacxdbdbdb"), is(true));
+        assertThat(grammar.matches("x"), is(true));
+        assertThat(grammar.matches("cxd"), is(true));
+        assertThat(grammar.matches("cacxdbd"), is(true));
+        assertThat(grammar.matches("cacacxdbdbd"), is(true));
+        assertThat(grammar.matches("cacacacxdbdbdbd"), is(true));
+        assertThat(grammar.matches("acxdb"), is(true));
+        assertThat(grammar.matches("acacxdbdb"), is(true));
+        assertThat(grammar.matches("acacacxdbdbdb"), is(true));
 
-        assertThat(grammar.accepts(""), is(false));
-        assertThat(grammar.accepts("ab"), is(false));
-        assertThat(grammar.accepts("acdb"), is(false));
-        assertThat(grammar.accepts("acabdb"), is(false));
-        assertThat(grammar.accepts("acaxbdb"), is(false));
-        assertThat(grammar.accepts("acaaxbbdb"), is(false));
-        assertThat(grammar.accepts("acaaxbbdb"), is(false));
-        assertThat(grammar.accepts("cd"), is(false));
-        assertThat(grammar.accepts("cabd"), is(false));
-        assertThat(grammar.accepts("caxbd"), is(false));
-        assertThat(grammar.accepts("cacdbd"), is(false));
-        assertThat(grammar.accepts("ccacxdbdd"), is(false));
+        assertThat(grammar.matches(""), is(false));
+        assertThat(grammar.matches("ab"), is(false));
+        assertThat(grammar.matches("acdb"), is(false));
+        assertThat(grammar.matches("acabdb"), is(false));
+        assertThat(grammar.matches("acaxbdb"), is(false));
+        assertThat(grammar.matches("acaaxbbdb"), is(false));
+        assertThat(grammar.matches("acaaxbbdb"), is(false));
+        assertThat(grammar.matches("cd"), is(false));
+        assertThat(grammar.matches("cabd"), is(false));
+        assertThat(grammar.matches("caxbd"), is(false));
+        assertThat(grammar.matches("cacdbd"), is(false));
+        assertThat(grammar.matches("ccacxdbdd"), is(false));
     }
 
     @Test

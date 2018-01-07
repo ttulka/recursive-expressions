@@ -67,7 +67,7 @@ public class RecexpGrammar {
      * @param input the input string
      * @return true if the grammar accepts the string, otherwise false
      */
-    public boolean accepts(String input) {
+    public boolean matches(String input) {
         return matcher(input).matches();
     }
 
