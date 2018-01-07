@@ -100,9 +100,114 @@ grammar.matcher("aaab").matches();  // true
 grammar.matcher("a").matches();     // false
 ```
 
+## Recursive expressions as Context-Free Grammar
+
+to be done
+
 ## Examples
 
-See [unit tests](http://github.com/ttulka/recursive-expressions/blob/master/src/test/java/cz/net21/ttulka/recexp/test/RecexpTest.java) for more examples.
+### Palindromes
+```
+S → 0S0 | 1S1 | 0 | 1 | ε 
+```
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("S", "0")
+    .rule("S", "1")
+    .rule("S", "0(@S)0")
+    .rule("S", "1(@S)1")
+    .rule("S", "@EPS")
+    .build();
+    
+grammar.matches("");        // true
+grammar.matches("0");       // true
+grammar.matches("1");       // true
+grammar.matches("11");      // true
+grammar.matches("00");      // true
+grammar.matches("010");     // true
+grammar.matches("101");     // true
+grammar.matches("000");     // true
+grammar.matches("111");     // true
+grammar.matches("0110");    // true
+grammar.matches("1001");    // true
+grammar.matches("10101");   // true
+grammar.matches("10");      // false
+grammar.matches("01");      // false
+grammar.matches("1101");    // false
+```
+The same grammar can be alternatively and compactly created like:
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("S", "0(@S)0|1(@S)1|0|1|@EPS")
+    .build();
+```
+Or by using the `@this` self-reference:
+```
+RecexpGrammar grammar = RecexpGrammar.compile(
+    "0(@this)0|1(@this)1|0|1|@EPS");
+```
+
+### Strings with the same number of 0s and 1s
+```
+S → 0S1S | 1S0S | ε 
+```
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("S", "0(@S)1(@S)")
+    .rule("S", "1(@S)0(@S)")
+    .rule("S", "@EPS") 
+    .build();
+    
+grammar.matches("");        // true
+grammar.matches("0101");    // true
+grammar.matches("1010");    // true
+grammar.matches("1100");    // true
+grammar.matches("110010");  // true
+grammar.matches("110100");  // true
+grammar.matches("11000101");// true
+grammar.matches("0");   // false
+grammar.matches("1");   // false
+grammar.matches("00");  // false
+grammar.matches("11");  // false
+grammar.matches("101"); // false
+grammar.matches("010"); // false     
+```
+The same grammar can be alternatively and compactly created like:
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@EPS")
+    .build();
+```
+Or by using the `@this` self-reference:
+```
+RecexpGrammar grammar = RecexpGrammar.compile(
+    "0(@this)1(@this)|1(@this)0(@this)|@EPS");
+```  
+
+### Arithmetic expressions over variables X and Y
+```
+E → E±T | T           (expressions)
+T → T×F | F           (terms)
+F → (E) | X | Y       (factors)
+```
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("E", "@E±@T|@T")
+    .rule("T", "@T×@F|@F")
+    .rule("F", "\\(@E\\)|X|Y")
+    .build();
+
+grammar.matches("X±Y");            // true
+grammar.matches("X×Y");            // true
+grammar.matches("(X±X)×Y");        // true
+grammar.matches("(X±X)×(Y×X)");    // true
+
+grammar.matches("(X×X)(Y×X)");     // false
+```
+
+### More examples
+
+For more examples see [unit tests](http://github.com/ttulka/recursive-expressions/blob/master/src/test/java/cz/net21/ttulka/recexp/test/RecexpTest.java) for more examples.
 
 ## Release Changes
 

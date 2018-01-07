@@ -641,25 +641,28 @@ public class RecexpTest {
 
     @Test
     public void popularGrammars_arithmeticExpressionsTest() {
-        // ʘ ==> OR  (+)
-        // Λ ==> AND (*)
         RecexpGrammar arithmeticExpressionsGrammar = RecexpGrammar.builder()
-                .rule("E", "@E ʘ @T|@T")       // expressions
-                .rule("T", "@T Λ @F|@F")       // terms
+                .rule("E", "@E±@T|@T")      // expressions
+                .rule("T", "@T×@F|@F")      // terms
                 .rule("F", "\\(@E\\)|X|Y")  // factors
                 .build();
-        assertThat(arithmeticExpressionsGrammar.matches("X ʘ Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("X ʘ X"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ Y)"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("X ʘ X Λ Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X Λ X) ʘ Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ X) Λ Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ X) Λ (Y Λ X)"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X±Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X±X"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X×X"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X×Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X±Y)"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X×Y)"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X±X×Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X×X)±Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X±X)×Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X±X)×(Y×X)"), is(true));
 
         assertThat(arithmeticExpressionsGrammar.matches(""), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("X ʘ"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("X ʘʘ X"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("(X Λ X) ʘ A"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ X) (Y Λ X)"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("X±"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("X ± X"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("X × X"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("X××X"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("(X×X)×A"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("(X×X)(Y×X)"), is(false));
     }
 }
