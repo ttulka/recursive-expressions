@@ -520,4 +520,146 @@ public class RecexpTest {
         assertThat(grammar.matcher("aab").matches(), is(false));
         assertThat(grammar.matcher("abb").matches(), is(false));
     }
+
+    @Test
+    public void popularGrammars_palindromesTest() {
+        RecexpGrammar palindromesGrammar1 = RecexpGrammar.compile(
+                "0(@this)0|1(@this)1|0|1|@EPS");
+        assertThat(palindromesGrammar1.matches(""), is(true));
+        assertThat(palindromesGrammar1.matches("0"), is(true));
+        assertThat(palindromesGrammar1.matches("1"), is(true));
+        assertThat(palindromesGrammar1.matches("11"), is(true));
+        assertThat(palindromesGrammar1.matches("00"), is(true));
+        assertThat(palindromesGrammar1.matches("010"), is(true));
+        assertThat(palindromesGrammar1.matches("101"), is(true));
+        assertThat(palindromesGrammar1.matches("000"), is(true));
+        assertThat(palindromesGrammar1.matches("111"), is(true));
+        assertThat(palindromesGrammar1.matches("0110"), is(true));
+        assertThat(palindromesGrammar1.matches("1001"), is(true));
+        assertThat(palindromesGrammar1.matches("10101"), is(true));
+        assertThat(palindromesGrammar1.matches("10"), is(false));
+        assertThat(palindromesGrammar1.matches("01"), is(false));
+        assertThat(palindromesGrammar1.matches("1101"), is(false));
+
+        RecexpGrammar palindromesGrammar2 = RecexpGrammar.builder()
+                .rule("S", "0(@S)0|1(@S)1|0|1|@EPS")
+                .build();
+        assertThat(palindromesGrammar2.matches(""), is(true));
+        assertThat(palindromesGrammar2.matches("0"), is(true));
+        assertThat(palindromesGrammar2.matches("1"), is(true));
+        assertThat(palindromesGrammar2.matches("11"), is(true));
+        assertThat(palindromesGrammar2.matches("00"), is(true));
+        assertThat(palindromesGrammar2.matches("010"), is(true));
+        assertThat(palindromesGrammar2.matches("101"), is(true));
+        assertThat(palindromesGrammar2.matches("000"), is(true));
+        assertThat(palindromesGrammar2.matches("111"), is(true));
+        assertThat(palindromesGrammar2.matches("0110"), is(true));
+        assertThat(palindromesGrammar2.matches("1001"), is(true));
+        assertThat(palindromesGrammar2.matches("10101"), is(true));
+        assertThat(palindromesGrammar2.matches("10"), is(false));
+        assertThat(palindromesGrammar2.matches("01"), is(false));
+        assertThat(palindromesGrammar2.matches("1101"), is(false));
+
+        RecexpGrammar palindromesGrammar3 = RecexpGrammar.builder()
+                .rule("S", "0")
+                .rule("S", "1")
+                .rule("S", "0(@S)0")
+                .rule("S", "1(@S)1")
+                .rule("S", "@EPS")
+                .build();
+        assertThat(palindromesGrammar3.matches(""), is(true));
+        assertThat(palindromesGrammar3.matches("0"), is(true));
+        assertThat(palindromesGrammar3.matches("1"), is(true));
+        assertThat(palindromesGrammar3.matches("11"), is(true));
+        assertThat(palindromesGrammar3.matches("00"), is(true));
+        assertThat(palindromesGrammar3.matches("010"), is(true));
+        assertThat(palindromesGrammar3.matches("101"), is(true));
+        assertThat(palindromesGrammar3.matches("000"), is(true));
+        assertThat(palindromesGrammar3.matches("111"), is(true));
+        assertThat(palindromesGrammar3.matches("0110"), is(true));
+        assertThat(palindromesGrammar3.matches("1001"), is(true));
+        assertThat(palindromesGrammar3.matches("10101"), is(true));
+        assertThat(palindromesGrammar3.matches("10"), is(false));
+        assertThat(palindromesGrammar3.matches("01"), is(false));
+        assertThat(palindromesGrammar3.matches("1101"), is(false));
+    }
+
+    @Test
+    public void popularGrammars_stringWithSameNumberOf0sAnd1sTest() {
+        RecexpGrammar stringWithSameNumberOf0sAnd1sGrammar1 = RecexpGrammar.compile(
+                "0(@this)1(@this)|1(@this)0(@this)|@EPS");
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches(""), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("0101"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("1010"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("1100"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("110010"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("110100"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("11000101"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("0"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("1"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("00"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("11"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("101"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("010"), is(false));
+
+        RecexpGrammar stringWithSameNumberOf0sAnd1sGrammar2 = RecexpGrammar.builder()
+                .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@EPS")
+                .build();
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches(""), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("0101"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("1010"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("1100"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("110010"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("110100"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("11000101"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("0"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("1"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("00"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("11"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("101"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("010"), is(false));
+
+        RecexpGrammar stringWithSameNumberOf0sAnd1sGrammar3 = RecexpGrammar.builder()
+                .rule("S", "0(@S)1(@S)")
+                .rule("S", "1(@S)0(@S)")
+                .rule("S", "@EPS")
+                .build();
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches(""), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("0101"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("1010"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("1100"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("110010"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("110100"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("11000101"), is(true));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("0"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("1"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("00"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("11"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("101"), is(false));
+        assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("010"), is(false));
+    }
+
+    @Test
+    public void popularGrammars_arithmeticExpressionsTest() {
+        // ʘ ==> OR  (+)
+        // Λ ==> AND (*)
+        RecexpGrammar arithmeticExpressionsGrammar = RecexpGrammar.builder()
+                .rule("E", "@E ʘ @T|@T")       // expressions
+                .rule("T", "@T Λ @F|@F")       // terms
+                .rule("F", "\\(@E\\)|X|Y")  // factors
+                .build();
+        assertThat(arithmeticExpressionsGrammar.matches("X ʘ Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X ʘ X"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ Y)"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("X ʘ X Λ Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X Λ X) ʘ Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ X) Λ Y"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ X) Λ (Y Λ X)"), is(true));
+
+        assertThat(arithmeticExpressionsGrammar.matches(""), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("X ʘ"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("X ʘʘ X"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("(X Λ X) ʘ A"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matches("(X ʘ X) (Y Λ X)"), is(false));
+    }
 }
