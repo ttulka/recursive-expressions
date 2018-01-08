@@ -24,7 +24,7 @@ Copy the Maven dependency into your Maven project:
 </dependency>
 ```
 
-### Recursive Expressions as a Regular Expressions Extension
+### Recursive Expressions as an Extension of Regular Expressions 
 
 Regular expression standard Java library doesn't use hierarchical grouping of a parsing result:
 ```
@@ -61,6 +61,11 @@ Hierarchical expression tree from the example above:
              b
 ```
 
+
+### Recursive expressions as Context-Free Grammar
+
+to be done
+
 ### Recursive References
 
 Rule expression can reference another rule and/or itself. 
@@ -89,7 +94,7 @@ matcher.group(3).name();        // @B
 matcher.group(3).value();       // b
 ```
 
-### Self-reference `@this`
+#### Self-reference `@this`
 ```
 RecexpGrammar grammar = RecexpGrammar.compile("a@this|b");
 
@@ -101,7 +106,7 @@ grammar.matches("aaab");  // true
 grammar.matcher("a").matches();     // false
 ```
 
-### Empty reference Epsilon
+#### Empty reference `@eps` (Epsilon)
 
 *Epsilon* has syntax `@eps` and can be use as a rule defining an empty string:
 ```
@@ -117,10 +122,6 @@ RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("epsilon", "")
     ...
 ```
-
-## Recursive expressions as Context-Free Grammar
-
-to be done
 
 ## Examples
 
