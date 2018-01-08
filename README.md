@@ -207,7 +207,7 @@ grammar.matches("(X×X)(Y×X)");     // false
 
 ### More examples
 
-For more examples see [unit tests](http://github.com/ttulka/recursive-expressions/blob/master/src/test/java/cz/net21/ttulka/recexp/test/RecexpTest.java) for more examples.
+For more examples see [unit tests](http://github.com/ttulka/recursive-expressions/blob/master/src/test/java/cz/net21/ttulka/recexp/test/RecexpTest.java).
 
 ## Release Changes
 
