@@ -158,19 +158,19 @@ RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("S", "@eps") 
     .build();
     
-grammar.matches("");        // true
-grammar.matches("0101");    // true
-grammar.matches("1010");    // true
-grammar.matches("1100");    // true
-grammar.matches("110010");  // true
-grammar.matches("110100");  // true
-grammar.matches("11000101");// true
-grammar.matches("0");   // false
-grammar.matches("1");   // false
-grammar.matches("00");  // false
-grammar.matches("11");  // false
-grammar.matches("101"); // false
-grammar.matches("010"); // false     
+grammar.matches("");         // true
+grammar.matches("0101");     // true
+grammar.matches("1010");     // true
+grammar.matches("1100");     // true
+grammar.matches("110010");   // true
+grammar.matches("110100");   // true
+grammar.matches("11000101"); // true
+grammar.matches("0");        // false
+grammar.matches("1");        // false
+grammar.matches("00");       // false
+grammar.matches("11");       // false
+grammar.matches("101");      // false
+grammar.matches("010");      // false     
 ```
 The same grammar can be compactly created like:
 ```
