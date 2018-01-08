@@ -30,9 +30,9 @@ Regular expression standard Java library doesn't use hierarchical grouping of a 
 ```
 Matcher matcher = Pattern.compile("(a)((b))").matcher("ab");    // this is standard Java
 matcher.groupCount();   // 3
-matcher.group(1)        // a
-matcher.group(2)        // b
-matcher.group(3)        // b
+matcher.group(1);       // a
+matcher.group(2);       // b
+matcher.group(3);       // b
 ```
 
 With Recursive Expressions are groups created hierarchically:
@@ -135,13 +135,13 @@ grammar.matches("10");      // false
 grammar.matches("01");      // false
 grammar.matches("1101");    // false
 ```
-The same grammar can be alternatively and compactly created like:
+The same grammar can be compactly created like:
 ```
 RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("S", "0(@S)0|1(@S)1|0|1|@EPS")
     .build();
 ```
-Or by using the `@this` self-reference:
+Or alternatively by using the `@this` self-reference:
 ```
 RecexpGrammar grammar = RecexpGrammar.compile(
     "0(@this)0|1(@this)1|0|1|@EPS");
@@ -172,13 +172,13 @@ grammar.matches("11");  // false
 grammar.matches("101"); // false
 grammar.matches("010"); // false     
 ```
-The same grammar can be alternatively and compactly created like:
+The same grammar can be compactly created like:
 ```
 RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@EPS")
     .build();
 ```
-Or by using the `@this` self-reference:
+Or alternatively by using the `@this` self-reference:
 ```
 RecexpGrammar grammar = RecexpGrammar.compile(
     "0(@this)1(@this)|1(@this)0(@this)|@EPS");
