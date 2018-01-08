@@ -230,7 +230,7 @@ public class RecexpTest {
         RecexpGrammar grammar = RecexpGrammar.builder()
                 .rule("R", "a(@R)b")
                 .rule("R", "@X")
-                .rule("R", "@EPS")
+                .rule("R", "@eps")
                 .rule("X", "x")
                 .build();
 
@@ -524,7 +524,7 @@ public class RecexpTest {
     @Test
     public void popularGrammars_palindromesTest() {
         RecexpGrammar palindromesGrammar1 = RecexpGrammar.compile(
-                "0(@this)0|1(@this)1|0|1|@EPS");
+                "0(@this)0|1(@this)1|0|1|@eps");
         assertThat(palindromesGrammar1.matches(""), is(true));
         assertThat(palindromesGrammar1.matches("0"), is(true));
         assertThat(palindromesGrammar1.matches("1"), is(true));
@@ -542,7 +542,7 @@ public class RecexpTest {
         assertThat(palindromesGrammar1.matches("1101"), is(false));
 
         RecexpGrammar palindromesGrammar2 = RecexpGrammar.builder()
-                .rule("S", "0(@S)0|1(@S)1|0|1|@EPS")
+                .rule("S", "0(@S)0|1(@S)1|0|1|@eps")
                 .build();
         assertThat(palindromesGrammar2.matches(""), is(true));
         assertThat(palindromesGrammar2.matches("0"), is(true));
@@ -565,7 +565,7 @@ public class RecexpTest {
                 .rule("S", "1")
                 .rule("S", "0(@S)0")
                 .rule("S", "1(@S)1")
-                .rule("S", "@EPS")
+                .rule("S", "@eps")
                 .build();
         assertThat(palindromesGrammar3.matches(""), is(true));
         assertThat(palindromesGrammar3.matches("0"), is(true));
@@ -587,7 +587,7 @@ public class RecexpTest {
     @Test
     public void popularGrammars_stringWithSameNumberOf0sAnd1sTest() {
         RecexpGrammar stringWithSameNumberOf0sAnd1sGrammar1 = RecexpGrammar.compile(
-                "0(@this)1(@this)|1(@this)0(@this)|@EPS");
+                "0(@this)1(@this)|1(@this)0(@this)|@eps");
         assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches(""), is(true));
         assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("0101"), is(true));
         assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("1010"), is(true));
@@ -603,7 +603,7 @@ public class RecexpTest {
         assertThat(stringWithSameNumberOf0sAnd1sGrammar1.matches("010"), is(false));
 
         RecexpGrammar stringWithSameNumberOf0sAnd1sGrammar2 = RecexpGrammar.builder()
-                .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@EPS")
+                .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@eps")
                 .build();
         assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches(""), is(true));
         assertThat(stringWithSameNumberOf0sAnd1sGrammar2.matches("0101"), is(true));
@@ -622,7 +622,7 @@ public class RecexpTest {
         RecexpGrammar stringWithSameNumberOf0sAnd1sGrammar3 = RecexpGrammar.builder()
                 .rule("S", "0(@S)1(@S)")
                 .rule("S", "1(@S)0(@S)")
-                .rule("S", "@EPS")
+                .rule("S", "@eps")
                 .build();
         assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches(""), is(true));
         assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("0101"), is(true));

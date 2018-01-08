@@ -64,7 +64,7 @@ public class RuleTest {
     @Test
     public void epsilonReferenceExplicitlyUsedTest() {
         RecexpGrammar grammar = RecexpGrammar.builder()
-                .rule("E", "@EPS")
+                .rule("E", "@eps")
                 .build();
 
         assertThat(grammar.matches("a"), is(false));
@@ -74,7 +74,7 @@ public class RuleTest {
     @Test
     public void epsilonReferenceExplicitlyUsedInOrTest() {
         RecexpGrammar grammar = RecexpGrammar.builder()
-                .rule("A", "a|@EPS")
+                .rule("A", "a|@eps")
                 .build();
 
         assertThat(grammar.matches("a"), is(true));

@@ -116,7 +116,7 @@ RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("S", "1")
     .rule("S", "0(@S)0")
     .rule("S", "1(@S)1")
-    .rule("S", "@EPS")
+    .rule("S", "@eps")
     .build();
     
 grammar.matches("");        // true
@@ -138,13 +138,13 @@ grammar.matches("1101");    // false
 The same grammar can be compactly created like:
 ```
 RecexpGrammar grammar = RecexpGrammar.builder()
-    .rule("S", "0(@S)0|1(@S)1|0|1|@EPS")
+    .rule("S", "0(@S)0|1(@S)1|0|1|@eps")
     .build();
 ```
 Or alternatively by using the `@this` self-reference:
 ```
 RecexpGrammar grammar = RecexpGrammar.compile(
-    "0(@this)0|1(@this)1|0|1|@EPS");
+    "0(@this)0|1(@this)1|0|1|@eps");
 ```
 
 ### Strings with the same number of 0s and 1s
@@ -155,7 +155,7 @@ S → 0S1S | 1S0S | ε
 RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("S", "0(@S)1(@S)")
     .rule("S", "1(@S)0(@S)")
-    .rule("S", "@EPS") 
+    .rule("S", "@eps") 
     .build();
     
 grammar.matches("");        // true
@@ -175,13 +175,13 @@ grammar.matches("010"); // false
 The same grammar can be compactly created like:
 ```
 RecexpGrammar grammar = RecexpGrammar.builder()
-    .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@EPS")
+    .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@eps")
     .build();
 ```
 Or alternatively by using the `@this` self-reference:
 ```
 RecexpGrammar grammar = RecexpGrammar.compile(
-    "0(@this)1(@this)|1(@this)0(@this)|@EPS");
+    "0(@this)1(@this)|1(@this)0(@this)|@eps");
 ```  
 
 ### Arithmetic expressions over variables X and Y
