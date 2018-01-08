@@ -116,7 +116,7 @@ grammar.matches("");      // true
 grammar.matches("a");     // true
 ```
 
-Epsilon is a shortcut for a empty rule:
+Epsilon is a shortcut for an empty rule:
 ```
 RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("epsilon", "")
