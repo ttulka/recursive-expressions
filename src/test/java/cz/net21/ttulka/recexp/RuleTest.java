@@ -84,7 +84,7 @@ public class RuleTest {
     @Test(expected = IllegalArgumentException.class)
     public void epsilonExplicitlyDefinedExceptionTest() {
         RecexpGrammar.builder()
-                .rule("EPS", "a")
+                .rule("eps", "a")
                 .build();
     }
 
