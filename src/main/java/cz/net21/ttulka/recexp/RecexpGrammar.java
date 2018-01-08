@@ -8,14 +8,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Recursive Grammar.
  * <p>
  * Defined as a set of recursive rules.
  * <p>
- * From a grammar a derivate tree can be generated based on an input string. The result is represented as a {@link RecexpMatcher matcher} and the derivate as a
+ * From a grammar a derivative tree can be generated based on an input string. The result is represented as a {@link RecexpMatcher matcher} and the derivative as a
  * tree of {@link RecexpGroup groups}.
  *
  * @author ttulka
@@ -101,9 +100,9 @@ public class RecexpGrammar {
         checkCyclicRules(rules);
 
         for (Rule rule : rules) {
-            ExpressionTree.Node derivate = derivateTree(rule.getExpression().getRoot(), input, new HashSet<String>());
-            if (derivate != null) {
-                RecexpGroup group = nodeToGroup(derivate, input);
+            ExpressionTree.Node derivative = deriveTree(rule.getExpression().getRoot(), input, new HashSet<String>());
+            if (derivative != null) {
+                RecexpGroup group = nodeToGroup(derivative, input);
                 return RecexpMatcher.matcher(rule.toString(), input, group.groups());
             }
         }
@@ -212,9 +211,9 @@ public class RecexpGrammar {
     }
 
     /**
-     * Returns a derivated tree for the candidate and input, or <code>null</code> if there is no such a derivation.
+     * Returns a derivative tree for the candidate and input, or <code>null</code> if there is no such a derivation.
      */
-    ExpressionTree.Node derivateTree(ExpressionTree.Node root, String input, Set<String> alreadySeen) {
+    ExpressionTree.Node deriveTree(ExpressionTree.Node root, String input, Set<String> alreadySeen) {
         Queue<ExpressionTree.Node> candidatesQueue = new LinkedList<ExpressionTree.Node>();
 
         if (root.isOrNode()) {
@@ -232,11 +231,11 @@ public class RecexpGrammar {
             }
             alreadySeen.add(sentence);
 
-            if (!matchesIgnoreReferences(sentence, input)) {
+            if (!ExpressionUtils.matchesIgnoreReferences(sentence, input)) {
                 continue;
             }
 
-            if (matches(sentence, input)) {
+            if (ExpressionUtils.matches(sentence, input)) {
                 return candidate;
             }
 
@@ -249,59 +248,46 @@ public class RecexpGrammar {
         return null;
     }
 
-    private static boolean matchesIgnoreReferences(String expression, String input) {
-        return Pattern.matches(ExpressionUtils.hydrateExpression(expression), input);
-    }
-
-    private static boolean matches(String expression, String input) {
-        if (expression.equals(input)) {
-            return true;
-        }
-        // when matches for a substitution with X and Y too, it's obviously expendable
-        return Pattern.matches(ExpressionUtils.hydrateExpression(expression, "X"), input) &&
-               Pattern.matches(ExpressionUtils.hydrateExpression(expression, "Y"), input);
-    }
-
     private Set<ExpressionTree.Node> generateCandidates(ExpressionTree.Node node, ExpressionTree.Node root) {
         Set<ExpressionTree.Node> candidates = new HashSet<ExpressionTree.Node>();
 
-        for (Set<LeafCandidate> leafCandidates : getCartesianProduct(node, root)) {
-            candidates.add(copyNode(node, leafCandidates));
+        for (Set<NodeCandidate> nodeCandidates : getCartesianProduct(node, root)) {
+            candidates.add(copyNode(node, nodeCandidates));
         }
         return candidates;
     }
 
-    private Set<Set<LeafCandidate>> getCartesianProduct(ExpressionTree.Node node, ExpressionTree.Node root) {
-        Set<LeafCombination> combinations = new HashSet<LeafCombination>();
+    private Set<Set<NodeCandidate>> getCartesianProduct(ExpressionTree.Node node, ExpressionTree.Node root) {
+        Set<NodeCombinationsHolder> combinations = new HashSet<NodeCombinationsHolder>();
 
         if (node.isOrNode()) {
-            combinations.add(new LeafCombination(node, new HashSet<ExpressionTree.Node>(node.getSubNodes())));
+            combinations.add(new NodeCombinationsHolder(node, new HashSet<ExpressionTree.Node>(node.getSubNodes())));
         } else {
             combinations.addAll(generateCombinationsFromLeaves(node, root));
         }
-        return getCartesianProduct(combinations);
+        return generateCartesianProduct(combinations);
     }
 
     /**
      * Generates the Cartesian product for the node combinations.
      */
-    Set<Set<LeafCandidate>> getCartesianProduct(Collection<LeafCombination> combinations) {
-        Set<Set<LeafCandidate>> cartesianProduct = new HashSet<Set<LeafCandidate>>();
+    Set<Set<NodeCandidate>> generateCartesianProduct(Collection<NodeCombinationsHolder> combinations) {
+        Set<Set<NodeCandidate>> cartesianProduct = new HashSet<Set<NodeCandidate>>();
 
         if (combinations.isEmpty()) {
             return cartesianProduct;
         }
 
-        List<LeafCombination> combinationList = new ArrayList<LeafCombination>(combinations);
+        List<NodeCombinationsHolder> combinationList = new ArrayList<NodeCombinationsHolder>(combinations);
 
-        LeafCombination head = combinationList.get(0);
+        NodeCombinationsHolder head = combinationList.get(0);
 
         if (combinations.size() > 1) {
-            for (Set<LeafCandidate> tail : getCartesianProduct(combinationList.subList(1, combinationList.size()))) {
+            for (Set<NodeCandidate> tail : generateCartesianProduct(combinationList.subList(1, combinationList.size()))) {
 
                 for (ExpressionTree.Node candidate : head.getCombinations()) {
-                    Set<LeafCandidate> product = new HashSet<LeafCandidate>(tail);
-                    product.add(new LeafCandidate(head.getNode(), candidate));
+                    Set<NodeCandidate> product = new HashSet<NodeCandidate>(tail);
+                    product.add(new NodeCandidate(head.getNode(), candidate));
 
                     cartesianProduct.add(product);
                 }
@@ -309,8 +295,8 @@ public class RecexpGrammar {
 
         } else {
             for (ExpressionTree.Node candidate : head.getCombinations()) {
-                Set<LeafCandidate> product = new HashSet<LeafCandidate>();
-                product.add(new LeafCandidate(head.getNode(), candidate));
+                Set<NodeCandidate> product = new HashSet<NodeCandidate>();
+                product.add(new NodeCandidate(head.getNode(), candidate));
 
                 cartesianProduct.add(product);
             }
@@ -318,12 +304,12 @@ public class RecexpGrammar {
         return cartesianProduct;
     }
 
-    private Set<LeafCombination> generateCombinationsFromLeaves(ExpressionTree.Node node, ExpressionTree.Node root) {
-        Set<LeafCombination> combinations = new HashSet<LeafCombination>();
+    private Set<NodeCombinationsHolder> generateCombinationsFromLeaves(ExpressionTree.Node node, ExpressionTree.Node root) {
+        Set<NodeCombinationsHolder> combinations = new HashSet<NodeCombinationsHolder>();
 
         for (ExpressionTree.Node leaf : node.getLeaves()) {
             if (leaf.getExpression().isReference()) {
-                combinations.add(new LeafCombination(leaf, generateCombinations(leaf, root)));
+                combinations.add(new NodeCombinationsHolder(leaf, generateCombinations(leaf, root)));
             }
         }
         return combinations;
@@ -390,8 +376,8 @@ public class RecexpGrammar {
         return combination;
     }
 
-    private ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<LeafCandidate> leafCandidates) {
-        ExpressionTree.Node candidate = findCandidate(node, leafCandidates);
+    private ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<NodeCandidate> nodeCandidates) {
+        ExpressionTree.Node candidate = findCandidate(node, nodeCandidates);
 
         if (candidate != null) {
             return new ExpressionTree.Node(
@@ -402,15 +388,15 @@ public class RecexpGrammar {
         } else {
             List<ExpressionTree.Node> subNodes = new ArrayList<ExpressionTree.Node>();
             for (ExpressionTree.Node subNode : node.getSubNodes()) {
-                subNodes.add(copyNode(subNode, leafCandidates));
+                subNodes.add(copyNode(subNode, nodeCandidates));
             }
             return new ExpressionTree.Node(
                     node.getExpression(), node.getSubNodesConnectionType(), subNodes);
         }
     }
 
-    private ExpressionTree.Node findCandidate(ExpressionTree.Node node, Set<LeafCandidate> leafCandidates) {
-        for (LeafCandidate candidate : leafCandidates) {
+    private ExpressionTree.Node findCandidate(ExpressionTree.Node node, Set<NodeCandidate> nodeCandidates) {
+        for (NodeCandidate candidate : nodeCandidates) {
             if (candidate.getNode().equals(node)) {
                 return candidate.getCandidate();
             }
@@ -474,8 +460,8 @@ public class RecexpGrammar {
             String candidate = sb.toString();
             String restString = input.substring(candidate.length());
 
-            if (matches(nodeSentence, sb.toString())
-                && matches(rightNodesSentence, restString)) {
+            if (ExpressionUtils.matches(nodeSentence, sb.toString())
+                && ExpressionUtils.matches(rightNodesSentence, restString)) {
                 return sb.toString();
             }
 
@@ -549,14 +535,14 @@ public class RecexpGrammar {
     }
 
     /**
-     * Expression combination for a node.
+     * Holder of possible expression combinations for a node.
      */
-    class LeafCombination {
+    class NodeCombinationsHolder {
 
         final ExpressionTree.Node node;
         final Set<ExpressionTree.Node> combinations;
 
-        public LeafCombination(ExpressionTree.Node node, Set<ExpressionTree.Node> combinations) {
+        public NodeCombinationsHolder(ExpressionTree.Node node, Set<ExpressionTree.Node> combinations) {
             this.node = node;
             this.combinations = combinations;
         }
@@ -578,7 +564,7 @@ public class RecexpGrammar {
                 return false;
             }
 
-            LeafCombination that = (LeafCombination) o;
+            NodeCombinationsHolder that = (NodeCombinationsHolder) o;
 
             return node.equals(that.node);
         }
@@ -592,12 +578,12 @@ public class RecexpGrammar {
     /**
      * Expression candidate for a node.
      */
-    class LeafCandidate {
+    class NodeCandidate {
 
         final ExpressionTree.Node node;
         final ExpressionTree.Node candidate;
 
-        public LeafCandidate(ExpressionTree.Node node, ExpressionTree.Node candidate) {
+        public NodeCandidate(ExpressionTree.Node node, ExpressionTree.Node candidate) {
             this.node = node;
             this.candidate = candidate;
         }
@@ -619,7 +605,7 @@ public class RecexpGrammar {
                 return false;
             }
 
-            LeafCandidate candidate = (LeafCandidate) o;
+            NodeCandidate candidate = (NodeCandidate) o;
 
             if (!node.equals(candidate.node)) {
                 return false;

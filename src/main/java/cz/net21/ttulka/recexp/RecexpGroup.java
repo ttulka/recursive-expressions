@@ -1,7 +1,7 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Derivate tree node as a candidate group.
+ * Derive tree node as a candidate group.
  *
  * @author ttulka
  * @see RecexpMatcher

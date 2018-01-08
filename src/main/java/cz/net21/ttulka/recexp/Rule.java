@@ -5,8 +5,7 @@ import java.util.regex.Pattern;
 /**
  * Recursive rule.
  * <p>
- * A rule is defined as a entry of name and {@link ExpressionTree expression}. The name can contain only word characters (<code>a-z</code>, <code>A-Z</code>,
- * <code>0-9</code>, <code>_</code>).
+ * A rule is defined as a entry of name and {@link ExpressionTree expression}.
  * <p>
  * A rule can contain a reference to itself declared as <code>@this</code> and/or a reference to another rule via name. A reference to another rule starts with
  * <code>@</code> and continues with the name of the rule (case-sensitive).
@@ -71,6 +70,8 @@ class Rule {
 
 /**
  * Named rule.
+ * <p>
+ * The name can contain only word characters (<code>a-z</code>, <code>A-Z</code>, <code>0-9</code>, <code>_</code>).
  *
  * @author ttulka
  */

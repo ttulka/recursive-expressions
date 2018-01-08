@@ -244,14 +244,14 @@ public class RecexpGrammarTest {
     }
 
     @Test
-    public void getCartesianProductTest() {
-        Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(
+    public void generateCartesianProductTest() {
+        Collection<RecexpGrammar.NodeCombinationsHolder> combinations = Arrays.asList(
                 createLeafCombination("A", "B"),
                 createLeafCombination("o"),
                 createLeafCombination("x", "y", "z"));
 
-        Set<Set<RecexpGrammar.LeafCandidate>> product = RecexpGrammar.compile("")
-                .getCartesianProduct(combinations);
+        Set<Set<RecexpGrammar.NodeCandidate>> product = RecexpGrammar.compile("")
+                .generateCartesianProduct(combinations);
 
         assertThat(getStringsFromCartesianProduct(product), containsInAnyOrder(
                 "Aox", "Aoy", "Aoz", "Box", "Boy", "Boz"
@@ -259,43 +259,43 @@ public class RecexpGrammarTest {
     }
 
     @Test
-    public void getCartesianProductWithEpsilonTest() {
-        Collection<RecexpGrammar.LeafCombination> combinations = Arrays.asList(
+    public void generateCartesianProductWithEpsilonTest() {
+        Collection<RecexpGrammar.NodeCombinationsHolder> combinations = Arrays.asList(
                 createLeafCombination("a", "b"),
                 createLeafCombination("x", ""));
 
-        Set<Set<RecexpGrammar.LeafCandidate>> product = RecexpGrammar.compile("")
-                .getCartesianProduct(combinations);
+        Set<Set<RecexpGrammar.NodeCandidate>> product = RecexpGrammar.compile("")
+                .generateCartesianProduct(combinations);
 
         assertThat(getStringsFromCartesianProduct(product), containsInAnyOrder(
                 "ax", "bx", "a", "b"
         ));
     }
 
-    private RecexpGrammar.LeafCombination createLeafCombination(String... combinations) {
+    private RecexpGrammar.NodeCombinationsHolder createLeafCombination(String... combinations) {
         Set<ExpressionTree.Node> combinationNodes = new HashSet<ExpressionTree.Node>();
         for (String c : combinations) {
             combinationNodes.add(ExpressionTree.Node.parseNode(c));
         }
-        RecexpGrammar.LeafCombination lc = mock(RecexpGrammar.LeafCombination.class);
+        RecexpGrammar.NodeCombinationsHolder lc = mock(RecexpGrammar.NodeCombinationsHolder.class);
         when(lc.getCombinations()).thenReturn(combinationNodes);
         when(lc.getNode()).thenReturn(mock(ExpressionTree.Node.class));
         return lc;
     }
 
-    private Set<String> getStringsFromCartesianProduct(Set<Set<RecexpGrammar.LeafCandidate>> product) {
+    private Set<String> getStringsFromCartesianProduct(Set<Set<RecexpGrammar.NodeCandidate>> product) {
         Set<String> candidates = new HashSet<String>();
 
-        for (Set<RecexpGrammar.LeafCandidate> candidateSet : product) {
-            List<RecexpGrammar.LeafCandidate> candidateList = new ArrayList<RecexpGrammar.LeafCandidate>(candidateSet);
-            Collections.sort(candidateList, new Comparator<RecexpGrammar.LeafCandidate>() {
+        for (Set<RecexpGrammar.NodeCandidate> candidateSet : product) {
+            List<RecexpGrammar.NodeCandidate> candidateList = new ArrayList<RecexpGrammar.NodeCandidate>(candidateSet);
+            Collections.sort(candidateList, new Comparator<RecexpGrammar.NodeCandidate>() {
                 @Override
-                public int compare(RecexpGrammar.LeafCandidate o1, RecexpGrammar.LeafCandidate o2) {
+                public int compare(RecexpGrammar.NodeCandidate o1, RecexpGrammar.NodeCandidate o2) {
                     return o1.getCandidate().toWord().compareTo(o2.getCandidate().toWord());
                 }
             });
             StringBuilder sb = new StringBuilder();
-            for (RecexpGrammar.LeafCandidate candidate : candidateList) {
+            for (RecexpGrammar.NodeCandidate candidate : candidateList) {
                 sb.append(candidate.getCandidate().getExpression().getText());
             }
             candidates.add(sb.toString());
@@ -525,29 +525,29 @@ public class RecexpGrammarTest {
     }
 
     @Test
-    public void derivateTreeTest() {
-        ExpressionTree.Node derivate;
+    public void deriveTreeTest() {
+        ExpressionTree.Node derivative;
 
-        derivate = RecexpGrammar.compile("")
-                .derivateTree(ExpressionTree.parseTree("a").getRoot(), "a", new HashSet<String>());
+        derivative = RecexpGrammar.compile("")
+                .deriveTree(ExpressionTree.parseTree("a").getRoot(), "a", new HashSet<String>());
 
-        assertThat(derivate, not(nullValue()));
-        assertThat(derivate.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
-        assertThat(derivate.getSubNodes().size(), is(0));
+        assertThat(derivative, not(nullValue()));
+        assertThat(derivative.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(derivative.getSubNodes().size(), is(0));
 
-        derivate = RecexpGrammar.compile("")
-                .derivateTree(ExpressionTree.parseTree("a?").getRoot(), "a", new HashSet<String>());
+        derivative = RecexpGrammar.compile("")
+                .deriveTree(ExpressionTree.parseTree("a?").getRoot(), "a", new HashSet<String>());
 
-        assertThat(derivate, not(nullValue()));
-        assertThat(derivate.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
-        assertThat(derivate.getSubNodes().size(), is(0));
+        assertThat(derivative, not(nullValue()));
+        assertThat(derivative.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(derivative.getSubNodes().size(), is(0));
 
-        derivate = RecexpGrammar.compile("")
-                .derivateTree(ExpressionTree.parseTree("a|b").getRoot(), "a", new HashSet<String>());
+        derivative = RecexpGrammar.compile("")
+                .deriveTree(ExpressionTree.parseTree("a|b").getRoot(), "a", new HashSet<String>());
 
-        assertThat(derivate, not(nullValue()));
-        assertThat(derivate.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
-        assertThat(derivate.getSubNodes().size(), is(0));
+        assertThat(derivative, not(nullValue()));
+        assertThat(derivative.getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
+        assertThat(derivative.getSubNodes().size(), is(0));
     }
 
     @Test

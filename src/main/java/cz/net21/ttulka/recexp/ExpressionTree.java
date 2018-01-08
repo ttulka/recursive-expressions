@@ -46,6 +46,10 @@ class ExpressionTree {
      */
     static class Node {
 
+        enum SubNodesConnectionType {
+            SINGLE, AND, OR
+        }
+
         private final Expression expression;
         private final SubNodesConnectionType subNodesConnectionType;
         private final List<Node> subNodes;
@@ -239,10 +243,6 @@ class ExpressionTree {
         @Override
         public String toString() {
             return expression.toString();
-        }
-
-        enum SubNodesConnectionType {
-            SINGLE, AND, OR
         }
     }
 }

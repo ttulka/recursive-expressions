@@ -255,4 +255,17 @@ class ExpressionUtils {
     public static boolean matchesEpsilon(String expression) {
         return Pattern.matches(hydrateExpression(expression, "X"), "");
     }
+
+    public static boolean matchesIgnoreReferences(String expression, String input) {
+        return Pattern.matches(hydrateExpression(expression), input);
+    }
+
+    public static boolean matches(String expression, String input) {
+        if (expression.equals(input)) {
+            return true;
+        }
+        // when matches for a substitution with X and Y too, it's obviously expendable
+        return Pattern.matches(hydrateExpression(expression, "X"), input) &&
+               Pattern.matches(hydrateExpression(expression, "Y"), input);
+    }
 }
