@@ -6,7 +6,7 @@
     <version>0.0.1-beta</version>
 
     <name>Recursive Expressions</name>
-    <description>Java Library for Recursive Expressions.</description>
+    <description>Java library for working with recursive expressions and context-free languages and grammars.</description>
     <url>https://github.com/ttulka/recursive-expressions</url>
 
     <properties>
