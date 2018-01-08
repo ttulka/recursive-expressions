@@ -82,9 +82,9 @@ matcher.groupCount();           // 3
 matcher.group(1).name();        // @A
 matcher.group(1).value();       // a   
 
-matcher.group(1).name();        // @RULE?
-matcher.group(1).value();       // ab
-matcher.group(1).groupCount();  // 1
+matcher.group(2).name();        // @MyRef?
+matcher.group(2).value();       // ab
+matcher.group(2).groupCount();  // 1
 ```
 
 Self-reference has syntax `@this`:
