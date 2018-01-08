@@ -89,17 +89,33 @@ matcher.group(3).name();        // @B
 matcher.group(3).value();       // b
 ```
 
-Self-reference has syntax `@this`:
-
+### Self-reference `@this`
 ```
 RecexpGrammar grammar = RecexpGrammar.compile("a@this|b");
 
-grammar.matcher("b").matches();     // true
-grammar.matcher("ab").matches();    // true
-grammar.matcher("aab").matches();   // true
-grammar.matcher("aaab").matches();  // true
+grammar.matches("b");     // true
+grammar.matches("ab");    // true
+grammar.matches("aab");   // true
+grammar.matches("aaab");  // true
 
 grammar.matcher("a").matches();     // false
+```
+
+### Empty reference Epsilon
+
+*Epsilon* has syntax `@eps` and can be use as a rule defining an empty string:
+```
+RecexpGrammar grammar = RecexpGrammar.compile("a|@eps");
+
+grammar.matches("");      // true
+grammar.matches("a");     // true
+```
+
+Epsilon is a shortcut for a empty rule:
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("epsilon", "")
+    ...
 ```
 
 ## Recursive expressions as Context-Free Grammar
