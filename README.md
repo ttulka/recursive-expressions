@@ -1,6 +1,6 @@
 # Recursive Expressions
 
-Java Library for working with Recursive Expressions.
+Java Library for working with Recursive Expressions and Context-Free Grammars.
 
 **!!! IN PROGRESS !!!**
 
