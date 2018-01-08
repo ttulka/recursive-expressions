@@ -84,7 +84,9 @@ matcher.group(1).value();       // a
 
 matcher.group(2).name();        // @MyRef?
 matcher.group(2).value();       // ab
-matcher.group(2).groupCount();  // 1
+
+matcher.group(3).name();        // @B
+matcher.group(3).value();       // b
 ```
 
 Self-reference has syntax `@this`:

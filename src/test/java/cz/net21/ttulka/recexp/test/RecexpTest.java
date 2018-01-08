@@ -11,6 +11,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
+ * Acceptance tests.
+ *
  * @author ttulka
  */
 public class RecexpTest {
