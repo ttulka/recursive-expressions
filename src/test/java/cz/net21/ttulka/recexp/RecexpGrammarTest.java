@@ -250,8 +250,7 @@ public class RecexpGrammarTest {
                 createLeafCombination("o"),
                 createLeafCombination("x", "y", "z"));
 
-        Set<Set<RecexpGrammar.NodeCandidate>> product = RecexpGrammar.compile("")
-                .generateCartesianProduct(combinations);
+        Set<Set<RecexpGrammar.NodeCandidate>> product = RecexpGrammar.generateCartesianProduct(combinations);
 
         assertThat(getStringsFromCartesianProduct(product), containsInAnyOrder(
                 "Aox", "Aoy", "Aoz", "Box", "Boy", "Boz"
@@ -264,8 +263,7 @@ public class RecexpGrammarTest {
                 createLeafCombination("a", "b"),
                 createLeafCombination("x", ""));
 
-        Set<Set<RecexpGrammar.NodeCandidate>> product = RecexpGrammar.compile("")
-                .generateCartesianProduct(combinations);
+        Set<Set<RecexpGrammar.NodeCandidate>> product = RecexpGrammar.generateCartesianProduct(combinations);
 
         assertThat(getStringsFromCartesianProduct(product), containsInAnyOrder(
                 "ax", "bx", "a", "b"

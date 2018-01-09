@@ -288,8 +288,10 @@ public class RecexpGrammar {
 
     /**
      * Generates the Cartesian product for the node combinations.
+     *
+     * @return the set of sets of node candidates of the Cartesian product, each sub-set means a row in the matrix
      */
-    Set<Set<NodeCandidate>> generateCartesianProduct(Collection<NodeCombinationsHolder> combinations) {
+    static Set<Set<NodeCandidate>> generateCartesianProduct(Collection<NodeCombinationsHolder> combinations) {
         Set<Set<NodeCandidate>> cartesianProduct = new HashSet<Set<NodeCandidate>>();
 
         if (combinations.isEmpty()) {
@@ -381,7 +383,7 @@ public class RecexpGrammar {
         return combinations;
     }
 
-    private ExpressionTree.Node toCombination(ExpressionTree.Node leaf, Expression expression) {
+    private static ExpressionTree.Node toCombination(ExpressionTree.Node leaf, Expression expression) {
         ExpressionTree.Node combination;
 
         if (!expression.isEpsilon()
@@ -394,7 +396,7 @@ public class RecexpGrammar {
         return combination;
     }
 
-    private ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<NodeCandidate> nodeCandidates) {
+    private static ExpressionTree.Node copyNode(ExpressionTree.Node node, Set<NodeCandidate> nodeCandidates) {
         ExpressionTree.Node candidate = findCandidate(node, nodeCandidates);
 
         if (candidate != null) {
@@ -413,7 +415,7 @@ public class RecexpGrammar {
         }
     }
 
-    private ExpressionTree.Node findCandidate(ExpressionTree.Node node, Set<NodeCandidate> nodeCandidates) {
+    private static ExpressionTree.Node findCandidate(ExpressionTree.Node node, Set<NodeCandidate> nodeCandidates) {
         for (NodeCandidate candidate : nodeCandidates) {
             if (candidate.getNode().equals(node)) {
                 return candidate.getCandidate();
@@ -571,7 +573,7 @@ public class RecexpGrammar {
     /**
      * Holder of possible expression combinations for a node.
      */
-    class NodeCombinationsHolder {
+    static class NodeCombinationsHolder {
 
         final ExpressionTree.Node node;
         final Set<ExpressionTree.Node> combinations;
@@ -612,7 +614,7 @@ public class RecexpGrammar {
     /**
      * Expression candidate for a node.
      */
-    class NodeCandidate {
+    static class NodeCandidate {
 
         final ExpressionTree.Node node;
         final ExpressionTree.Node candidate;
