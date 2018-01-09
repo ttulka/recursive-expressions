@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * <code>@</code> and continues with the name of the rule (case-sensitive).
  *
  * @author ttulka
- * @see RecexpGrammar
+ * @see Recexp
  * @see ExpressionTree
  */
 class Rule {

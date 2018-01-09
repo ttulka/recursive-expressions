@@ -4,7 +4,7 @@ package cz.net21.ttulka.recexp;
  * Referenced rule not found exception.
  *
  * @author ttulka
- * @see RecexpGrammar
+ * @see Recexp
  */
 public class RecexpRuleNotFoundException extends RecexpException {
 

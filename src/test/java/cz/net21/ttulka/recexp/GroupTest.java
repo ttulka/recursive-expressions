@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 /**
  * @author ttulka
  */
-public class RecexpGroupTest {
+public class GroupTest {
 
     @Test
     public void constructorTest() {

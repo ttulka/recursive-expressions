@@ -55,7 +55,7 @@ public class RuleTest {
 
     @Test
     public void epsilonImplicitNotUsedTest() {
-        RecexpGrammar grammar = RecexpGrammar.compile("ab");
+        Recexp grammar = Recexp.compile("ab");
 
         assertThat(grammar.matches("ab"), is(true));
         assertThat(grammar.matches(""), is(false));
@@ -63,7 +63,7 @@ public class RuleTest {
 
     @Test
     public void epsilonReferenceExplicitlyUsedTest() {
-        RecexpGrammar grammar = RecexpGrammar.builder()
+        Recexp grammar = Recexp.builder()
                 .rule("E", "@eps")
                 .build();
 
@@ -73,7 +73,7 @@ public class RuleTest {
 
     @Test
     public void epsilonReferenceExplicitlyUsedInOrTest() {
-        RecexpGrammar grammar = RecexpGrammar.builder()
+        Recexp grammar = Recexp.builder()
                 .rule("A", "a|@eps")
                 .build();
 
@@ -83,29 +83,29 @@ public class RuleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void epsilonExplicitlyDefinedExceptionTest() {
-        RecexpGrammar.builder()
+        Recexp.builder()
                 .rule("eps", "a")
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void thisExplicitlyDefinedExceptionTest() {
-        RecexpGrammar.builder()
+        Recexp.builder()
                 .rule("this", "a")
                 .build();
     }
 
     @Test
     public void thisExplicitlyDefinedCaseSensitiveTest() {
-        RecexpGrammar.builder()
+        Recexp.builder()
                 .rule("This", "a")
                 .build();
 
-        RecexpGrammar.builder()
+        Recexp.builder()
                 .rule("tHiS", "a")
                 .build();
 
-        RecexpGrammar.builder()
+        Recexp.builder()
                 .rule("THIS", "a")
                 .build();
     }

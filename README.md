@@ -35,7 +35,7 @@ matcher.group(3);       // b
 
 With Recursive Expressions are groups created hierarchically:
 ```
-RecexpMatcher matcher = RecexpGrammar.compile("(a)((b))").matcher("ab");
+RecexpMatcher matcher = Recexp.compile("(a)((b))").matcher("ab");
 
 matcher.groupCount();       // 2
 
@@ -63,17 +63,17 @@ Hierarchical expression tree from the example above:
 
 Recursive Expressions are using the standard match flags from the `Pattern` class:
 ```
-RecexpGrammar.compile("a", Pattern.CASE_INSENSITIVE)    // case-insetive
+Recexp.compile("a", Pattern.CASE_INSENSITIVE)    // case-insetive
     .matches("A");  // true
 ```
-The flags are applied to the whole grammar (all the rules).
+The flags are applied to all the rules.
 
 ### Recursive Expressions as Context-Free Grammar
 
 A context-free grammar can be defined as a set of rules with a starting rule `S`. The rules are of the form `A → w`, where `A` is a name of the rule and `w` is a string which can contain characters and rule references.
 
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp grammar = Recexp.builder()
     .rule("S", "@A@B")
     .rule("A", "a")
     .rule("B", "b")
@@ -87,7 +87,7 @@ The *matcher* contains a result of a derivation from the starting rule. If the s
 
 When the rule name is omitted, the whole expression is used as a rule name and the rule cannot be referenced.
 
-**Tip:** *Use the convenience shortcut `RecexpGrammar.compile(rule1, ..., ruleN)` for defining a grammar with multiple anonymous rules.*  
+**Tip:** *Use the convenience shortcut `Recexp.compile(rule1, ..., ruleN)` for defining a grammar with multiple anonymous rules.*  
 
 #### Recursive rule references
 
@@ -96,13 +96,13 @@ Rule expression can reference another rule and/or itself.
 References have syntax `@RefName` where `RefName` can contain only word characters (letters, digits and underscore `_`).
 
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("MyRef", "@A@MyRef?@B")
     .rule("A", "a")
     .rule("B", "b")
     .build();
     
-RecexpMatcher matcher = grammar.matcher("aabb");
+RecexpMatcher matcher = recexp.matcher("aabb");
     
 matcher.matches();              // true
 matcher.groupCount();           // 3    
@@ -119,29 +119,29 @@ matcher.group(3).value();       // b
 
 #### Self-reference `@this`
 ```
-RecexpGrammar grammar = RecexpGrammar.compile("a@this|b");
+Recexp recexp = Recexp.compile("a@this|b");
 
-grammar.matches("b");     // true
-grammar.matches("ab");    // true
-grammar.matches("aab");   // true
-grammar.matches("aaab");  // true
+recexp.matches("b");     // true
+recexp.matches("ab");    // true
+recexp.matches("aab");   // true
+recexp.matches("aaab");  // true
 
-grammar.matcher("a").matches();     // false
+recexp.matcher("a").matches();     // false
 ```
 
 #### Empty reference `@eps` (Epsilon)
 
 *Epsilon* has syntax `@eps` and can be use as a rule defining an empty string:
 ```
-RecexpGrammar grammar = RecexpGrammar.compile("a|@eps");
+Recexp recexp = Recexp.compile("a|@eps");
 
-grammar.matches("");      // true
-grammar.matches("a");     // true
+recexp.matches("");      // true
+recexp.matches("a");     // true
 ```
 
 Epsilon is a shortcut for an empty rule:
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("epsilon", "")
     ...
 ```
@@ -153,7 +153,7 @@ RecexpGrammar grammar = RecexpGrammar.builder()
 S → 0S0 | 1S1 | 0 | 1 | ε 
 ```
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("S", "0")
     .rule("S", "1")
     .rule("S", "0(@S)0")
@@ -161,31 +161,31 @@ RecexpGrammar grammar = RecexpGrammar.builder()
     .rule("S", "@eps")
     .build();
     
-grammar.matches("");        // true
-grammar.matches("0");       // true
-grammar.matches("1");       // true
-grammar.matches("11");      // true
-grammar.matches("00");      // true
-grammar.matches("010");     // true
-grammar.matches("101");     // true
-grammar.matches("000");     // true
-grammar.matches("111");     // true
-grammar.matches("0110");    // true
-grammar.matches("1001");    // true
-grammar.matches("10101");   // true
-grammar.matches("10");      // false
-grammar.matches("01");      // false
-grammar.matches("1101");    // false
+recexp.matches("");        // true
+recexp.matches("0");       // true
+recexp.matches("1");       // true
+recexp.matches("11");      // true
+recexp.matches("00");      // true
+recexp.matches("010");     // true
+recexp.matches("101");     // true
+recexp.matches("000");     // true
+recexp.matches("111");     // true
+recexp.matches("0110");    // true
+recexp.matches("1001");    // true
+recexp.matches("10101");   // true
+recexp.matches("10");      // false
+recexp.matches("01");      // false
+recexp.matches("1101");    // false
 ```
-The same grammar can be compactly created like:
+The same definition can be compactly created like:
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("S", "0(@S)0|1(@S)1|0|1|@eps")
     .build();
 ```
 Or alternatively by using the `@this` self-reference:
 ```
-RecexpGrammar grammar = RecexpGrammar.compile(
+Recexp recexp = Recexp.compile(
     "0(@this)0|1(@this)1|0|1|@eps");
 ```
 
@@ -194,35 +194,35 @@ RecexpGrammar grammar = RecexpGrammar.compile(
 S → 0S1S | 1S0S | ε 
 ```
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("S", "0(@S)1(@S)")
     .rule("S", "1(@S)0(@S)")
     .rule("S", "@eps") 
     .build();
     
-grammar.matches("");         // true
-grammar.matches("0101");     // true
-grammar.matches("1010");     // true
-grammar.matches("1100");     // true
-grammar.matches("110010");   // true
-grammar.matches("110100");   // true
-grammar.matches("11000101"); // true
-grammar.matches("0");        // false
-grammar.matches("1");        // false
-grammar.matches("00");       // false
-grammar.matches("11");       // false
-grammar.matches("101");      // false
-grammar.matches("010");      // false     
+recexp.matches("");         // true
+recexp.matches("0101");     // true
+recexp.matches("1010");     // true
+recexp.matches("1100");     // true
+recexp.matches("110010");   // true
+recexp.matches("110100");   // true
+recexp.matches("11000101"); // true
+recexp.matches("0");        // false
+recexp.matches("1");        // false
+recexp.matches("00");       // false
+recexp.matches("11");       // false
+recexp.matches("101");      // false
+recexp.matches("010");      // false     
 ```
-The same grammar can be compactly created like:
+The same definition can be compactly created like:
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("S", "0(@S)1(@S)|1(@S)0(@S)|@eps")
     .build();
 ```
 Or alternatively by using the `@this` self-reference:
 ```
-RecexpGrammar grammar = RecexpGrammar.compile(
+Recexp recexp = Recexp.compile(
     "0(@this)1(@this)|1(@this)0(@this)|@eps");
 ```  
 
@@ -233,18 +233,18 @@ T → T×F | F           (terms)
 F → (E) | X | Y       (factors)
 ```
 ```
-RecexpGrammar grammar = RecexpGrammar.builder()
+Recexp recexp = Recexp.builder()
     .rule("E", "@E±@T|@T")
     .rule("T", "@T×@F|@F")
     .rule("F", "\\(@E\\)|X|Y")
     .build();
 
-grammar.matches("X±Y");            // true
-grammar.matches("X×Y");            // true
-grammar.matches("(X±X)×Y");        // true
-grammar.matches("(X±X)×(Y×X)");    // true
+recexp.matches("X±Y");            // true
+recexp.matches("X×Y");            // true
+recexp.matches("(X±X)×Y");        // true
+recexp.matches("(X±X)×(Y×X)");    // true
 
-grammar.matches("(X×X)(Y×X)");     // false
+recexp.matches("(X×X)(Y×X)");     // false
 ```
 
 ### More examples

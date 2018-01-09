@@ -10,7 +10,7 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Recursive Grammar.
+ * Recursive Expressions Grammar.
  * <p>
  * Defined as a set of recursive rules.
  * <p>
@@ -22,7 +22,7 @@ import java.util.Set;
  * @see RecexpGroup
  * @see java.util.regex.Pattern
  */
-public class RecexpGrammar {
+public class Recexp {
 
     protected final Set<Rule> rules;
     protected final int flags;
@@ -33,7 +33,7 @@ public class RecexpGrammar {
      * @param rules the rules
      * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
      */
-    private RecexpGrammar(Collection<Rule> rules, int flags) {
+    private Recexp(Collection<Rule> rules, int flags) {
         Set<Rule> ruleSet = new HashSet<Rule>(rules);
         // add implicit rules
         ruleSet.add(ImplicitRule.EPSILON_RULE);
@@ -49,13 +49,13 @@ public class RecexpGrammar {
      * @param rules the next rules
      * @return the constructed grammar object
      */
-    public static RecexpGrammar compile(String rule, String... rules) {
+    public static Recexp compile(String rule, String... rules) {
         Set<Rule> ruleSet = new HashSet<Rule>(rules.length);
         ruleSet.add(new Rule(rule, rule));
         for (String r : rules) {
             ruleSet.add(new Rule(r, r));
         }
-        return new RecexpGrammar(ruleSet, 0);
+        return new Recexp(ruleSet, 0);
     }
 
     /**
@@ -65,8 +65,8 @@ public class RecexpGrammar {
      * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
      * @return the constructed grammar object
      */
-    public static RecexpGrammar compile(String rule, int flags) {
-        return new RecexpGrammar(Collections.singleton(new Rule(rule, rule)), flags);
+    public static Recexp compile(String rule, int flags) {
+        return new Recexp(Collections.singleton(new Rule(rule, rule)), flags);
     }
 
     /**
@@ -74,8 +74,8 @@ public class RecexpGrammar {
      *
      * @return the builder
      */
-    public static RecexpGrammarBuilder builder() {
-        return new RecexpGrammarBuilder();
+    public static RecexpBuilder builder() {
+        return new RecexpBuilder();
     }
 
     /**
@@ -509,14 +509,14 @@ public class RecexpGrammar {
     }
 
     /**
-     * Builder for the {@link RecexpGrammar Recursive Grammar class}.
+     * Builder for the {@link Recexp Recursive Expressions class}.
      */
-    public static class RecexpGrammarBuilder {
+    public static class RecexpBuilder {
 
         private final Set<Rule> ruleSet;
         private int flags;
 
-        private RecexpGrammarBuilder() {
+        private RecexpBuilder() {
             this.ruleSet = new HashSet<Rule>();
             this.flags = 0;
         }
@@ -528,7 +528,7 @@ public class RecexpGrammar {
          * @param expression the expression
          * @return the builder
          */
-        public RecexpGrammarBuilder rule(String name, String expression) {
+        public RecexpBuilder rule(String name, String expression) {
             this.ruleSet.add(new NamedRule(name, expression));
             return this;
         }
@@ -539,7 +539,7 @@ public class RecexpGrammar {
          * @param expression the expression
          * @return the builder
          */
-        public RecexpGrammarBuilder rule(String expression) {
+        public RecexpBuilder rule(String expression) {
             this.ruleSet.add(new Rule(expression, expression));
             return this;
         }
@@ -550,7 +550,7 @@ public class RecexpGrammar {
          * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
          * @return
          */
-        public RecexpGrammarBuilder flags(int flags) {
+        public RecexpBuilder flags(int flags) {
             this.flags = flags;
             return this;
         }
@@ -560,11 +560,11 @@ public class RecexpGrammar {
          *
          * @return the grammar
          */
-        public RecexpGrammar build() {
+        public Recexp build() {
             if (this.ruleSet.isEmpty()) {
                 throw new IllegalStateException("Rule set cannot be empty.");
             }
-            RecexpGrammar grammar = new RecexpGrammar(this.ruleSet, this.flags);
+            Recexp grammar = new Recexp(this.ruleSet, this.flags);
             this.ruleSet.clear();
             return grammar;
         }

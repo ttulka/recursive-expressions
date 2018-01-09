@@ -4,7 +4,7 @@ package cz.net21.ttulka.recexp;
  * Recursive expression general exception.
  *
  * @author ttulka
- * @see RecexpGrammar
+ * @see Recexp
  */
 public class RecexpException extends RuntimeException {
 

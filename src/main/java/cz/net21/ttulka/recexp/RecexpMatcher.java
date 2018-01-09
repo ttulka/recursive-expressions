@@ -4,7 +4,7 @@ package cz.net21.ttulka.recexp;
  * Derivation result representation as a matcher.
  *
  * @author ttulka
- * @see RecexpGrammar
+ * @see Recexp
  */
 abstract public class RecexpMatcher extends RecexpGroup {
 
