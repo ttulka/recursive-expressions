@@ -2,8 +2,6 @@
 
 Java library for working with recursive expressions and context-free languages and grammars.
 
-**!!! IN PROGRESS !!!**
-
 ## Prerequisites
 
 - Java 6
