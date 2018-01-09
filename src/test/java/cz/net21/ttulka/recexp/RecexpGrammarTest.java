@@ -486,7 +486,7 @@ public class RecexpGrammarTest {
         RecexpGroup group;
 
         tree = ExpressionTree.parseTree("(a?)(b?)");
-        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "ab");
+        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "ab", 0);
 
         assertThat(group, not(nullValue()));
         assertThat(group.groupCount(), is(2));
@@ -498,7 +498,7 @@ public class RecexpGrammarTest {
         assertThat(group.group(2).groupCount(), is(0));
 
         tree = ExpressionTree.parseTree("a?b?");
-        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "ab");
+        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "ab", 0);
 
         assertThat(group, not(nullValue()));
         assertThat(group.groupCount(), is(0));
@@ -510,7 +510,7 @@ public class RecexpGrammarTest {
         RecexpGroup group;
 
         tree = ExpressionTree.parseTree("(a)?(b)?");
-        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "x");
+        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "x", 0);
         System.out.println(group);
     }
 
@@ -520,7 +520,7 @@ public class RecexpGrammarTest {
         RecexpGroup group;
 
         tree = ExpressionTree.parseTree("(a)?(a)?|(b)?(b)?");
-        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "x");
+        group = RecexpGrammar.nodeToGroup(tree.getRoot(), "x", 0);
         System.out.println(group);
     }
 

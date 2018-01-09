@@ -256,16 +256,16 @@ class ExpressionUtils {
         return Pattern.matches(hydrateExpression(expression, "X"), "");
     }
 
-    public static boolean matchesIgnoreReferences(String expression, String input) {
-        return Pattern.matches(hydrateExpression(expression), input);
+    public static boolean matchesIgnoreReferences(String expression, String input, int flags) {
+        return Pattern.compile(hydrateExpression(expression), flags).matcher(input).matches();
     }
 
-    public static boolean matches(String expression, String input) {
+    public static boolean matches(String expression, String input, int flags) {
         if (expression.equals(input)) {
             return true;
         }
         // when matches for a substitution with X and Y too, it's obviously expendable
-        return Pattern.matches(hydrateExpression(expression, "X"), input) &&
-               Pattern.matches(hydrateExpression(expression, "Y"), input);
+        return Pattern.compile(hydrateExpression(expression, "X"), flags).matcher(input).matches() &&
+               Pattern.compile(hydrateExpression(expression, "Y"), flags).matcher(input).matches();
     }
 }

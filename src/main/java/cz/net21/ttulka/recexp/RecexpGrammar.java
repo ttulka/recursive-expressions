@@ -14,25 +14,32 @@ import java.util.Set;
  * <p>
  * Defined as a set of recursive rules.
  * <p>
- * From a grammar a derivative tree can be generated based on an input string. The result is represented as a {@link RecexpMatcher matcher} and the derivative as a
- * tree of {@link RecexpGroup groups}.
+ * From a grammar a derivative tree can be generated based on an input string. The result is represented as a {@link RecexpMatcher matcher} and the derivative
+ * as a tree of {@link RecexpGroup groups}.
  *
  * @author ttulka
  * @see RecexpMatcher
  * @see RecexpGroup
+ * @see java.util.regex.Pattern
  */
 public class RecexpGrammar {
 
     protected final Set<Rule> rules;
+    protected final int flags;
 
     /**
      * The only one constructor.
      *
      * @param rules the rules
+     * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
      */
-    private RecexpGrammar(Collection<Rule> rules) {
-        rules.add(ImplicitRule.EPSILON_RULE);
-        this.rules = Collections.unmodifiableSet(new HashSet<Rule>(rules));
+    private RecexpGrammar(Collection<Rule> rules, int flags) {
+        Set<Rule> ruleSet = new HashSet<Rule>(rules);
+        // add implicit rules
+        ruleSet.add(ImplicitRule.EPSILON_RULE);
+
+        this.rules = Collections.unmodifiableSet(ruleSet);
+        this.flags = flags;
     }
 
     /**
@@ -48,7 +55,18 @@ public class RecexpGrammar {
         for (String r : rules) {
             ruleSet.add(new Rule(r, r));
         }
-        return new RecexpGrammar(ruleSet);
+        return new RecexpGrammar(ruleSet, 0);
+    }
+
+    /**
+     * Constructs a grammar object from the rule with the flags.
+     *
+     * @param rule  the first rule
+     * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
+     * @return the constructed grammar object
+     */
+    public static RecexpGrammar compile(String rule, int flags) {
+        return new RecexpGrammar(Collections.singleton(new Rule(rule, rule)), flags);
     }
 
     /**
@@ -102,7 +120,7 @@ public class RecexpGrammar {
         for (Rule rule : rules) {
             ExpressionTree.Node derivative = deriveTree(rule.getExpression().getRoot(), input, new HashSet<String>());
             if (derivative != null) {
-                RecexpGroup group = nodeToGroup(derivative, input);
+                RecexpGroup group = nodeToGroup(derivative, input, flags);
                 return RecexpMatcher.matcher(rule.toString(), input, group.groups());
             }
         }
@@ -231,11 +249,11 @@ public class RecexpGrammar {
             }
             alreadySeen.add(sentence);
 
-            if (!ExpressionUtils.matchesIgnoreReferences(sentence, input)) {
+            if (!ExpressionUtils.matchesIgnoreReferences(sentence, input, flags)) {
                 continue;
             }
 
-            if (ExpressionUtils.matches(sentence, input)) {
+            if (ExpressionUtils.matches(sentence, input, flags)) {
                 return candidate;
             }
 
@@ -404,7 +422,7 @@ public class RecexpGrammar {
         return null;
     }
 
-    static RecexpGroup nodeToGroup(ExpressionTree.Node node, String input) {
+    static RecexpGroup nodeToGroup(ExpressionTree.Node node, String input, int flags) {
         if (input.isEmpty()) {
             return new RecexpGroup(node.getExpression().toWord(), input, new RecexpGroup[0]);
         }
@@ -412,7 +430,7 @@ public class RecexpGrammar {
         if (node.isOrNode()) {
             for (ExpressionTree.Node subNode : node.getSubNodes()) {
                 try {
-                    return nodeToGroup(subNode, input);
+                    return nodeToGroup(subNode, input, flags);
 
                 } catch (IllegalStateException ignore) {
                     // continue
@@ -433,11 +451,13 @@ public class RecexpGrammar {
                 break;
             }
 
-            String value = getInputPartForNodeByLeftReduction(restInput, subNode, node.getSubNodes().subList(i + 1, node.getSubNodes().size()));
+            String value = getInputPartForNodeByLeftReduction(
+                    restInput, flags, subNode, node.getSubNodes().subList(i + 1, node.getSubNodes().size()));
+
             if (value == null) {
                 throw new IllegalStateException("Cannot reduce: input '" + input + "' doesn't match the expression: " + node.toWord());
             }
-            subGroups.add(nodeToGroup(subNode, value));
+            subGroups.add(nodeToGroup(subNode, value, flags));
 
             restInput = restInput.substring(value.length());
         }
@@ -449,7 +469,7 @@ public class RecexpGrammar {
         return new RecexpGroup(node.getExpression().toWord(), input, groups);
     }
 
-    private static String getInputPartForNodeByLeftReduction(String input, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {
+    private static String getInputPartForNodeByLeftReduction(String input, int flags, ExpressionTree.Node node, List<ExpressionTree.Node> rightNodes) {
         String nodeSentence = node.getSentence();
         String rightNodesSentence = getNodesSentence(rightNodes);
 
@@ -460,8 +480,8 @@ public class RecexpGrammar {
             String candidate = sb.toString();
             String restString = input.substring(candidate.length());
 
-            if (ExpressionUtils.matches(nodeSentence, sb.toString())
-                && ExpressionUtils.matches(rightNodesSentence, restString)) {
+            if (ExpressionUtils.matches(nodeSentence, sb.toString(), flags)
+                && ExpressionUtils.matches(rightNodesSentence, restString, flags)) {
                 return sb.toString();
             }
 
@@ -491,31 +511,45 @@ public class RecexpGrammar {
      */
     public static class RecexpGrammarBuilder {
 
-        private Set<Rule> ruleSet = new HashSet<Rule>();
+        private final Set<Rule> ruleSet;
+        private int flags;
 
         private RecexpGrammarBuilder() {
+            this.ruleSet = new HashSet<Rule>();
+            this.flags = 0;
         }
 
         /**
-         * Add a named rule.
+         * Adds a named rule.
          *
          * @param name       the name
          * @param expression the expression
          * @return the builder
          */
         public RecexpGrammarBuilder rule(String name, String expression) {
-            ruleSet.add(new NamedRule(name, expression));
+            this.ruleSet.add(new NamedRule(name, expression));
             return this;
         }
 
         /**
-         * Add a pure expression rule.
+         * Adds a pure expression rule.
          *
          * @param expression the expression
          * @return the builder
          */
         public RecexpGrammarBuilder rule(String expression) {
-            ruleSet.add(new Rule(expression, expression));
+            this.ruleSet.add(new Rule(expression, expression));
+            return this;
+        }
+
+        /**
+         * Sets the flags.
+         *
+         * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
+         * @return
+         */
+        public RecexpGrammarBuilder flags(int flags) {
+            this.flags = flags;
             return this;
         }
 
@@ -525,11 +559,11 @@ public class RecexpGrammar {
          * @return the grammar
          */
         public RecexpGrammar build() {
-            if (ruleSet.isEmpty()) {
+            if (this.ruleSet.isEmpty()) {
                 throw new IllegalStateException("Rule set cannot be empty.");
             }
-            RecexpGrammar grammar = new RecexpGrammar(ruleSet);
-            ruleSet.clear();
+            RecexpGrammar grammar = new RecexpGrammar(this.ruleSet, this.flags);
+            this.ruleSet.clear();
             return grammar;
         }
     }

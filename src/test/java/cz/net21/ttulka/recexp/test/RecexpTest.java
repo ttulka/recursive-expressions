@@ -1,5 +1,7 @@
 package cz.net21.ttulka.recexp.test;
 
+import java.util.regex.Pattern;
+
 import org.junit.Test;
 
 import cz.net21.ttulka.recexp.RecexpCyclicRuleException;
@@ -101,6 +103,11 @@ public class RecexpTest {
         assertThat(grammar.matches("aabbc"), is(false));
         assertThat(grammar.matches("aacbc"), is(false));
         assertThat(grammar.matches("ababcc"), is(true));
+    }
+
+    @Test
+    public void flagsTest() {
+        assertThat(RecexpGrammar.compile("a", Pattern.CASE_INSENSITIVE).matches("A"), is(true));
     }
 
     @Test(expected = RecexpCyclicRuleException.class)
@@ -648,23 +655,23 @@ public class RecexpTest {
                 .rule("T", "@T×@F|@F")      // terms
                 .rule("F", "\\(@E\\)|X|Y")  // factors
                 .build();
-        assertThat(arithmeticExpressionsGrammar.matches("X±Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("X±X"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("X×X"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("X×Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X±Y)"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X×Y)"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("X±X×Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X×X)±Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X±X)×Y"), is(true));
-        assertThat(arithmeticExpressionsGrammar.matches("(X±X)×(Y×X)"), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X±Y").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X±X").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X×X").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X×Y").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X±Y)").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×Y)").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X±X×Y").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)±Y").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X±X)×Y").matches(), is(true));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X±X)×(Y×X)").matches(), is(true));
 
-        assertThat(arithmeticExpressionsGrammar.matches(""), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("X±"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("X ± X"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("X × X"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("X××X"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("(X×X)×A"), is(false));
-        assertThat(arithmeticExpressionsGrammar.matches("(X×X)(Y×X)"), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "").matches(), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X±").matches(), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X ± X").matches(), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X × X").matches(), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "X××X").matches(), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)×A").matches(), is(false));
+        assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)(Y×X)").matches(), is(false));
     }
 }

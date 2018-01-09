@@ -61,12 +61,37 @@ Hierarchical expression tree from the example above:
              b
 ```
 
+#### Match flags
 
-### Recursive expressions as Context-Free Grammar
+Recursive Expressions are using the standard match flags from the `Pattern` class:
+```
+RecexpGrammar.compile("a", Pattern.CASE_INSENSITIVE)    // case-insetive
+    .matches("A");  // true
+```
+The flags are applied to the whole grammar (all the rules).
 
-to be done
+### Recursive Expressions as Context-Free Grammar
 
-### Recursive References
+A context-free grammar can be defined as a set of rules with a starting rule `S`. The rules are of the form `A → w`, where `A` is a name of the rule and `w` is a string which can contain characters and rule references.
+
+```
+RecexpGrammar grammar = RecexpGrammar.builder()
+    .rule("S", "@A@B")
+    .rule("A", "a")
+    .rule("B", "b")
+    .build();
+    
+RecexpMatcher matcher = grammar.matcher("S", "ab");
+matcher.matches();  // true - the grammar accepts the input "ab"
+```
+
+The *matcher* contains a result of a derivation from the starting rule. If the starting rule is omitted, each rule is a starting rule.
+
+When the rule name is omitted, the whole expression is used as a rule name and the rule cannot be referenced.
+
+**Tip:** *Use the convenience shortcut `RecexpGrammar.compile(rule1, ..., ruleN)` for defining a grammar with multiple anonymous rules.*  
+
+#### Recursive rule references
 
 Rule expression can reference another rule and/or itself. 
 
