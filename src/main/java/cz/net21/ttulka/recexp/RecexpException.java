@@ -1,7 +1,7 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Recursive expression general exception.
+ * Recursive expressions general exception.
  *
  * @author ttulka
  * @see Recexp

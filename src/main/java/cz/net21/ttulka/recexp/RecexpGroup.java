@@ -1,7 +1,7 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Derive tree node as a candidate group.
+ * Derivation result tree node.
  *
  * @author ttulka
  * @see RecexpMatcher
@@ -12,6 +12,11 @@ public class RecexpGroup {
     private final String value;
     private final RecexpGroup[] groups;
 
+    /**
+     * @param name   the name of the expression part
+     * @param value  the parsed input value
+     * @param groups the children groups
+     */
     protected RecexpGroup(String name, String value, RecexpGroup[] groups) {
         this.name = name;
         this.value = value;
@@ -93,10 +98,5 @@ public class RecexpGroup {
             }
         }
         return null;
-    }
-
-    @Override
-    public String toString() {
-        return "RecexpGroup{" + name + "}";
     }
 }

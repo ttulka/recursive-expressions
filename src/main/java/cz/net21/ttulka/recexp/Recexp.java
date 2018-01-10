@@ -33,7 +33,7 @@ public class Recexp {
      * @param rules the rules
      * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
      */
-    private Recexp(Collection<Rule> rules, int flags) {
+    protected Recexp(Collection<Rule> rules, int flags) {
         Set<Rule> ruleSet = new HashSet<Rule>(rules);
         // add implicit rules
         ruleSet.add(ImplicitRule.EPSILON_RULE);
@@ -59,7 +59,7 @@ public class Recexp {
     }
 
     /**
-     * Constructs a grammar object from the rule with the flags.
+     * Constructs a grammar object from the rule with the match flags.
      *
      * @param rule  the first rule
      * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
@@ -83,8 +83,8 @@ public class Recexp {
      *
      * @param input the input string
      * @return true if the grammar accepts the string, otherwise false
-     * @throws RecexpEmptyRulesException when there are no rules
-     * @throws RecexpCyclicRuleException when there is a cyclic rule
+     * @throws RecexpEmptyRulesException   when there are no rules
+     * @throws RecexpCyclicRuleException   when there is a cyclic rule
      * @throws RecexpRuleNotFoundException when a rule is referenced but not defined
      */
     public boolean matches(String input) {
@@ -97,8 +97,8 @@ public class Recexp {
      * @param startingRuleName the name of the starting rule
      * @param input            the input string
      * @return the matcher
-     * @throws RecexpEmptyRulesException when there are no rules
-     * @throws RecexpCyclicRuleException when there is a cyclic rule
+     * @throws RecexpEmptyRulesException   when there are no rules
+     * @throws RecexpCyclicRuleException   when there is a cyclic rule
      * @throws RecexpRuleNotFoundException when a rule is referenced but not defined
      */
     public RecexpMatcher matcher(String startingRuleName, String input) {
@@ -506,11 +506,6 @@ public class Recexp {
         return sb.toString();
     }
 
-    @Override
-    public String toString() {
-        return this.rules.toString();
-    }
-
     /**
      * Builder for the {@link Recexp Recursive Expressions class}.
      */
@@ -537,7 +532,7 @@ public class Recexp {
         }
 
         /**
-         * Adds a pure expression rule.
+         * Adds an anonymous rule.
          *
          * @param expression the expression
          * @return the builder
@@ -548,7 +543,7 @@ public class Recexp {
         }
 
         /**
-         * Sets the flags.
+         * Sets the match flags.
          *
          * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
          * @return the builder

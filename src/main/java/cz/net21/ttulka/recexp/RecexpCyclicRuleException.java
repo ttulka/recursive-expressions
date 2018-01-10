@@ -1,14 +1,17 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Grammar contains a cyclic rule exception.
+ * Cyclic rule definition exception.
  *
  * @author ttulka
  * @see Recexp
  */
 public class RecexpCyclicRuleException extends RecexpException {
 
-    protected RecexpCyclicRuleException(String expression) {
-        super(expression);
+    /**
+     * @param name the rule name
+     */
+    protected RecexpCyclicRuleException(String name) {
+        super(name);
     }
 }

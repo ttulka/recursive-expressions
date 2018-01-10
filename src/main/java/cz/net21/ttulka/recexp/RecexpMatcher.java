@@ -1,13 +1,18 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Derivation result representation as a matcher.
+ * Derivation result matcher.
  *
  * @author ttulka
  * @see Recexp
  */
 abstract public class RecexpMatcher extends RecexpGroup {
 
+    /**
+     * @param name   the name of the expression
+     * @param value  the parsed input value
+     * @param groups the children groups
+     */
     protected RecexpMatcher(String name, String value, RecexpGroup[] groups) {
         super(name, value, groups);
     }

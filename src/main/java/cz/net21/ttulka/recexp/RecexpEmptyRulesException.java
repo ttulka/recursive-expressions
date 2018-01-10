@@ -1,7 +1,7 @@
 package cz.net21.ttulka.recexp;
 
 /**
- * Grammar contains no rules exception.
+ * No rules defined exception.
  *
  * @author ttulka
  * @see Recexp
