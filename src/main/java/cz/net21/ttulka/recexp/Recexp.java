@@ -10,7 +10,7 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Recursive Expressions Grammar.
+ * Recursive Expressions.
  * <p>
  * Defined as a set of recursive rules.
  * <p>
@@ -85,6 +85,7 @@ public class Recexp {
      * @return true if the grammar accepts the string, otherwise false
      * @throws RecexpEmptyRulesException when there are no rules
      * @throws RecexpCyclicRuleException when there is a cyclic rule
+     * @throws RecexpRuleNotFoundException when a rule is referenced but not defined
      */
     public boolean matches(String input) {
         return matcher(input).matches();
@@ -98,6 +99,7 @@ public class Recexp {
      * @return the matcher
      * @throws RecexpEmptyRulesException when there are no rules
      * @throws RecexpCyclicRuleException when there is a cyclic rule
+     * @throws RecexpRuleNotFoundException when a rule is referenced but not defined
      */
     public RecexpMatcher matcher(String startingRuleName, String input) {
         return matcher(getNamedRules(startingRuleName), input);
@@ -108,8 +110,9 @@ public class Recexp {
      *
      * @param input the input string
      * @return the matcher
-     * @throws RecexpEmptyRulesException when there are no rules
-     * @throws RecexpCyclicRuleException when there is a cyclic rule
+     * @throws RecexpEmptyRulesException   when there are no rules
+     * @throws RecexpCyclicRuleException   when there is a cyclic rule
+     * @throws RecexpRuleNotFoundException when a rule is referenced but not defined
      */
     public RecexpMatcher matcher(String input) {
         return matcher(getAllExplicitRules(), input);
