@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.net21.ttulka.recexp</groupId>
     <artifactId>recursive-expressions</artifactId>
-    <version>0.0.1-beta</version>
+    <version>0.0.0-beta</version>
 
     <name>Recursive Expressions</name>
     <description>Java library for working with recursive expressions and context-free languages and grammars.</description>
@@ -92,9 +92,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
-                <configuration>
-                    <skip></skip>
-                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>

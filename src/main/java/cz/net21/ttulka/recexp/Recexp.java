@@ -83,6 +83,8 @@ public class Recexp {
      *
      * @param input the input string
      * @return true if the grammar accepts the string, otherwise false
+     * @throws RecexpEmptyRulesException when there are no rules
+     * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     public boolean matches(String input) {
         return matcher(input).matches();
@@ -223,7 +225,7 @@ public class Recexp {
             }
         }
         if (namedRules.isEmpty()) {
-            throw new IllegalArgumentException("No rule with the name '" + name + "' found.");
+            throw new RecexpRuleNotFoundException(name);
         }
         return namedRules;
     }
@@ -259,9 +261,7 @@ public class Recexp {
 
             // generate new candidates from this candidate tree and add them to the queue
             // this is a level-based derivation (in contrast to depth-base derivation)
-            for (ExpressionTree.Node node : generateCandidates(candidate, root)) {
-                candidatesQueue.add(node);
-            }
+            candidatesQueue.addAll(generateCandidates(candidate, root));
         }
         return null;
     }
@@ -548,7 +548,7 @@ public class Recexp {
          * Sets the flags.
          *
          * @param flags the match flags, a bit mask that may include the flags from {@link java.util.regex.Pattern}
-         * @return
+         * @return the builder
          */
         public RecexpBuilder flags(int flags) {
             this.flags = flags;

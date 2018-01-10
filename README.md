@@ -24,7 +24,7 @@ Copy the Maven dependency into your Maven project:
 
 ### Recursive Expressions as an Extension of Regular Expressions 
 
-Regular expression standard Java library doesn't use hierarchical grouping of a parsing result:
+Regular expression standard Java library does not use hierarchical grouping of a parsing result:
 ```
 Matcher matcher = Pattern.compile("(a)((b))").matcher("ab");    // this is standard Java
 matcher.groupCount();   // 3

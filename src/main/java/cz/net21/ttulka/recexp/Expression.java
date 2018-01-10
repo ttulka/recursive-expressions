@@ -45,16 +45,12 @@ class Expression {
     }
 
     public String toWord() {
-        return toWord(false);
-    }
-
-    String toWord(boolean closeIntoBrackets) {
         if (isEpsilon()) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
 
-        if (closeIntoBrackets || (!isReference() && isQuantified())) {
+        if (!isReference() && isQuantified()) {
             sb.append("(");
         }
 
@@ -64,7 +60,7 @@ class Expression {
 
         sb.append(getText());
 
-        if (closeIntoBrackets || (!isReference() && isQuantified())) {
+        if (!isReference() && isQuantified()) {
             sb.append(")");
         }
 

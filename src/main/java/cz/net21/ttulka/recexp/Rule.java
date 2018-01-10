@@ -112,7 +112,8 @@ class ImplicitRule extends NamedRule {
 
     public static final ImplicitRule EPSILON_RULE = new ImplicitRule(Expression.EPSILON_REFERENCE_NAME, Expression.EPSILON);
 
-    private ImplicitRule(String name, Expression expression) {
+    @SuppressWarnings("SameParameterValue")
+    private ImplicitRule(@SuppressWarnings("SameParameterValue") String name, Expression expression) {
         super(name, expression);
     }
 }

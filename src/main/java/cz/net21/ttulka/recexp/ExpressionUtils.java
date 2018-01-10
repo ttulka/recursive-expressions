@@ -94,9 +94,7 @@ class ExpressionUtils {
 
         // ANDs => bracket groups + references
         for (String bracketGroup : getExpressionPartsCutByBrackets(expression)) {
-            for (String referenceGroup : getExpressionPartsCutByReferences(bracketGroup)) {
-                parts.add(referenceGroup);
-            }
+            parts.addAll(getExpressionPartsCutByReferences(bracketGroup));
         }
         return parts;
     }

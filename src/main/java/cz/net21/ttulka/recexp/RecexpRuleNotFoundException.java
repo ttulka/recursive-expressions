@@ -8,7 +8,7 @@ package cz.net21.ttulka.recexp;
  */
 public class RecexpRuleNotFoundException extends RecexpException {
 
-    protected RecexpRuleNotFoundException(String expression) {
-        super(expression);
+    protected RecexpRuleNotFoundException(String name) {
+        super("No rule with the name '" + name + "' found.");
     }
 }
