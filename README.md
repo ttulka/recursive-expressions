@@ -68,7 +68,7 @@ Recexp.compile("a", Pattern.CASE_INSENSITIVE)    // case-insetive
 ```
 The flags are applied to all the rules.
 
-### Recursive Expressions as Context-Free Grammar
+### Recursive Expressions as a Context-Free Grammar
 
 A context-free grammar can be defined as a set of rules with a starting rule `S`. The rules are of the form `A → w`, where `A` is a name of the rule and `w` is a string which can contain characters and rule references.
 
