@@ -88,6 +88,9 @@ public class RecexpGroup {
      * @return The (possibly empty) subgroup captured by the group, or null if the group failed to match part of the input
      */
     public RecexpGroup group(String groupName) {
+        if (groups == null) {
+            return null;
+        }
         if (groupName.equals(name)) {
             return this;
         }
@@ -96,6 +99,19 @@ public class RecexpGroup {
             if (group.name().equals(groupName)) {
                 return group;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Returns subgroups captured by the given rule.
+     *
+     * @param ruleName the name of the capturing rule
+     * @return The (possibly empty) array of subgroups captured by the rule, or null if the group failed to match part of the input
+     */
+    public RecexpGroup[] findByRule(String ruleName) {
+        if (groups == null) {
+            return null;
         }
         return null;
     }

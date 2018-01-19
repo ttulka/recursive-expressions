@@ -27,7 +27,7 @@ abstract public class RecexpMatcher extends RecexpGroup {
     }
 
     static RecexpMatcher emptyMatcher(String input) {
-        return new RecexpMatcher(null, input, new RecexpGroup[0]) {
+        return new RecexpMatcher(null, input, null) {
             @Override
             public boolean matches() {
                 return false;
