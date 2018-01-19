@@ -282,7 +282,7 @@ public class Recexp {
         Set<NodeCombinationsHolder> combinations = new HashSet<NodeCombinationsHolder>();
 
         if (node.isOrNode()) {
-            combinations.add(new NodeCombinationsHolder(node, new HashSet<ExpressionTree.Node>(node.getSubNodes())));
+            combinations.add(new NodeCombinationsHolder(node, new ArrayList<ExpressionTree.Node>(node.getSubNodes())));
         } else {
             combinations.addAll(generateCombinationsFromLeaves(node, root));
         }
@@ -341,8 +341,8 @@ public class Recexp {
     /**
      * Generates combination for the node - epsilon and references substitution.
      */
-    Set<ExpressionTree.Node> generateCombinations(ExpressionTree.Node node, ExpressionTree.Node root) {
-        Set<ExpressionTree.Node> combinations = new HashSet<ExpressionTree.Node>();
+    List<ExpressionTree.Node> generateCombinations(ExpressionTree.Node node, ExpressionTree.Node root) {
+        List<ExpressionTree.Node> combinations = new ArrayList<ExpressionTree.Node>();
 
         if (node.isThisReference()) {
             if (node.getExpression().isQuantified()) {
@@ -359,12 +359,13 @@ public class Recexp {
         } else {
             if (node.getExpression().isReference()) {
                 for (Rule rule : getNamedRules(node.getExpression().getText())) {
-                    if (rule.getExpression().getRoot().isOrNode()) {
-                        for (ExpressionTree.Node n : rule.getExpression().getRoot().getSubNodes()) {
+                    ExpressionTree.Node ruleRoot = rule.getExpression().getRoot();
+                    if (ruleRoot.isOrNode()) {
+                        for (ExpressionTree.Node n : ruleRoot.getSubNodes()) {
                             combinations.add(toCombination(node, n.getExpression()));
                         }
                     } else {
-                        combinations.add(toCombination(node, rule.getExpression().getRoot().getExpression()));
+                        combinations.add(toCombination(node, ruleRoot.getExpression()));
                     }
                 }
             } else {
@@ -574,9 +575,9 @@ public class Recexp {
     static class NodeCombinationsHolder {
 
         final ExpressionTree.Node node;
-        final Set<ExpressionTree.Node> combinations;
+        final List<ExpressionTree.Node> combinations;
 
-        public NodeCombinationsHolder(ExpressionTree.Node node, Set<ExpressionTree.Node> combinations) {
+        public NodeCombinationsHolder(ExpressionTree.Node node, List<ExpressionTree.Node> combinations) {
             this.node = node;
             this.combinations = combinations;
         }
@@ -585,7 +586,7 @@ public class Recexp {
             return node;
         }
 
-        public Set<ExpressionTree.Node> getCombinations() {
+        public List<ExpressionTree.Node> getCombinations() {
             return combinations;
         }
 

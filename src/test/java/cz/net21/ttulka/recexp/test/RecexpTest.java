@@ -638,7 +638,6 @@ public class RecexpTest {
         assertThat(palindromesGrammar3.matches("1101"), is(false));
     }
 
-    @Ignore
     @Test
     public void popularGrammars_stringWithSameNumberOf0sAnd1sTest() {
         Recexp stringWithSameNumberOf0sAnd1sGrammar1 = Recexp.compile(
@@ -694,7 +693,6 @@ public class RecexpTest {
         assertThat(stringWithSameNumberOf0sAnd1sGrammar3.matches("010"), is(false));
     }
 
-    @Ignore
     @Test
     public void popularGrammars_arithmeticExpressionsTest() {
         Recexp arithmeticExpressionsGrammar = Recexp.builder()

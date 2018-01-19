@@ -271,7 +271,7 @@ public class GrammarTest {
     }
 
     private Recexp.NodeCombinationsHolder createLeafCombination(String... combinations) {
-        Set<ExpressionTree.Node> combinationNodes = new HashSet<ExpressionTree.Node>();
+        List<ExpressionTree.Node> combinationNodes = new ArrayList<ExpressionTree.Node>();
         for (String c : combinations) {
             combinationNodes.add(ExpressionTree.Node.parseNode(c));
         }
@@ -356,7 +356,7 @@ public class GrammarTest {
                    containsInAnyOrder("@this??", ""));
     }
 
-    private Set<String> combinationsToString(Set<ExpressionTree.Node> combinations) {
+    private Set<String> combinationsToString(Collection<ExpressionTree.Node> combinations) {
         Set<String> strings = new HashSet<String>();
         for (ExpressionTree.Node node : combinations) {
             strings.add(node.toWord());
