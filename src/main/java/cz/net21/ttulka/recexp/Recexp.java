@@ -362,7 +362,9 @@ public class Recexp {
                     ExpressionTree.Node ruleRoot = rule.getExpression().getRoot();
                     if (ruleRoot.isOrNode()) {
                         for (ExpressionTree.Node n : ruleRoot.getSubNodes()) {
-                            combinations.add(toCombination(node, n.getExpression()));
+                            if (!n.getExpression().isReference() || !n.getExpression().getText().equals(node.getExpression().getText())) {
+                                combinations.add(toCombination(node, n.getExpression()));
+                            }
                         }
                     } else {
                         combinations.add(toCombination(node, ruleRoot.getExpression()));

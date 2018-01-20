@@ -2,12 +2,10 @@ package cz.net21.ttulka.recexp.test;
 
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.net21.ttulka.recexp.Recexp;
 import cz.net21.ttulka.recexp.RecexpCyclicRuleException;
-import cz.net21.ttulka.recexp.RecexpGroup;
 import cz.net21.ttulka.recexp.RecexpMatcher;
 
 import static org.hamcrest.CoreMatchers.is;

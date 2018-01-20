@@ -18,7 +18,7 @@ Copy the Maven dependency into your Maven project:
 <dependency>
     <groupId>cz.net21.ttulka.recexp</groupId>
     <artifactId>recursive-expressions</artifactId>
-    <version>0.0.0-beta</version>
+    <version>0.0.1-beta</version>
 </dependency>
 ```
 
