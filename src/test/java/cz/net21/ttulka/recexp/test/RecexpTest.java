@@ -439,23 +439,6 @@ public class RecexpTest {
     }
 
     @Test
-    public void findByRuleTest() {
-        Recexp recexp = Recexp.builder()
-                .rule("WORD", "@WORD\\s|\\w+")
-                .rule("PERIOD", "[\\.\\!\\?]")
-                .rule("SENTENCE", "@WORD+@PERIOD")
-                .build();
-
-        RecexpMatcher matcher = recexp.matcher("SENTENCE", "Hello Recexp!");
-
-        assertThat(matcher.matches(), is(true));
-        assertThat(matcher.groupCount(), is(2));
-
-        RecexpGroup[] words = matcher.findByRule("WORD");
-        assertThat(words.length, is(2));
-    }
-
-    @Test
     public void groupsTest() {
         Recexp recexp = Recexp.compile("a(b(c)(d))e");
         RecexpMatcher matcher = recexp.matcher("abcde");
