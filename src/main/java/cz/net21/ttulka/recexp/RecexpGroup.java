@@ -1,8 +1,5 @@
 package cz.net21.ttulka.recexp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Derivation result tree node.
  *

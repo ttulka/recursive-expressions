@@ -2,7 +2,6 @@ package cz.net21.ttulka.recexp.test;
 
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.net21.ttulka.recexp.Recexp;
@@ -721,18 +720,18 @@ public class RecexpTest {
     public void infiniteRecursionTest() {
         Recexp grammar;
 
-//        grammar = Recexp.builder()
-//                .rule("S", "@S+|a")
-//                .build();
-//
-//        assertThat(grammar.matcher("a").matches(), is(true));
-//        assertThat(grammar.matcher("b").matches(), is(false));
+        grammar = Recexp.builder()
+                .rule("S", "@S+|a")
+                .build();
+
+        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("b").matches(), is(false));
 
         grammar = Recexp.builder()
                 .rule("S", "a?@S+|a")
                 .build();
 
-//        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("a").matches(), is(true));
         assertThat(grammar.matcher("b").matches(), is(false));
 
         grammar = Recexp.builder()
