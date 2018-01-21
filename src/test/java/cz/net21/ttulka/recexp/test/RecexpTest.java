@@ -716,6 +716,9 @@ public class RecexpTest {
         assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)(Y×X)").matches(), is(false));
     }
 
+    /**
+     * These grammars can possibly derive infinitely.
+     */
     @Test
     public void infiniteRecursionTest() {
         Recexp grammar;
