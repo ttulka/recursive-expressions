@@ -131,8 +131,8 @@ public class Recexp {
                     RecexpGroup group = nodeToGroup(derivative, input, flags);
                     return RecexpMatcher.matcher(rule.toString(), input, group.groups());
                 }
-            } catch (RecexpException e) {
-                throw e;
+            } catch (RecexpException rethrow) {
+                throw rethrow;
             } catch (Throwable ignore) {
                 // TODO workaround for infinite recursions
             }
