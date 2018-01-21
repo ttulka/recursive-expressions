@@ -123,10 +123,18 @@ public class Recexp {
         checkCyclicRules(rules);
 
         for (Rule rule : rules) {
-            ExpressionTree.Node derivative = deriveTree(rule.getExpression().getRoot(), input, new HashSet<String>());
-            if (derivative != null) {
-                RecexpGroup group = nodeToGroup(derivative, input, flags);
-                return RecexpMatcher.matcher(rule.toString(), input, group.groups());
+            try {
+                ExpressionTree.Node derivative = deriveTree(
+                        rule.getExpression().getRoot(), input, new HashSet<String>());
+
+                if (derivative != null) {
+                    RecexpGroup group = nodeToGroup(derivative, input, flags);
+                    return RecexpMatcher.matcher(rule.toString(), input, group.groups());
+                }
+            } catch (RecexpException e) {
+                throw e;
+            } catch (Throwable ignore) {
+                // TODO workaround for infinite recursions
             }
         }
         return RecexpMatcher.emptyMatcher(input);

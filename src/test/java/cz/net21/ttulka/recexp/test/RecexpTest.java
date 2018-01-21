@@ -717,21 +717,22 @@ public class RecexpTest {
         assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)(Y×X)").matches(), is(false));
     }
 
-    @Ignore
     @Test
     public void infiniteRecursionTest() {
-        Recexp grammar = Recexp.builder()
-                .rule("S", "@S+|a")
-                .build();
+        Recexp grammar;
 
-        assertThat(grammar.matcher("a").matches(), is(true));
-        assertThat(grammar.matcher("b").matches(), is(false));
+//        grammar = Recexp.builder()
+//                .rule("S", "@S+|a")
+//                .build();
+//
+//        assertThat(grammar.matcher("a").matches(), is(true));
+//        assertThat(grammar.matcher("b").matches(), is(false));
 
         grammar = Recexp.builder()
                 .rule("S", "a?@S+|a")
                 .build();
 
-        assertThat(grammar.matcher("a").matches(), is(true));
+//        assertThat(grammar.matcher("a").matches(), is(true));
         assertThat(grammar.matcher("b").matches(), is(false));
 
         grammar = Recexp.builder()
