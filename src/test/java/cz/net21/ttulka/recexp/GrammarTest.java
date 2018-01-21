@@ -372,25 +372,24 @@ public class GrammarTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
-        assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("ab");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("ab"));
         assertThat(tree.getSentence(), is("ab"));
-        assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("@A");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A"));
         assertThat(tree.getSentence(), is("@A"));
-        assertThat(tree.getLeaves().size(), is(1));
+        assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
         tree = ExpressionTree.parseTree("x(@A)y");
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("x(@A)y"));
         assertThat(tree.getSentence(), is("x(@A)y"));
-        assertThat(tree.getLeaves().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("x"));
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@A"));
@@ -400,7 +399,6 @@ public class GrammarTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A@B"));
         assertThat(tree.getSentence(), is("@A@B"));
-        assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A"));
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@B"));
@@ -409,7 +407,6 @@ public class GrammarTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a@this?b"));
         assertThat(tree.getSentence(), is("a@this?b"));
-        assertThat(tree.getLeaves().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
         assertThat(tree.getRoot().getSubNodes().get(1).toWord(), is("@this?"));
@@ -420,7 +417,6 @@ public class GrammarTest {
         assertThat(tree.getSentence(), is("a((@this)x)?b"));
         assertThat(tree.getRoot().toWord(), is("a((@this(x))?)b"));
         assertThat(tree.getRoot().getSentence(), is("a((@this)x)?b"));
-        assertThat(tree.getLeaves().size(), is(4));
         assertThat(tree.getRoot().getSubNodes().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
         assertThat(tree.getRoot().getSubNodes().get(0).getSentence(), is("a"));
@@ -441,7 +437,6 @@ public class GrammarTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("ab(12)@this@A?(@B)(@C?)cd?((@D))((@E)(@F))?(a@REF)"));
         assertThat(tree.getSentence(), is("ab12@this@A?@B@C?cd?@D(@E@F)?a@REF"));
-        assertThat(tree.getLeaves().size(), is(12));
         assertThat(tree.getRoot().getSubNodes().size(), is(10));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("ab"));
         assertThat(tree.getRoot().getSubNodes().get(0).getSentence(), is("ab"));
@@ -631,6 +626,12 @@ public class GrammarTest {
                     .rule("B", "b")
                     .rule("@A@this@B")
                     .build()
+                    .matches("");
+            fail("Should throw a RecexpCyclicRuleException.");
+        } catch (RecexpCyclicRuleException expected) {
+        }
+        try {
+            Recexp.builder().rule("@this").build()
                     .matches("");
             fail("Should throw a RecexpCyclicRuleException.");
         } catch (RecexpCyclicRuleException expected) {

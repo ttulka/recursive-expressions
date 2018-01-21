@@ -28,10 +28,6 @@ class ExpressionTree {
         return root;
     }
 
-    public List<Node> getLeaves() {
-        return root.getLeaves();
-    }
-
     public String getSentence() {
         return root.getSentence();
     }
@@ -157,30 +153,6 @@ class ExpressionTree {
 
         public String toWord() {
             return expression.toWord();
-        }
-
-        public boolean isEmpty() {
-            return expression.isEpsilon();
-        }
-
-        public List<Node> getLeaves() {
-            return getLeaves(this);
-        }
-
-        private List<Node> getLeaves(Node node) {
-            List<Node> leaves = new ArrayList<Node>();
-
-            if (node.getSubNodes().isEmpty()) {
-                if (!node.isEmpty()) {
-                    leaves.add(node);
-                }
-
-            } else {
-                for (Node l : node.getSubNodes()) {
-                    leaves.addAll(getLeaves(l));
-                }
-            }
-            return leaves;
         }
 
         public String getSentence() {

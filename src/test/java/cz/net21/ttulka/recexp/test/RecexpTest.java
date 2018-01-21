@@ -2,6 +2,7 @@ package cz.net21.ttulka.recexp.test;
 
 import java.util.regex.Pattern;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.net21.ttulka.recexp.Recexp;
@@ -270,6 +271,22 @@ public class RecexpTest {
     }
 
     @Test
+    public void innerOrTest() {
+        Recexp recexp = Recexp.builder()
+                .rule("WORD", "((@WORD\\s|\\w+))")
+                .rule("SENTENCE", "(@WORD\\s)+@WORD?[\\.\\!\\?]")
+                .build();
+
+        RecexpMatcher matcher = recexp.matcher("SENTENCE", "Hello Recexp!");
+
+        assertThat(matcher.matches(), is(true));
+        assertThat(matcher.groupCount(), is(3));
+        assertThat(matcher.group("(@WORD\\s)+"), is(matcher.group(1)));
+        assertThat(matcher.group("@WORD?"), is(matcher.group(2)));
+        assertThat(matcher.group("[\\.\\!\\?]"), is(matcher.group(3)));
+    }
+
+    @Test
     public void twoRulesTest() {
         Recexp recexp = Recexp.builder()
                 .rule("RULE_AB", "a(@RULE_C)b")
@@ -516,7 +533,6 @@ public class RecexpTest {
         RecexpMatcher matcher = recexp.matcher("aabb");
 
         assertThat(matcher.groupCount(), is(3));
-        assertThat(matcher.group(1).groupCount(), is(0));
         assertThat(matcher.group(2).groupCount(), is(1));
         assertThat(matcher.group(2).group(1).groupCount(), is(3));
         assertThat(matcher.group(2).group(1).group(1).groupCount(), is(0));
@@ -699,5 +715,31 @@ public class RecexpTest {
         assertThat(arithmeticExpressionsGrammar.matcher("E", "X××X").matches(), is(false));
         assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)×A").matches(), is(false));
         assertThat(arithmeticExpressionsGrammar.matcher("E", "(X×X)(Y×X)").matches(), is(false));
+    }
+
+    @Ignore
+    @Test
+    public void infiniteRecursionTest() {
+        Recexp grammar = Recexp.builder()
+                .rule("S", "@S+|a")
+                .build();
+
+        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("b").matches(), is(false));
+
+        grammar = Recexp.builder()
+                .rule("S", "a?@S+|a")
+                .build();
+
+        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("b").matches(), is(false));
+
+        grammar = Recexp.builder()
+                .rule("S", "a?@A+|a")
+                .rule("A", "@S")
+                .build();
+
+        assertThat(grammar.matcher("a").matches(), is(true));
+        assertThat(grammar.matcher("b").matches(), is(false));
     }
 }

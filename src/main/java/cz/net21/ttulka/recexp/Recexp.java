@@ -145,8 +145,9 @@ public class Recexp {
      * @throws RecexpCyclicRuleException when there is a cyclic rule
      */
     void checkCyclicRules(Set<Rule> rules) {
+        Set<String> alreadyCheckedReferences = new HashSet<String>();
         for (Rule rule : rules) {
-            if (!checkCyclicRules(rule, rule.getExpression().getRoot())) {
+            if (!checkCyclicRules(rule, rule.getExpression().getRoot(), alreadyCheckedReferences)) {
                 throw new RecexpCyclicRuleException(rule.getName());
             }
         }
@@ -155,45 +156,45 @@ public class Recexp {
     /**
      * @return true if the rule has no self-reference, otherwise false.
      */
-    private boolean checkCyclicRules(Rule rule, ExpressionTree.Node node) {
-        if (node.isOrNode()) {
-            for (ExpressionTree.Node n : node.getSubNodes()) {
-                if (checkCyclicRules(rule, n)) {
-                    return true;
-                }
-            }
+    private boolean checkCyclicRules(Rule rule, ExpressionTree.Node node, Set<String> alreadyCheckedReferences) {
+        if (ExpressionUtils.matchesEpsilon(node.toWord())) {
+            return true;
         }
+        if (node.isThisReference()) {
+            return false;
+        }
+        if (node.getExpression().isReference()) {
+            if (alreadyCheckedReferences.add(node.getExpression().getText())) {
 
-        Set<ExpressionTree.Node> unresolvedReferences = new HashSet<ExpressionTree.Node>();
-
-        for (ExpressionTree.Node leaf : node.getLeaves()) {
-            Expression expression = leaf.getExpression();
-
-            if (ExpressionUtils.matchesEpsilon(leaf.toWord())) {
-                continue;
-            }
-
-            if (leaf.isThisReference()) {
-                return false;
-            }
-
-            if (expression.isReference()) {
-                if (rule.getName().equals(leaf.getExpression().getText())) {
+                if (rule.getName().equals(node.getExpression().getText())) {
                     if (numberOfRulesWithSameName(rule.getName()) == 1) {
                         return false;
                     }
                 }
-                unresolvedReferences.add(leaf);
+
+                for (ExpressionTree.Node candidate : generateCandidates(node, rule.getExpression().getRoot())) {
+                    if (checkCyclicRules(rule, candidate, alreadyCheckedReferences)) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
-        for (ExpressionTree.Node n : unresolvedReferences) {
-            for (ExpressionTree.Node candidate : generateCandidates(n, node)) {
-                if (checkCyclicRules(rule, candidate)) {
+        if (node.isOrNode()) {
+            for (ExpressionTree.Node sub : node.getSubNodes()) {
+                if (checkCyclicRules(rule, sub, alreadyCheckedReferences)) {
                     return true;
                 }
             }
             return false;
+
+        } else {
+            for (ExpressionTree.Node sub : node.getSubNodes()) {
+                if (!checkCyclicRules(rule, sub, alreadyCheckedReferences)) {
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -279,14 +280,29 @@ public class Recexp {
     }
 
     private Set<Set<NodeCandidate>> getCartesianProduct(ExpressionTree.Node node, ExpressionTree.Node root) {
+        return generateCartesianProduct(getCombinations(node, root));
+    }
+
+    private Set<NodeCombinationsHolder> getCombinations(ExpressionTree.Node node, ExpressionTree.Node root) {
         Set<NodeCombinationsHolder> combinations = new HashSet<NodeCombinationsHolder>();
 
-        if (node.isOrNode()) {
-            combinations.add(new NodeCombinationsHolder(node, new ArrayList<ExpressionTree.Node>(node.getSubNodes())));
+        if (node.getSubNodes().isEmpty()) {
+            if (node.getExpression().isReference()) {
+                combinations.add(new NodeCombinationsHolder(node, generateCombinations(node, root)));
+            }
         } else {
-            combinations.addAll(generateCombinationsFromLeaves(node, root));
+            if (node.isOrNode()) {
+                if (node.getExpression().isReference()) {
+                    combinations.add(new NodeCombinationsHolder(node, new ArrayList<ExpressionTree.Node>(node.getSubNodes())));
+                }
+
+            } else {
+                for (ExpressionTree.Node sub : node.getSubNodes()) {
+                    combinations.addAll(getCombinations(sub, root));
+                }
+            }
         }
-        return generateCartesianProduct(combinations);
+        return combinations;
     }
 
     /**
@@ -325,17 +341,6 @@ public class Recexp {
             }
         }
         return cartesianProduct;
-    }
-
-    private Set<NodeCombinationsHolder> generateCombinationsFromLeaves(ExpressionTree.Node node, ExpressionTree.Node root) {
-        Set<NodeCombinationsHolder> combinations = new HashSet<NodeCombinationsHolder>();
-
-        for (ExpressionTree.Node leaf : node.getLeaves()) {
-            if (leaf.getExpression().isReference()) {
-                combinations.add(new NodeCombinationsHolder(leaf, generateCombinations(leaf, root)));
-            }
-        }
-        return combinations;
     }
 
     /**

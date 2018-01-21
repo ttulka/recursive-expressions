@@ -1,15 +1,11 @@
 package cz.net21.ttulka.recexp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.fail;
 
 /**
@@ -25,7 +21,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is(""));
         assertThat(tree.getSentence(), is(""));
-        assertThat(tree.getLeaves().size(), is(0));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -33,7 +28,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -41,7 +35,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("ab"));
         assertThat(tree.getSentence(), is("ab"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -49,7 +42,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A"));
         assertThat(tree.getSentence(), is("@A"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -57,7 +49,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@AB"));
         assertThat(tree.getSentence(), is("@AB"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -65,7 +56,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A?"));
         assertThat(tree.getSentence(), is("@A?"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -73,7 +63,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@AB?"));
         assertThat(tree.getSentence(), is("@AB?"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -81,7 +70,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a"));
         assertThat(tree.getSentence(), is("a"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(0));
 
@@ -89,7 +77,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(a)"));
         assertThat(tree.getSentence(), is("a"));
-        assertThat(tree.getLeaves().size(), is(1));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.SINGLE));
         assertThat(tree.getRoot().getSubNodes().size(), is(1));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
@@ -98,7 +85,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("@A?@B?"));
         assertThat(tree.getSentence(), is("@A?@B?"));
-        assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A?"));
@@ -108,7 +94,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(@A?@B?)?"));
         assertThat(tree.getSentence(), is("(@A?@B?)?"));
-        assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("@A?"));
@@ -118,7 +103,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a(@this)?b"));
         assertThat(tree.getSentence(), is("a@this?b"));
-        assertThat(tree.getLeaves().size(), is(3));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(3));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
@@ -129,7 +113,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("(a)(b)"));
         assertThat(tree.getSentence(), is("ab"));
-        assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
@@ -140,7 +123,6 @@ public class ExpressionTreeTest {
         assertThat(tree, not(nullValue()));
         assertThat(tree.getRoot().toWord(), is("a((b))"));
         assertThat(tree.getSentence(), is("ab"));
-        assertThat(tree.getLeaves().size(), is(2));
         assertThat(tree.getRoot().getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
         assertThat(tree.getRoot().getSubNodes().size(), is(2));
         assertThat(tree.getRoot().getSubNodes().get(0).toWord(), is("a"));
@@ -261,34 +243,6 @@ public class ExpressionTreeTest {
     }
 
     @Test
-    public void getLeavesTest() {
-        ExpressionTree tree = createSimpleTree();
-
-        List<String> leaves = new ArrayList<String>();
-
-        for (ExpressionTree.Node node : tree.getLeaves()) {
-            leaves.add(node.getExpression().getText());
-        }
-        assertThat(leaves, contains("D", "G", "F"));
-
-        // simple OR
-        tree = ExpressionTree.parseTree("a|b");
-        leaves.clear();
-        for (ExpressionTree.Node node : tree.getLeaves()) {
-            leaves.add(node.getExpression().getText());
-        }
-        assertThat(leaves, contains("a", "b"));
-
-        // complex OR
-        tree = ExpressionTree.parseTree("a(b)|c");
-        leaves.clear();
-        for (ExpressionTree.Node node : tree.getLeaves()) {
-            leaves.add(node.getExpression().getText());
-        }
-        assertThat(leaves, contains("a", "b", "c"));
-    }
-
-    @Test
     public void getSentenceTest() {
         assertThat(createSimpleTree().getSentence(), is("DGF"));
 
@@ -365,7 +319,6 @@ public class ExpressionTreeTest {
         assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().get(0).getSubNodes().size(), is(2));
         assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
     }
-
 
     @Test
     public void getWordTest() {
