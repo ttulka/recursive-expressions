@@ -310,6 +310,64 @@ public class ExpressionTreeTest {
     }
 
     @Test
+    public void parseNodeTest() {
+        ExpressionTree.Node node;
+
+        node = ExpressionTree.Node.parseNode("a|b");
+        assertThat(node.toWord(), is("a|b"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(0));
+
+        node = ExpressionTree.Node.parseNode("a|@A");
+        assertThat(node.toWord(), is("a|@A"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(0));
+
+        node = ExpressionTree.Node.parseNode("a|(@A)");
+        assertThat(node.toWord(), is("a|(@A)"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(0));
+
+        node = ExpressionTree.Node.parseNode("a|(@A@B)");
+        assertThat(node.toWord(), is("a|(@A@B)"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+
+        node = ExpressionTree.Node.parseNode("a|(@A|@B)");
+        assertThat(node.toWord(), is("a|(@A|@B)"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(1).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+
+        node = ExpressionTree.Node.parseNode("a|((@A|@B))");
+        assertThat(node.toWord(), is("a|((@A|@B))"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(1));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+
+        node = ExpressionTree.Node.parseNode("a|((a@A|b@B))");
+        assertThat(node.toWord(), is("a|((a@A|b@B))"));
+        assertThat(node.getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(0).getSubNodes().size(), is(0));
+        assertThat(node.getSubNodes().get(1).getSubNodes().size(), is(1));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.OR));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().get(0).getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().get(0).getSubNodes().size(), is(2));
+        assertThat(node.getSubNodes().get(1).getSubNodes().get(0).getSubNodes().get(0).getSubNodesConnectionType(), is(ExpressionTree.Node.SubNodesConnectionType.AND));
+    }
+
+
+    @Test
     public void getWordTest() {
         ExpressionTree.Node node;
 
