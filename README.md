@@ -253,7 +253,8 @@ For more examples see [unit tests](http://github.com/ttulka/recursive-expression
 
 ## Release Changes
 
-Not released yet.
+### 1.0.0
+Initial version.
 
 ## License
 
